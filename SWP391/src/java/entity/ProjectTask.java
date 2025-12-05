@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
  * @author Admin
  */
 public class ProjectTask {
+
     private Integer taskId;         // INT IDENTITY(1,1) PRIMARY KEY (Integer là Wrapper Class của int)
     private Integer projectId;      // INT NOT NULL
     private String taskCode;    // NVARCHAR(50) NOT NULL UNIQUE
@@ -19,7 +20,12 @@ public class ProjectTask {
     private Boolean isActive;   // BIT NOT NULL DEFAULT 1 (Boolean là Wrapper Class của boolean)
     private LocalDateTime createdAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
     private String status;      // NVARCHAR(20) NOT NULL DEFAULT N'TO_DO'
+    //CHECK (Status IN (N'TO_DO', N'COMPLETE'));
 
+    public ProjectTask() {
+    }
+
+    
     public ProjectTask(Integer taskId, Integer projectId, String taskCode, String taskName, String description, Boolean isActive, LocalDateTime createdAt, String status) {
         this.taskId = taskId;
         this.projectId = projectId;
@@ -94,6 +100,5 @@ public class ProjectTask {
     public void setStatus(String status) {
         this.status = status;
     }
-    
-    
+
 }

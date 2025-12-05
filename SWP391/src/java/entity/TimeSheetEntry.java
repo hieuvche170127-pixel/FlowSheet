@@ -40,6 +40,10 @@ public class TimeSheetEntry {
     private Integer approvedById;  // INT NULL (FK to UserAccount)
     private LocalDateTime approvedAt; // DATETIME2 NULL
 
+    public TimeSheetEntry() {
+    }
+    
+
     public TimeSheetEntry(Integer entryId, Integer userId, Integer projectId, Integer taskId, LocalDate workDate, LocalTime startTime, LocalTime endTime, Integer minutesWorked, String note, LocalDateTime createdAt, LocalDateTime updatedAt, String status, Integer approvedById, LocalDateTime approvedAt) {
         this.entryId = entryId;
         this.userId = userId;

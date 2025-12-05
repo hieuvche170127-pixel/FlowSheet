@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
  * @author Admin
  */
 public class UserAccount {
+
     private Integer userId; // INT IDENTITY(1,1) PRIMARY KEY
     private String username; // NVARCHAR(50) NOT NULL UNIQUE
     private String passwordHash; // NVARCHAR(255) NOT NULL
@@ -21,9 +22,10 @@ public class UserAccount {
     private Boolean isActive; // BIT NOT NULL DEFAULT 1
     private LocalDateTime createdAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
     private LocalDateTime updatedAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-    /**
-     * Constructor đầy đủ để dễ dàng khởi tạo đối tượng với tất cả các thuộc tính.
-     */
+
+    public UserAccount() {
+    }
+
     // ôi vl nó quên return type :)
     public void User(Integer userId, String username, String passwordHash, String fullName, String email, String phone, Integer roleId, Boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.userId = userId;
@@ -39,7 +41,6 @@ public class UserAccount {
     }
 
     // --- Getters và Setters ---
-
     public Integer getUserId() {
         return userId;
     }
@@ -119,5 +120,5 @@ public class UserAccount {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
+
 }
