@@ -16,7 +16,7 @@ public class UserDAO extends DBContext{
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         
-        String sql = "SELECT * FROM UserAccount WHERE IsActive = 1"; 
+        String sql = "SELECT * FROM UserAccount WHERE RoleID = 1 AND IsActive = 1"; 
 
         try {
             PreparedStatement ps = connection.prepareStatement(sql);
