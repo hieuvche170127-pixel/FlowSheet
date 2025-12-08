@@ -26,6 +26,13 @@
                     <file>${file.reference.mssql-jdbc-13.2.1.jre11.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
+                <library dirs="200">
+                 <file>${file.reference.jaxb-api-2.1.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.sqljdbc42.jar}</file>
+                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>
