@@ -37,12 +37,6 @@ public class TimesheetEntryDAO extends DBContext {
             // 2. Foreign Keys (INT NOT NULL)
             timesheet.setUserId(rs.getInt("userId"));
 
-            // 3. Optional Foreign Keys (INT NULL)
-            // Cần kiểm tra NULL cho các trường INT/INTEGER trong Java để tránh lỗi chuyển đổi 
-            // nếu cột trong DB là NULL. Mặc dù rs.getInt() trả về 0 nếu NULL, nhưng 
-            // kiểm tra tường minh thì tốt hơn nếu bạn muốn phân biệt 0 và NULL.
-            // Tuy nhiên, nếu bạn dùng Integer trong Entity, rs.getObject() là an toàn nhất.
-            // Nếu dùng rs.getInt() và Integer trong Java:
             timesheet.setProjectId(rs.getInt("projectId"));
             if (rs.wasNull()) {
                 timesheet.setProjectId(null); // Nếu giá trị DB là NULL, set Java object là null
