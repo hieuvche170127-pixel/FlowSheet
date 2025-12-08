@@ -1,79 +1,65 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
-/**
- *
- * @author Admin
- */
 public class TeamMember {
-
-    private Integer teamMemberId;
-
-    // Required Foreign Keys (INT NOT NULL)
-    private Integer teamId;
-    private Integer userId;
-
-    // Optional Fields
-    private String roleInTeam;     // NVARCHAR(50) NULL (e.g., 'Leader', 'Member')
-
-    // System/Audit Field
-    private LocalDateTime joinedAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    private int teamId;
+    private int userId;
+    private String role;
+    private Timestamp joinedAt;
 
     public TeamMember() {
     }
 
-    public TeamMember(Integer teamMemberId, Integer teamId, Integer userId, String roleInTeam, LocalDateTime joinedAt) {
-        this.teamMemberId = teamMemberId;
+    public TeamMember(int teamId, int userId, String role) {
         this.teamId = teamId;
         this.userId = userId;
-        this.roleInTeam = roleInTeam;
+        this.role = role;
+    }
+
+    public TeamMember(int teamId, int userId, String role, Timestamp joinedAt) {
+        this.teamId = teamId;
+        this.userId = userId;
+        this.role = role;
         this.joinedAt = joinedAt;
     }
 
-    public Integer getTeamMemberId() {
-        return teamMemberId;
-    }
-
-    public void setTeamMemberId(Integer teamMemberId) {
-        this.teamMemberId = teamMemberId;
-    }
-
-    public Integer getTeamId() {
+    public int getTeamId() {
         return teamId;
     }
 
-    public void setTeamId(Integer teamId) {
+    public void setTeamId(int teamId) {
         this.teamId = teamId;
     }
 
-    public Integer getUserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(int userId) {
         this.userId = userId;
     }
 
-    public String getRoleInTeam() {
-        return roleInTeam;
+    public String getRole() {
+        return role;
     }
 
-    public void setRoleInTeam(String roleInTeam) {
-        this.roleInTeam = roleInTeam;
+    public void setRole(String role) {
+        this.role = role;
     }
 
-    public LocalDateTime getJoinedAt() {
+    public Timestamp getJoinedAt() {
         return joinedAt;
     }
 
-    public void setJoinedAt(LocalDateTime joinedAt) {
+    public void setJoinedAt(Timestamp joinedAt) {
         this.joinedAt = joinedAt;
     }
 
+    @Override
+    public String toString() {
+        return "TeamMember{" + "teamId=" + teamId + ", userId=" + userId + ", role=" + role + '}';
+    }
+    
     
 }

@@ -1,43 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
-import java.time.LocalDateTime;
-import java.time.LocalDate;
+import java.sql.Timestamp;
+import java.sql.Date;
 
-
-/**
- *
- * @author Admin
- */
 public class Project {
-    // --- Fields (Trường) ---
-
-    private Integer projectId;      // INT IDENTITY(1,1) PRIMARY KEY
-    private String projectCode;     // NVARCHAR(50) NOT NULL UNIQUE
-    private String projectName;     // NVARCHAR(200) NOT NULL
-    private String description;     // NVARCHAR(MAX) NULL
-    private Boolean isActive;       // BIT NOT NULL DEFAULT 1
-    private LocalDateTime createdAt;  // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-
-    // Thêm các trường mới
-    private LocalDate startDate;      // DATE NULL
-    private LocalDate deadline;       // DATE NULL
-    private String status;          // NVARCHAR(20) NOT NULL DEFAULT N'OPEN'
-    //(Status IN (N'OPEN', N'IN_PROGRESS', N'COMPLETE'));
-    // note lại để mng để ý các constraint
+    private int projectID;
+    private String projectCode;
+    private String projectName;
+    private String description;
+    private boolean isActive;
+    private Timestamp createdAt;
+    private Date startDate;
+    private Date deadline;
+    private String status;
 
     public Project() {
     }
-    
-    
-    
-    public Project(Integer projectId, String projectCode, String projectName,
-            String description, Boolean isActive,
-            LocalDateTime createdAt, LocalDate startDate, LocalDate deadline, String status) {
-        this.projectId = projectId;
+
+    public Project(int projectID, String projectCode, String projectName, String description, boolean isActive, Timestamp createdAt, Date startDate, Date deadline, String status) {
+        this.projectID = projectID;
         this.projectCode = projectCode;
         this.projectName = projectName;
         this.description = description;
@@ -48,12 +29,12 @@ public class Project {
         this.status = status;
     }
 
-    public Integer getProjectId() {
-        return projectId;
+    public int getProjectID() {
+        return projectID;
     }
 
-    public void setProjectId(Integer projectId) {
-        this.projectId = projectId;
+    public void setProjectID(int projectID) {
+        this.projectID = projectID;
     }
 
     public String getProjectCode() {
@@ -80,35 +61,35 @@ public class Project {
         this.description = description;
     }
 
-    public Boolean getIsActive() {
+    public boolean isIsActive() {
         return isActive;
     }
 
-    public void setIsActive(Boolean isActive) {
+    public void setIsActive(boolean isActive) {
         this.isActive = isActive;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDate getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getDeadline() {
+    public Date getDeadline() {
         return deadline;
     }
 
-    public void setDeadline(LocalDate deadline) {
+    public void setDeadline(Date deadline) {
         this.deadline = deadline;
     }
 
@@ -119,5 +100,6 @@ public class Project {
     public void setStatus(String status) {
         this.status = status;
     }
-
+    
+    
 }

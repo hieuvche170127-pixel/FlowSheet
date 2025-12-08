@@ -1,68 +1,58 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
-/**
- *
- * @author Admin
- */
 public class TeamProject {
-    // Primary Key (INT IDENTITY)
-    private Integer teamProjectId; 
-
-    // Required Foreign Keys (INT NOT NULL)
-    private Integer teamId; 
-    private Integer projectId; 
-    
-    // System/Audit Field
-    private LocalDateTime assignedAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    private int teamProjectId;
+    private int teamId;
+    private int projectId;
+    private Timestamp assignedAt;
 
     public TeamProject() {
     }
 
-    public TeamProject(Integer teamProjectId, Integer teamId, Integer projectId, LocalDateTime assignedAt) {
+    public TeamProject(int teamId, int projectId) {
+        this.teamId = teamId;
+        this.projectId = projectId;
+    }
+
+    public TeamProject(int teamProjectId, int teamId, int projectId, Timestamp assignedAt) {
         this.teamProjectId = teamProjectId;
         this.teamId = teamId;
         this.projectId = projectId;
         this.assignedAt = assignedAt;
     }
 
-    public Integer getTeamProjectId() {
+    public int getTeamProjectId() {
         return teamProjectId;
     }
 
-    public void setTeamProjectId(Integer teamProjectId) {
+    public void setTeamProjectId(int teamProjectId) {
         this.teamProjectId = teamProjectId;
     }
 
-    public Integer getTeamId() {
+    public int getTeamId() {
         return teamId;
     }
 
-    public void setTeamId(Integer teamId) {
+    public void setTeamId(int teamId) {
         this.teamId = teamId;
     }
 
-    public Integer getProjectId() {
+    public int getProjectId() {
         return projectId;
     }
 
-    public void setProjectId(Integer projectId) {
+    public void setProjectId(int projectId) {
         this.projectId = projectId;
     }
 
-    public LocalDateTime getAssignedAt() {
+    public Timestamp getAssignedAt() {
         return assignedAt;
     }
 
-    public void setAssignedAt(LocalDateTime assignedAt) {
+    public void setAssignedAt(Timestamp assignedAt) {
         this.assignedAt = assignedAt;
     }
-    
-    
     
 }
