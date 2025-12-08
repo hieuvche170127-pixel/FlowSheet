@@ -1,0 +1,83 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/ClientSide/css.css to edit this template
+*/
+/* 
+    Created on : Dec 7, 2025, 11:09:38 AM
+    Author     : Admin
+*/
+
+/*class: 1*/
+.background{
+    background: linear-gradient(
+        135deg,
+        #9c27b0, /* Tím */
+        #4db6ac, /* Xanh ngọc */
+        #ff80ab  /* Hồng */
+        )
+}
+.empty_div{
+    height: 30px;
+}
+.header_container{
+
+}
+
+/*class2 - insinde header_container*/
+.header{
+    background-color: rgba(255, 255, 255, 0.2);
+    height: 60px;
+    padding: 12px 12px 12px 16px;
+    overflow: hidden;
+    margin-bottom: 50px;
+}
+
+.logo_image_container{
+    height: 100%;
+    overflow: hidden;
+}
+
+.logo_image{
+    width: 100px;
+    height:100px
+}
+
+
+.carousel_container{
+}
+
+/*inside carousel_container*/
+.carousel_image{
+    height: 500px;
+}
+
+
+
+.part2{
+    background: linear-gradient(
+        135deg,
+        #ff80ab,  /* Hồng */
+        #4db6ac, /* Xanh ngọc */
+        #9c27b0 /* Tím */
+        )
+
+}
+
+
+.part3{
+    background: linear-gradient(
+        135deg,
+        #9c27b0, /* Tím */
+        #ff80ab,  /* Hồng */
+        #4db6ac /* Xanh ngọc */
+        )
+}
+/*class 2*/
+.footer{
+    background-color: black;
+    color: white;
+}
+
+.empty_div_height_100px{
+    height: 100px
+}
