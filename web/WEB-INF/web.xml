@@ -4,3 +4,32 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 </web-app>
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <filter>
+        <filter-name>CheckUserSession</filter-name>
+        <filter-class>filter.CheckUserSession</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CheckUserSession</filter-name>
+        <servlet-name>TimesheetManagement</servlet-name>
+    </filter-mapping>
+    
+    
+    
+    <servlet>
+        <servlet-name>SImpleLogin</servlet-name>
+        <servlet-class>controller.temporary.SImpleLogin</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TimesheetManagement</servlet-name>
+        <servlet-class>controller.TimesheetManagement</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SImpleLogin</servlet-name>
+        <url-pattern>/SImpleLogin</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TimesheetManagement</servlet-name>
+        <url-pattern>/TimesheetManagement</url-pattern>
+    </servlet-mapping>
+</web-app>
