@@ -48,7 +48,7 @@
                                     <div class="modal-body">
                                         <div class="container">
                                             <h1 class="modal-title fs-1 text-center" id="SignInModalLabel">Sign In</h1>
-                                            <form action="action" method="">
+                                            <form action="SImpleLogin" method="get">
                                                 <p style="margin-bottom: 0px; margin-top: 10px"> Username: </p>
                                                 <input type="text" name="username" placeholder="Type your email:" 
                                                        style="width: 100%; border-radius: 20px;padding: 10px">

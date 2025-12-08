@@ -16,7 +16,7 @@ public class ParameterName {
      *
      */
     public static final String PASSWORD = "password";
-    public static final String ACCOUNT = "account";
+    public static final String ACCOUNT = "username";
 
     private ParameterName() {
     }

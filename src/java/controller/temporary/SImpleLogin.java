@@ -10,7 +10,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import dal.UserAccountDAO;
+import entity.UserAccount;
+import jakarta.servlet.http.HttpSession;
+
 import commonconstant.ParameterName;
+import commonconstant.JSPUrll;
 
 /**
  *
@@ -59,7 +64,18 @@ public class SImpleLogin extends HttpServlet {
             throws ServletException, IOException {
         String account = request.getParameter(ParameterName.ACCOUNT);
         String password = request.getParameter(ParameterName.PASSWORD);
-        
+        // lấy session hiện tại, ko có thì tạo mới 
+        HttpSession session = request.getSession(true);
+
+        UserAccountDAO userDao = new UserAccountDAO();
+        UserAccount user = userDao.getAccountByUsername(account);
+
+        if (user != null && user.getPasswordHash().equals(password)) {
+            session.setAttribute("account", user);
+            response.sendRedirect(JSPUrll.DAILYTIMESHEET);
+        } else {
+            request.getRequestDispatcher(JSPUrll.LANDINGPAGE).forward(request, response);
+        }
 
     }
 

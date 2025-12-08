@@ -6,8 +6,11 @@
     </filter>
     <filter-mapping>
         <filter-name>CheckUserSession</filter-name>
-        <url-pattern>/*</url-pattern>
+        <servlet-name>TimesheetManagement</servlet-name>
     </filter-mapping>
+    
+    
+    
     <servlet>
         <servlet-name>SImpleLogin</servlet-name>
         <servlet-class>controller.temporary.SImpleLogin</servlet-class>

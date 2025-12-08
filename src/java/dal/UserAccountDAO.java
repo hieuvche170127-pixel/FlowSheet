@@ -17,6 +17,45 @@ import java.sql.Timestamp;
  */
 public class UserAccountDAO extends DBContext {
 
+    private UserAccount mappingFromResultset(ResultSet rs) throws Exception {
+        UserAccount user = null;
+        try {
+            user = new UserAccount();
+            user.setUserId(rs.getInt("UserID"));
+
+            // NVARCHAR
+            user.setUsername(rs.getString("Username"));
+            user.setPasswordHash(rs.getString("PasswordHash"));
+            user.setFullName(rs.getString("FullName"));
+
+            // NVARCHAR (NULLABLE)
+            user.setEmail(rs.getString("Email"));
+            user.setPhone(rs.getString("Phone"));
+
+            // INT Foreign Key
+            user.setRoleId(rs.getInt("RoleID"));
+
+            // BIT NOT NULL (Mặc dù là Boolean Wrapper, ta dùng getBoolean)
+            user.setIsActive(rs.getBoolean("IsActive"));
+
+            // 2. Ánh xạ các trường DATETIME2 (Cần chuyển đổi qua Timestamp)
+            // CreatedAt (DATETIME2 NOT NULL)
+            Timestamp createdAtTs = rs.getTimestamp("CreatedAt");
+            if (createdAtTs != null) {
+                user.setCreatedAt(createdAtTs.toLocalDateTime());
+            }
+
+            // UpdatedAt (DATETIME2 NOT NULL)
+            Timestamp updatedAtTs = rs.getTimestamp("UpdatedAt");
+            if (updatedAtTs != null) {
+                user.setUpdatedAt(updatedAtTs.toLocalDateTime());
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return user;
+    }
+
     public ArrayList<UserAccount> getAllAccount() {
         ArrayList<UserAccount> list = new ArrayList<>();
         try {
@@ -41,39 +80,8 @@ public class UserAccountDAO extends DBContext {
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
-            
             if (rs.next()) {
-                user = new UserAccount();
-                user.setUserId(rs.getInt("UserID"));
-
-                // NVARCHAR
-                user.setUsername(rs.getString("Username"));
-                user.setPasswordHash(rs.getString("PasswordHash"));
-                user.setFullName(rs.getString("FullName"));
-
-                // NVARCHAR (NULLABLE)
-                user.setEmail(rs.getString("Email"));
-                user.setPhone(rs.getString("Phone"));
-
-                // INT Foreign Key
-                user.setRoleId(rs.getInt("RoleID"));
-
-                // BIT NOT NULL (Mặc dù là Boolean Wrapper, ta dùng getBoolean)
-                user.setIsActive(rs.getBoolean("IsActive"));
-
-                // 2. Ánh xạ các trường DATETIME2 (Cần chuyển đổi qua Timestamp)
-                // CreatedAt (DATETIME2 NOT NULL)
-                Timestamp createdAtTs = rs.getTimestamp("CreatedAt");
-                if (createdAtTs != null) {
-                    user.setCreatedAt(createdAtTs.toLocalDateTime());
-                }
-
-                // UpdatedAt (DATETIME2 NOT NULL)
-                Timestamp updatedAtTs = rs.getTimestamp("UpdatedAt");
-                if (updatedAtTs != null) {
-                    user.setUpdatedAt(updatedAtTs.toLocalDateTime());
-                }
-
+                user = mappingFromResultset(rs);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

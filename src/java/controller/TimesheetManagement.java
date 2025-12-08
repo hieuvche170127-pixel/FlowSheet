@@ -53,8 +53,12 @@ public class TimesheetManagement extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+        
+        
     } 
+
+    
+    // trả về data cho một url cụ thể. - có vài url fix cứng. 
 
     /** 
      * Handles the HTTP <code>POST</code> method.
