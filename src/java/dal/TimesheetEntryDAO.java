@@ -12,13 +12,6 @@ import java.util.ArrayList;
 import java.sql.Statement;
 import java.sql.ResultSet;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.LocalDateTime;
-
-import java.util.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 
 /**
  *
