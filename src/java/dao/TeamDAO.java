@@ -61,7 +61,7 @@ public class TeamDAO extends DBContext {
             connection.commit();
             return true;
         }catch (SQLException e) {
-            // 3. Nếu có lỗi -> Rollback
+            // Nếu có lỗi -> Rollback
             try {
                 if (connection != null) connection.rollback();
             } catch (SQLException ex) {
@@ -70,12 +70,10 @@ public class TeamDAO extends DBContext {
             Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, e);
             return false;
         } finally {
-            // 4. Trả lại trạng thái AutoCommit ban đầu (Quan trọng với DBContext kiểu này)
+            // Trả lại trạng thái AutoCommit ban đầu
             try {
                 if (connection != null) connection.setAutoCommit(true);
-                // Với kiểu DBContext này, ta thường KHÔNG đóng connection ở đây
-                // vì có thể bạn muốn dùng tiếp DAO instance này.
-                // Connection sẽ đóng khi Garbage Collector dọn dẹp hoặc bạn tự gọi close.
+                
             } catch (SQLException ex) {
                 Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
