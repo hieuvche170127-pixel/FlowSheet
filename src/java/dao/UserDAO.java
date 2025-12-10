@@ -108,4 +108,69 @@ public class UserDAO extends DBContext{
         }
         return false;
     }
+    
+    
+    //---------------------- ADD/UPDATE -----------------------------
+     public List<User> findAll() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT * FROM UserAccount";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                User u = new User();
+                u.setUserID(rs.getInt("UserID"));
+                u.setUsername(rs.getString("Username"));          // DB column: Username
+                u.setFullName(rs.getString("FullName"));
+                u.setEmail(rs.getString("Email"));
+                u.setRoleID(rs.getInt("RoleID"));
+                // if entity.User has phone / isActive / createdAt / updatedAt, set them here too
+
+                list.add(u);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return list;
+    }
+
+    /**
+     * Your old findMembersByTeam(int teamId), now using entity.User.
+     * Returns all members (Student + Supervisor) of a given team.
+     */
+    public List<User> findMembersByTeam(int teamId) {
+        List<User> list = new ArrayList<>();
+
+        String sql =
+                "SELECT ua.* " +
+                "FROM TeamMember tm " +
+                "JOIN UserAccount ua ON tm.UserID = ua.UserID " +
+                "JOIN [Role] r ON ua.RoleID = r.RoleID " +
+                "WHERE tm.TeamID = ? " +
+                "  AND r.RoleName IN ('Student', 'Supervisor')";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setUserID(rs.getInt("UserID"));
+                    u.setUsername(rs.getString("Username"));
+                    u.setFullName(rs.getString("FullName"));
+                    u.setEmail(rs.getString("Email"));
+                    u.setRoleID(rs.getInt("RoleID"));
+                    // again, set more fields if your entity.User defines them
+
+                    list.add(u);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return list;
+    }
+    
 }

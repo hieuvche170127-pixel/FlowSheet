@@ -7,7 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
-@WebServlet("/FlowSheet/login.jsp")
+@WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
@@ -15,7 +15,7 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.getRequestDispatcher("/FlowSheet/login.jsp").forward(req, resp);
+        req.getRequestDispatcher("/login.jsp").forward(req, resp);
     }
 
     @Override
@@ -34,14 +34,15 @@ public class LoginServlet extends HttpServlet {
 
             // Role-based redirect
             String redirectUrl = switch (user.getRoleID()) {
-//                case "ADMIN"      -> "admin/dashboard.jsp";
-//                case "SUPERVISOR" -> "supervisor/dashboard.jsp";
-                default           -> "student/timesheet.jsp"; // STUDENT
+                //case "Adminstrator"      -> "admin/dashboard.jsp";
+                //case "Supervisor" -> "supervisor/dashboard.jsp";
+                //default           -> "student/timesheet.jsp"; // STUDENT
+                default           -> "index.html";
             };
             resp.sendRedirect(redirectUrl);
         } else {
             req.setAttribute("error", "Invalid username or password");
-            req.getRequestDispatcher("/FlowSheet/login.jsp").forward(req, resp);
+            req.getRequestDispatcher("/login.jsp").forward(req, resp);
         }
     }
 }
