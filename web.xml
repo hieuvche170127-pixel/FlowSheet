@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <filter>
+        <filter-name>CheckUserSession</filter-name>
+        <filter-class>filter.CheckUserSession</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CheckUserSession</filter-name>
+        <servlet-name>TimesheetManagement</servlet-name>
+    </filter-mapping>
+    <servlet>
+        <servlet-name>SImpleLogin</servlet-name>
+        <servlet-class>controller.temporary.SImpleLogin</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TimesheetManagement</servlet-name>
+        <servlet-class>controller.TimesheetManagement</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeamsServlet</servlet-name>
+        <servlet-class>controller.TeamsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeamMembersServlet</servlet-name>
+        <servlet-class>controller.TeamMembersServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SImpleLogin</servlet-name>
+        <url-pattern>/SImpleLogin</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TimesheetManagement</servlet-name>
+        <url-pattern>/TimesheetManagement</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeamsServlet</servlet-name>
+        <url-pattern>/team</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeamMembersServlet</servlet-name>
+        <url-pattern>/teamMember</url-pattern>
+    </servlet-mapping>
+</web-app>
