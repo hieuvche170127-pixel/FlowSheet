@@ -8,7 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebServlet("/FlowSheet/register.jsp")
+@WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
@@ -17,7 +17,7 @@ public class RegisterServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         // No token check → always show registration form
-        req.getRequestDispatcher("/FlowSheet/register.jsp").forward(req, resp);
+        req.getRequestDispatcher("/register.jsp").forward(req, resp);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class RegisterServlet extends HttpServlet {
 
         if (userDAO.isUsernameExists(username)) {
             req.setAttribute("error", "Username already taken.");
-            req.getRequestDispatcher("/FlowSheet/register.jsp").forward(req, resp);
+            req.getRequestDispatcher("/register.jsp").forward(req, resp);
             return;
         }
 
@@ -55,10 +55,11 @@ public class RegisterServlet extends HttpServlet {
             HttpSession session = req.getSession();
             session.setAttribute("user", newUser);
 
-            resp.sendRedirect(req.getContextPath() + "/student/timesheet.jsp");
+            //resp.sendRedirect(req.getContextPath() + "/student/timesheet.jsp");
+            resp.sendRedirect(req.getContextPath() + "/login.jsp");
         } else {
             req.setAttribute("error", "Registration failed. Please try again.");
-            req.getRequestDispatcher("/FlowSheet/register.jsp").forward(req, resp);
+            req.getRequestDispatcher("/register.jsp").forward(req, resp);
         }
     }
 }
