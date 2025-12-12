@@ -10,8 +10,7 @@ package commonconstant;
  */
 public class JSPUrll {
 
-    public static final String DAILYTIMESHEET = "DailyTimeSheet.jsp";
-    public static final String LANDINGPAGE = "LandingPage.jsp";
+    public static final String STUDENTHOMEPAGE = "studentpages/simplestudenthomepage.jsp";
 
     private JSPUrll() {
     }
