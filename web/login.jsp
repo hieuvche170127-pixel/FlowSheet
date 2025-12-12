@@ -1,155 +1,239 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
-<!-- <html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - LAB Timesheet</title>
+    
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+          crossorigin="anonymous">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <style>
-        body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; }
-        .error { color: red; }
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1055;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-notification {
+            min-width: 300px;
+            max-width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: slideInRight 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast-header-custom {
+            background: #d9534f;               /* đỏ Bootstrap danger */
+            color: white;
+            padding: 12px 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast-header-custom i {
+            font-size: 1.2rem;
+        }
+
+        .toast-body-custom {
+            padding: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .toast-notification.success .toast-header-custom {
+            background: #5cb85c;               /* xanh success */
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOutRight {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(100%); }
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .login-card {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+        .card-header {
+            background: rgba(255,255,255,0.95);
+            border-bottom: none;
+            padding: 2.5rem 1rem 2rem;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .form-floating > label {
+            color: #555;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
     </style>
 </head>
-<body>
-<h2>Login to Timesheet System</h2>
-<form action="login" method="post">
-    <label>Username:</label><br>
-    <input type="text" name="username" required autofocus><br><br>
+<body class="d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-sm-8">
+                <div class="card login-card">
+                    <div class="card-header text-center bg-transparent">
+                        <i class="fas fa-clock fa-4x text-primary mb-3"></i>
+                        <h3 class="mb-1 fw-bold text-dark">LAB Timesheet</h3>
+                        <p class="text-muted mb-0">Sign in to continue</p>
+                    </div>
+                    <div class="card-body p-4 p-xl-5">
+                        
+                        <form action="login" method="post">
+                            <div class="form-floating mb-3">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="username" 
+                                       name="username" 
+                                       placeholder="Username" 
+                                       required 
+                                       autofocus>
+                                <label for="username"><i class="fas fa-user me-2"></i>Username</label>
+                            </div>
+                            
+                            <div class="form-floating mb-4">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       placeholder="Password" 
+                                       required>
+                                <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-login w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0 text-muted">
+                                Don't have an account? 
+                                <a href="/FlowSheet/register.jsp" class="text-decoration-none fw-semibold">Register here</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <label>Password:</label><br>
-    <input type="password" name="password" required><br><br>
+    <script>
+        // Function to display toast with safe message escaping
+        function showToast(message, type = 'error', duration = 5000) {
+            if (!message || message.trim() === '') return; // Skip if no message
 
-    <button type="submit">Login</button>
-</form>
+            const container = document.getElementById('toast-container');
 
-<p>Don't have an account? <a href="/FlowSheet/register.jsp">Register here</a></p>
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
 
-<hr>
+            // Escape the message for safe HTML insertion and prevent JS breakage
+            const escapedMessage = message
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')  // Escape single quotes
+                .replace(/\n/g, '<br>')   // Handle newlines gracefully
+                .replace(/\\/g, '\\\\');  // Escape backslashes
+
+            toast.innerHTML = `
+        <div class="toast-header-custom">
+            <i class="fas ${type == 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+            <strong>${type == 'success' ? 'Thành công' : 'Lỗi'}</strong>
+            <button type="button" class="btn-close btn-close-white ms-auto"
+                    onclick="this.closest('.toast-notification').remove()"></button>
+        </div>
+        <div class="toast-body-custom">
+            ${escapedMessage}
+        </div>
+    `;
+
+            container.appendChild(toast);
+
+            // Trigger show animation
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            // Auto-hide after duration
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.4s ease-out forwards';
+                toast.addEventListener('animationend', () => toast.remove());
+            }, duration);
+        }
+
+        // Display error if present, with server-side pre-escaping for single quotes
+        <c:if test="${not empty error}">
+        <c:set var="escapedError" value="${fn:replace(error, \"'\", \"\\\\'\")}" />  <!-- JSTL escape for single quotes -->
+        showToast('${escapedError}', 'error', 6000);
+        <c:remove var="error" scope="request"/>
+        </c:if>
+    </script>
+
+    <div id="server-error" data-error="${not empty error ? error : ''}" style="display:none"></div>
+
+    <script>
+        // Đọc lỗi từ data attribute – 100% an toàn, không bao giờ bị cắt chuỗi
+        const errorElement = document.getElementById('server-error');
+        const serverError = errorElement.getAttribute('data-error').trim();
+
+        if (serverError) {
+            showToast(serverError, 'error', 7000);
+        }
+    </script>
 </body>
-</html> -->
-
-<html lang="en">
-
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
-	<meta name="author" content="AdminKit">
-	<meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
-
-	<link rel="preconnect" href="https://fonts.gstatic.com">
-	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
-
-	<link rel="canonical" href="pages-sign-in.html" />
-
-	<title>Sign In | AdminKit Demo</title>
-
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;display=swap" rel="stylesheet">
-
-	<!-- Choose your prefered color scheme -->
-	<!-- <link href="css/light.css" rel="stylesheet"> -->
-	<!-- <link href="css/dark.css" rel="stylesheet"> -->
-
-	<!-- BEGIN SETTINGS -->
-	<!-- Remove this after purchasing -->
-	<link class="js-stylesheet" href="css/light.css" rel="stylesheet">
-	<script src="js/settings.js"></script>
-	<style>body {
-			opacity: 0;
-		}
-	</style>
-	<!-- END SETTINGS -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120946860-10"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-120946860-10', { 'anonymize_ip': true });
-</script></head>
-<!--
-  HOW TO USE: 
-  data-theme: default (default), dark, light, colored
-  data-layout: fluid (default), boxed
-  data-sidebar-position: left (default), right
-  data-sidebar-layout: default (default), compact
--->
-
-<body data-theme="default" data-layout="fluid" data-sidebar-position="left" data-sidebar-layout="default">
-	<main class="d-flex w-100 h-100">
-		<div class="container d-flex flex-column">
-			<div class="row vh-100">
-				<div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
-					<div class="d-table-cell align-middle">
-
-						<div class="text-center mt-4">
-							<h1 class="h2"></h1>
-                            <h2>Login to Timesheet System</h2>
-							<p class="lead">
-								Sign in to your account to continue
-							</p>
-						</div>
-
-						<div class="card">
-							<div class="card-body">
-								<div class="m-sm-4">
-									<form>
-										<div class="mb-3">
-											<label class="form-label">Email</label>
-                                            <input class="form-control form-control-lg" type="text" name="username" required autofocus><br><br>
-										</div>
-										<div class="mb-3">
-											<label class="form-label">Password</label>
-											<input class="form-control form-control-lg" type="password" name="password" placeholder="Enter your password" />
-											<small>
-												<p>Don't have an account? <a href="/FlowSheet/register.jsp">Register here</a></p>
-											</small>
-										</div>
-										<div>
-											<label class="form-check">
-												<input class="form-check-input" type="checkbox" value="remember-me" name="remember-me" checked>
-												<span class="form-check-label">
-													Remember me next time
-												</span>
-											</label>
-										</div>
-										<div class="text-center mt-3">
-											<a href="index.html" class="btn btn-lg btn-primary">Sign in</a>
-											<!-- <button type="submit" class="btn btn-lg btn-primary">Sign in</button> -->
-										</div>
-									</form>
-								</div>
-							</div>
-						</div>
-
-					</div>
-				</div>
-			</div>
-		</div>
-	</main>
-
-	<script src="js/app.js"></script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function(event) { 
-    setTimeout(function(){
-      if(localStorage.getItem('popState') !== 'shown'){
-        window.notyf.open({
-          type: "success",
-          message: "Get access to all 500+ components and 45+ pages with AdminKit PRO. <u><a class=\"text-white\" href=\"https://adminkit.io/pricing\" target=\"_blank\">More info</a></u> 🚀",
-          duration: 10000,
-          ripple: true,
-          dismissible: false,
-          position: {
-            x: "left",
-            y: "bottom"
-          }
-        });
-
-        localStorage.setItem('popState','shown');
-      }
-    }, 15000);
-  });
-</script></body>
-
 </html>
