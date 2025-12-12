@@ -2,7 +2,7 @@ package controller;
 
 import dal.ProjectDAO;
 import dal.TeamDAO;
-import dal.UserDAO;
+import dal.UserAccountDAO;
 import entity.Project;
 import entity.Team;
 import entity.TeamMember;
@@ -81,7 +81,7 @@ public class CreateTeamController extends HttpServlet {
 //            return;
 //        }
 
-        UserDAO userDAO = new UserDAO();
+        UserAccountDAO userDAO = new UserAccountDAO();
         ProjectDAO projectDAO = new ProjectDAO();
 
         List<UserAccount> userList = userDAO.getAllUsersForTeam();
