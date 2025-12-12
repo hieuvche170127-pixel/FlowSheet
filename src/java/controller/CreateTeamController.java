@@ -1,13 +1,13 @@
 package controller;
 
-import dao.ProjectDAO;
-import dao.TeamDAO;
-import dao.UserDAO;
+import dal.ProjectDAO;
+import dal.TeamDAO;
+import dal.UserDAO;
 import entity.Project;
 import entity.Team;
 import entity.TeamMember;
 import entity.TeamProject;
-import entity.User;
+import entity.UserAccount;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -63,17 +63,16 @@ public class CreateTeamController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("user");
+        UserAccount currentUser = (UserAccount) session.getAttribute("user");
 
         if (currentUser == null) {
-        // Tạo ra một user giả (Giả sử là Supervisor 'sup_hoa' có ID=2 trong database)
-        currentUser = new User();
-        currentUser.setUserID(2); // QUAN TRỌNG: ID này phải tồn tại trong bảng UserAccount
-        currentUser.setUsername("sup_hoa");
-        currentUser.setFullName("Nguyen Thi Hoa (Test)");
-        currentUser.setRoleID(2); // Role Supervisor
+        
+        currentUser = new UserAccount();
+        currentUser.setUserId(3); 
+        currentUser.setUsername("stu_anh");
+        currentUser.setFullName("Nguyen Hoang Anh (Test)");
+        currentUser.setRoleId(1);
 
-        // Lưu vào session như thể đã login thật
         session.setAttribute("user", currentUser);
         System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
     }
@@ -85,8 +84,8 @@ public class CreateTeamController extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         ProjectDAO projectDAO = new ProjectDAO();
 
-        List<User> userList = userDAO.getAllUsers();
-        List<Project> projectList = projectDAO.getAllProjects();
+        List<UserAccount> userList = userDAO.getAllUsersForTeam();
+        List<Project> projectList = projectDAO.getAllProjectsForTeam();
 
         request.setAttribute("userList", userList);
         request.setAttribute("projectList", projectList);
@@ -153,12 +152,12 @@ public class CreateTeamController extends HttpServlet {
             }
 
             HttpSession session = request.getSession();
-            User creator = (User) session.getAttribute("user");
+            UserAccount creator = (UserAccount) session.getAttribute("user");
 
             Team newTeam = new Team();
             newTeam.setTeamName(teamName);
             newTeam.setDescription(description);
-            newTeam.setCreatedBy(creator.getUserID());
+            newTeam.setCreatedBy(creator.getUserId());
 
             List<TeamMember> members = new ArrayList<>();
             for (int i = 0; i < memberIdsRaw.length; i++) {

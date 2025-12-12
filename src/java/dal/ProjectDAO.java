@@ -1,4 +1,4 @@
-package dao;
+package dal;
 
 import dal.DBContext;
 import entity.Project;
