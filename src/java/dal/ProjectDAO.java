@@ -1,6 +1,5 @@
-package dao;
+package dal;
 
-import dal.DBContext;
 import entity.Project;
 import java.security.Timestamp;
 import java.sql.PreparedStatement;

@@ -1,9 +1,8 @@
 package controller;
 
-import dao.ProjectDAO;
+import dal.ProjectDAO;
 import entity.Project;
 import entity.Team;
-import entity.User;
 import entity.UserAccount;
 import java.io.IOException;
 import java.io.PrintWriter;

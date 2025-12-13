@@ -1,11 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package controller;
 
-import dao.ProjectDAO;
+import dal.ProjectDAO;
 import entity.Project;
 import entity.UserAccount;
 import java.io.IOException;
@@ -18,10 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
-/**
- *
- * @author DELL
- */
 @WebServlet(name="ProjectListController", urlPatterns = {"/projects"})
 public class ProjectListController extends HttpServlet {
    
