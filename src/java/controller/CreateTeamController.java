@@ -66,12 +66,12 @@ public class CreateTeamController extends HttpServlet {
         UserAccount currentUser = (UserAccount) session.getAttribute("user");
 
         if (currentUser == null) {
-        
+        // Tạo ra một user giả
         currentUser = new UserAccount();
-        currentUser.setUserId(3); 
-        currentUser.setUsername("stu_anh");
-        currentUser.setFullName("Nguyen Hoang Anh (Test)");
-        currentUser.setRoleId(1);
+        currentUser.setUserId(2); // QUAN TRỌNG: ID này phải tồn tại trong bảng UserAccount
+        currentUser.setUsername("sup_hoa");
+        currentUser.setFullName("Nguyen Thi Hoa (Test)");
+        currentUser.setRoleId(2); // Role Supervisor
 
         session.setAttribute("user", currentUser);
         System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
