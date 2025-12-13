@@ -1,6 +1,6 @@
 <%-- 
-    Document   : WeeklyTimeSheet
-    Created on : Dec 7, 2025, 9:32:24 PM
+    Document   : simplehomePage
+    Created on : Dec 12, 2025, 3:33:05 PM
     Author     : Admin
 --%>
 
@@ -12,6 +12,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>weekly timesheet </h1>
+        <h1>Hello World!</h1>
     </body>
 </html>

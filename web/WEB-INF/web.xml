@@ -8,9 +8,6 @@
         <filter-name>CheckUserSession</filter-name>
         <servlet-name>TimesheetManagement</servlet-name>
     </filter-mapping>
-    
-    
-    
     <servlet>
         <servlet-name>SImpleLogin</servlet-name>
         <servlet-class>controller.temporary.SImpleLogin</servlet-class>
@@ -19,6 +16,14 @@
         <servlet-name>TimesheetManagement</servlet-name>
         <servlet-class>controller.TimesheetManagement</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>TeamsServlet</servlet-name>
+        <servlet-class>controller.TeamsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeamMembersServlet</servlet-name>
+        <servlet-class>controller.TeamMembersServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>SImpleLogin</servlet-name>
         <url-pattern>/SImpleLogin</url-pattern>
@@ -26,5 +31,13 @@
     <servlet-mapping>
         <servlet-name>TimesheetManagement</servlet-name>
         <url-pattern>/TimesheetManagement</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeamsServlet</servlet-name>
+        <url-pattern>/team</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeamMembersServlet</servlet-name>
+        <url-pattern>/teamMember</url-pattern>
     </servlet-mapping>
 </web-app>

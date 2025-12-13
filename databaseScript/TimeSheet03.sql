@@ -10,6 +10,7 @@ DROP DATABASE LABTimesheet;
    ========================================================= */
 
 
+
 CREATE DATABASE LABTimesheet;
 GO
 
@@ -71,6 +72,8 @@ GO
 /* =========================================================
    2. Projects & Tasks (used by Weekly Timesheet filter)
    ========================================================= */
+
+   -- thêm isleadby và thêm bảng project member 
 
 CREATE TABLE Project (
     ProjectID   INT IDENTITY(1,1) PRIMARY KEY,
@@ -423,7 +426,7 @@ CREATE TABLE Invitation (
     InvitationID INT IDENTITY(1,1) PRIMARY KEY,
     Email        NVARCHAR(200) NOT NULL,
     RoleID       INT          NOT NULL,       -- role for the invited user
-    InvitedByID  INT          NOT NULL,       -- who invited
+    InvitedByID  INT          NOT NULL,       -- who invited team lead or project lead or supervisor
     Token        UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
     Status       NVARCHAR(20)  NOT NULL DEFAULT N'PENDING',
     ExpiresAt    DATETIME2     NOT NULL,
