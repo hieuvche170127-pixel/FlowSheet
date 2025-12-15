@@ -7,3 +7,4 @@
 
 # Bỏ qua các file cấu hình tạm thời, tự động tạo
 nbproject/genfiles.properties
+/nbproject

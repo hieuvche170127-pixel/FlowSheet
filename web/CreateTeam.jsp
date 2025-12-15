@@ -134,7 +134,7 @@
                 <select class="form-select tom-select-user" name="memberIds" placeholder="Tìm thành viên...">
                     <option value="">Chọn thành viên...</option>
                     <c:forEach items="${userList}" var="u">
-                        <option value="${u.userID}">${u.fullName} (${u.email})</option>
+                        <option value="${u.userId}">${u.fullName} (${u.email})</option>
                     </c:forEach>
                 </select>
             </div>
