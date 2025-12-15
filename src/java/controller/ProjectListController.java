@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
+
 @WebServlet(name="ProjectListController", urlPatterns = {"/projects"})
 public class ProjectListController extends HttpServlet {
    
@@ -79,21 +80,49 @@ public class ProjectListController extends HttpServlet {
         if (searchKeyword == null)
             searchKeyword = "";
         if (statusTab == null || statusTab.isEmpty())
-            statusTab = "Active";
+            statusTab = "ACTIVE";
         
         ProjectDAO projectDAO = new ProjectDAO();
+        String pageStr = request.getParameter("page");
+        int pageIndex = 1;
+        if (pageStr != null && !pageStr.isEmpty()) {
+            try {
+                pageIndex = Integer.parseInt(pageStr);
+            } catch (NumberFormatException e) {
+                pageIndex = 1;
+            }
+        }
+        int pageSize = 10;
         
-        List<Project> projectList = projectDAO.searchProjects(
+        int totalRecords = projectDAO.countProjects(
                 currentUser.getUserId(), 
                 currentUser.getRoleId(), 
                 searchKeyword, 
-                statusTab
+                statusTab 
+        );
+        
+        int endPage = totalRecords / pageSize;
+        if (totalRecords % pageSize != 0) {
+            endPage++;
+        }
+        
+        if(pageIndex < 1) pageIndex = 1;
+        if(pageIndex > endPage && endPage > 0) pageIndex = endPage;
+        
+        List<Project> projectList = projectDAO.searchProjectsWithPaging(
+                currentUser.getUserId(),
+                currentUser.getRoleId(),
+                searchKeyword,
+                statusTab,
+                pageIndex,
+                pageSize
         );
         
         request.setAttribute("projectList", projectList);
-        
         request.setAttribute("currentSearch", searchKeyword);
         request.setAttribute("currentStatus", statusTab);
+        request.setAttribute("currentPage", pageIndex);
+        request.setAttribute("endPage", endPage);
         
         request.getRequestDispatcher("/ProjectList.jsp").forward(request, response);
     } 

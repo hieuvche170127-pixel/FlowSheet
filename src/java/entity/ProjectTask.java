@@ -21,7 +21,8 @@ public class ProjectTask {
     private LocalDateTime createdAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
     private String status;      // NVARCHAR(20) NOT NULL DEFAULT N'TO_DO'
     //CHECK (Status IN (N'TO_DO', N'COMPLETE'));
-
+    private String assigneeNames;
+    
     public ProjectTask() {
     }
 
@@ -101,4 +102,13 @@ public class ProjectTask {
         this.status = status;
     }
 
+    public String getAssigneeNames() {
+        return assigneeNames;
+    }
+
+    public void setAssigneeNames(String assigneeNames) {
+        this.assigneeNames = assigneeNames;
+    }
+
+    
 }

@@ -23,6 +23,8 @@ public class UserAccount {
     private LocalDateTime createdAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
     private LocalDateTime updatedAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
 
+    private String roleInProject;
+    
     public UserAccount() {
     }
 
@@ -121,4 +123,13 @@ public class UserAccount {
         this.updatedAt = updatedAt;
     }
 
+    public String getRoleInProject() {
+        return roleInProject;
+    }
+
+    public void setRoleInProject(String roleInProject) {
+        this.roleInProject = roleInProject;
+    }
+
+    
 }
