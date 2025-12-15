@@ -1,4 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,6 +21,66 @@
           crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <style>
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1055;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-notification {
+            min-width: 300px;
+            max-width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: slideInRight 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast-header-custom {
+            background: #d9534f;               /* đỏ Bootstrap danger */
+            color: white;
+            padding: 12px 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast-header-custom i {
+            font-size: 1.2rem;
+        }
+
+        .toast-body-custom {
+            padding: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .toast-notification.success .toast-header-custom {
+            background: #5cb85c;               /* xanh success */
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOutRight {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(100%); }
+        }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -147,6 +209,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+        // Function to display toast with safe message escaping
+        function showToast(message, type = 'error', duration = 5000) {
+            if (!message || message.trim() === '') return; // Skip if no message
+
+            const container = document.getElementById('toast-container');
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+
+            // Escape the message for safe HTML insertion and prevent JS breakage
+            const escapedMessage = message
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')  // Escape single quotes
+                .replace(/\n/g, '<br>')   // Handle newlines gracefully
+                .replace(/\\/g, '\\\\');  // Escape backslashes
+
+            toast.innerHTML = `
+        <div class="toast-header-custom">
+            <i class="fas ${type == 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+            <strong>${type == 'success' ? 'Thành công' : 'Lỗi'}</strong>
+            <button type="button" class="btn-close btn-close-white ms-auto"
+                    onclick="this.closest('.toast-notification').remove()"></button>
+        </div>
+        <div class="toast-body-custom">
+            ${escapedMessage}
+        </div>
+    `;
+
+            container.appendChild(toast);
+
+            // Trigger show animation
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            // Auto-hide after duration
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.4s ease-out forwards';
+                toast.addEventListener('animationend', () => toast.remove());
+            }, duration);
+        }
+
+        // Display error if present, with server-side pre-escaping for single quotes
+        <c:if test="${not empty error}">
+        <c:set var="escapedError" value="${fn:replace(error, \"'\", \"\\\\'\")}" />  <!-- JSTL escape for single quotes -->
+        showToast('${escapedError}', 'error', 6000);
+        <c:remove var="error" scope="request"/>
+        </c:if>
+    </script>
+
+    <div id="server-error" data-error="${not empty error ? error : ''}" style="display:none"></div>
+
+    <script>
+        // Đọc lỗi từ data attribute – 100% an toàn, không bao giờ bị cắt chuỗi
+        const errorElement = document.getElementById('server-error');
+        const serverError = errorElement.getAttribute('data-error').trim();
+
+        if (serverError) {
+            showToast(serverError, 'error', 7000);
+        }
+    </script>
     
     <!-- Bootstrap JS (for alert dismiss) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

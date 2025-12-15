@@ -4,49 +4,51 @@
  */
 package entity;
 
-import java.time.LocalDateTime;
-
 /**
  *
  * @author Admin
  */
+import java.time.LocalDateTime;
+
 public class UserAccount {
 
-    private Integer userId; // INT IDENTITY(1,1) PRIMARY KEY
-    private String username; // NVARCHAR(50) NOT NULL UNIQUE
-    private String passwordHash; // NVARCHAR(255) NOT NULL
-    private String fullName; // NVARCHAR(100) NOT NULL
-    private String email; // NVARCHAR(100) NULL
-    private String phone; // NVARCHAR(20) NULL
-    private Integer roleId; // INT NOT NULL (Foreign Key)
-    private Boolean isActive; // BIT NOT NULL DEFAULT 1
-    private LocalDateTime createdAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-    private LocalDateTime updatedAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    private int userID;
+    private String username;
+    private String password;
+    private String fullName;
+    private String email;
+    private String phone;
+    private int roleID;
+    private boolean isActive;
 
+    // Thay thế Timestamp bằng LocalDateTime
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    // Constructors (Bạn có thể thêm các Constructor cần thiết)
     public UserAccount() {
     }
 
-    // ôi vl nó quên return type :)
-    public void User(Integer userId, String username, String passwordHash, String fullName, String email, String phone, Integer roleId, Boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.userId = userId;
+    public UserAccount(int userID, String username, String password, String fullName, String email, String phone, int roleID, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.userID = userID;
         this.username = username;
-        this.passwordHash = passwordHash;
+        this.password = password;
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
-        this.roleId = roleId;
+        this.roleID = roleID;
         this.isActive = isActive;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    // --- Getters và Setters ---
-    public Integer getUserId() {
-        return userId;
+    // Getters và Setters (Bạn nên thêm đầy đủ các phương thức này)
+    public int getUserID() {
+        return userID;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUserID(int userID) {
+        this.userID = userID;
     }
 
     public String getUsername() {
@@ -57,18 +59,19 @@ public class UserAccount {
         this.username = username;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getFullName() {
         return fullName;
     }
 
+    // Phương thức này được JSTL ${sessionScope.user.fullName} sử dụng
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -89,19 +92,19 @@ public class UserAccount {
         this.phone = phone;
     }
 
-    public Integer getRoleId() {
-        return roleId;
+    public int getRoleID() {
+        return roleID;
     }
 
-    public void setRoleId(Integer roleId) {
-        this.roleId = roleId;
+    public void setRoleID(int roleID) {
+        this.roleID = roleID;
     }
 
-    public Boolean getIsActive() {
+    public boolean isIsActive() {
         return isActive;
     }
 
-    public void setIsActive(Boolean isActive) {
+    public void setIsActive(boolean isActive) {
         this.isActive = isActive;
     }
 
@@ -121,4 +124,5 @@ public class UserAccount {
         this.updatedAt = updatedAt;
     }
 
+    // Bạn có thể thêm phương thức toString() để dễ debug
 }

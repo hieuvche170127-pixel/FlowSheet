@@ -62,10 +62,10 @@ public class CreateProjectController extends HttpServlet {
         if (currentUser == null) {
         
         currentUser = new UserAccount();
-        currentUser.setUserId(3); 
+        currentUser.setUserID(3); 
         currentUser.setUsername("stu_anh");
         currentUser.setFullName("Nguyen Hoang Anh (Test)");
-        currentUser.setRoleId(1);
+        currentUser.setRoleID(1);
 
         session.setAttribute("user", currentUser);
         System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
@@ -76,12 +76,13 @@ public class CreateProjectController extends HttpServlet {
 //        }
         
         ProjectDAO dao = new ProjectDAO();
+        // comment tạm tại nó lỗi - pkn
         
-        List<Team> teams = dao.getAllTeamsForProject();
-        List<UserAccount> users = dao.getAllActiveMembers();
-        
-        request.setAttribute("teams", teams);
-        request.setAttribute("users", users);
+//        List<Team> teams = dao.getAllTeamsForProject();
+//        List<UserAccount> users = dao.getAllActiveMembers();
+//        
+//        request.setAttribute("teams", teams);
+//        request.setAttribute("users", users);
         
         request.getRequestDispatcher("/CreateProject.jsp").forward(request, response);
     } 
@@ -117,18 +118,17 @@ public class CreateProjectController extends HttpServlet {
             p.setStartDate(startDate);
             p.setDeadline(deadline);
             p.setDescription(desc);
-            
             ProjectDAO dao = new ProjectDAO();
             
-            boolean success = dao.addProject(p, teamId, memberIds);
-
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/projects");
-            } else {
-                request.setAttribute("error", "Create project failed! Code might be duplicated.");
-                request.setAttribute("p", p);
-                doGet(request, response);
-            }
+            // comment tạm để chạy - pkn
+//            boolean success = dao.addProject(p, teamId, memberIds);
+//            if (success) {
+//                response.sendRedirect(request.getContextPath() + "/projects");
+//            } else {
+//                request.setAttribute("error", "Create project failed! Code might be duplicated.");
+//                request.setAttribute("p", p);
+//                doGet(request, response);
+//            }
         }catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/views/error.jsp");

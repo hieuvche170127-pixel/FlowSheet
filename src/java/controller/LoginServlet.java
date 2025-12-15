@@ -6,6 +6,9 @@ import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import commonconstant.JSPUrll;
+
+import commonconstant.Attributes;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -37,7 +40,7 @@ public class LoginServlet extends HttpServlet {
                 //case "Adminstrator"      -> "admin/dashboard.jsp";
                 //case "Supervisor" -> "supervisor/dashboard.jsp";
                 //default           -> "student/timesheet.jsp"; // STUDENT
-                default           -> "index.html";
+                default           -> JSPUrll.STUDENTHOMEPAGE;
             };
             resp.sendRedirect(redirectUrl);
         } else {

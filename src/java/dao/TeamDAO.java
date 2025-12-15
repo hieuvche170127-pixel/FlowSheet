@@ -121,9 +121,7 @@ public class TeamDAO extends DBContext {
                     t.setTeamName(rs.getString("TeamName"));
                     t.setDescription(rs.getString("Description"));
                     t.setCreatedBy(rs.getInt("CreatedBy"));
-
                     t.setCreatedAt(rs.getTimestamp("CreatedAt"));
-
                     /*
                 java.sql.Timestamp createdTs = rs.getTimestamp("CreatedAt");
                 t.setCreatedAt(createdATs != null ? createdTs.toLocalDateTime() : null);
@@ -168,5 +166,63 @@ public class TeamDAO extends DBContext {
             }
         }
         return list;
+    }
+
+    private Team mapTeamFromResultSet(ResultSet rs) throws SQLException {
+        Team t = null;
+        t = new Team();
+        // 1. Ánh xạ các trường dữ liệu
+        t.setTeamID(rs.getInt("teamID"));
+        t.setTeamName(rs.getString("teamName"));
+        t.setDescription(rs.getString("description"));
+        t.setCreatedBy(rs.getInt("createdBy"));
+        t.setCreatedAt(rs.getTimestamp("createdAt"));
+        return t;
+    }
+
+    public ArrayList<Team> getAllTeamByUserId(int userID) {
+        String query = "SELECT t.* FROM Team t\n"
+                + "JOIN TeamMember tm ON t.TeamID = tm.TeamID\n"
+                + "WHERE tm.UserID = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ArrayList<Team> teamList = new ArrayList<>();
+        try {
+            // Chuẩn bị và thực thi câu lệnh
+            ps = connection.prepareStatement(query);
+            ps.setInt(1, userID);
+            rs = ps.executeQuery();
+            // Lặp qua ResultSet và ánh xạ dữ liệu
+            while (rs.next()) {
+                // Giả định bạn đã có phương thức mapTeamFromResultSet(ResultSet rs)
+                Team team = mapTeamFromResultSet(rs);
+                if (team != null) {
+                    teamList.add(team);
+                }
+            }
+        } catch (SQLException ex) {
+            // Xử lý ngoại lệ SQL (in ra hoặc ghi log)
+            Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Đóng ResultSet và PreparedStatement trong khối finally
+            // Đảm bảo chúng được đóng ngay cả khi có lỗi xảy ra
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, ex);
+
+            }
+        }
+
+        return teamList;
     }
 }
