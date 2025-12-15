@@ -1,17 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
-    <filter>
-        <filter-name>CheckUserSession</filter-name>
-        <filter-class>filter.CheckUserSession</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>CheckUserSession</filter-name>
-        <servlet-name>TimesheetManagement</servlet-name>
-    </filter-mapping>
-    <servlet>
-        <servlet-name>SImpleLogin</servlet-name>
-        <servlet-class>controller.temporary.SImpleLogin</servlet-class>
-    </servlet>
     <servlet>
         <servlet-name>TimesheetManagement</servlet-name>
         <servlet-class>controller.TimesheetManagement</servlet-class>
@@ -24,10 +12,19 @@
         <servlet-name>TeamMembersServlet</servlet-name>
         <servlet-class>controller.TeamMembersServlet</servlet-class>
     </servlet>
-    <servlet-mapping>
-        <servlet-name>SImpleLogin</servlet-name>
-        <url-pattern>/SImpleLogin</url-pattern>
-    </servlet-mapping>
+    <servlet>
+        <servlet-name>Invitation</servlet-name>
+        <servlet-class>controller.nghia.InvitationManagement</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MyTeamList</servlet-name>
+        <servlet-class>controller.nghia.MyTeamList</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeamDetail</servlet-name>
+        <servlet-class>controller.nghia.TeamDetail</servlet-class>
+    </servlet>
+ 
     <servlet-mapping>
         <servlet-name>TimesheetManagement</servlet-name>
         <url-pattern>/TimesheetManagement</url-pattern>
@@ -40,4 +37,21 @@
         <servlet-name>TeamMembersServlet</servlet-name>
         <url-pattern>/teamMember</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Invitation</servlet-name>
+        <url-pattern>/Invitation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MyTeamList</servlet-name>
+        <url-pattern>/MyTeamList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeamDetail</servlet-name>
+        <url-pattern>/nghia/TeamDetail</url-pattern>
+    </servlet-mapping>
+    
+    
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
 </web-app>

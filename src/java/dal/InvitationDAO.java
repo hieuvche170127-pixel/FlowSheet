@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 import java.util.UUID;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import utilities.DateTimeConverter;
+import java.sql.Types;
 
 /**
  *
@@ -22,93 +24,91 @@ import java.time.LocalDateTime;
  */
 public class InvitationDAO extends DBContext {
 
-    // code 3 dong
-    private Invitation mapInvitationFromResultSet(ResultSet rs) {
-        Invitation invitation = null;
+    //Read
+    // có thể lấy được tất cả lời mời bằng email
+    // giả sử nghia có email là nghiakhac2005@gmail.com
+    // sẽ trả về list chứa các invitation đến email đấy kể cả đã và chưa trả lời nhé.
+    // trả về này:
+    // invitationid, roleId, invitedByid, status, expiredAt, CreatedAt AceeptedAt, 
+    // ProjectId nếu là Pr33oject,  Teamid nếu là lời mời team.
+    public ArrayList<Invitation> getAllInvitationByEmail(String email) {
+        ArrayList<Invitation> list = new ArrayList<>();
+        String query = "select * from invitation where email = ? ";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            if (rs.next()) {
-                // Khởi tạo đối tượng Invitation mới
-                invitation = new Invitation();
+            ps = connection.prepareStatement(query);
+            ps.setString(1, email);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Invitation invitation = new Invitation();
 
-                // 1. Ánh xạ các trường Bắt buộc (Required Fields)
                 invitation.setInvitationId(rs.getInt("InvitationID"));
-                invitation.setEmail(rs.getString("Email"));
                 invitation.setRoleId(rs.getInt("RoleID"));
                 invitation.setInvitedById(rs.getInt("InvitedByID"));
-
-                // Ánh xạ UUID: Dùng rs.getObject(String, Class) hoặc rs.getString() và UUID.fromString()
-                // Tùy thuộc vào driver SQL Server của bạn, rs.getObject() là cách hiện đại:
-                invitation.setToken(UUID.fromString(rs.getString("Token")));
-
                 invitation.setStatus(rs.getString("Status"));
 
-                // Ánh xạ LocalDateTime: Dùng rs.getTimestamp() và toLocalDateTime()
-                invitation.setExpiresAt(rs.getTimestamp("ExpiresAt").toLocalDateTime());
-
-                // 2. Ánh xạ các trường Tùy chọn (Optional Fields - Có thể NULL)
-                // Cần kiểm tra NULL để tránh lỗi NullPointerException khi lấy int từ ResultSet
-                // ProjectID
-                Integer projectId = rs.getInt("ProjectID");
+                int projectId = rs.getInt("ProjectID");
                 if (!rs.wasNull()) {
                     invitation.setProjectId(projectId);
                 }
-
-                // TeamID
-                Integer teamId = rs.getInt("TeamID");
+                int teamId = rs.getInt("TeamID");
                 if (!rs.wasNull()) {
                     invitation.setTeamId(teamId);
                 }
+                invitation.setExpiresAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(
+                        rs.getTimestamp("ExpiresAt")
+                ));
 
-                // 3. Ánh xạ các trường Hệ thống/Kiểm toán (Audit Fields)
-                invitation.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
+                invitation.setCreatedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(
+                        rs.getTimestamp("CreatedAt")
+                ));
 
-                // AcceptedAt (Có thể NULL)
-                java.sql.Timestamp acceptedTimestamp = rs.getTimestamp("AcceptedAt");
-                if (acceptedTimestamp != null) {
-                    invitation.setAcceptedAt(acceptedTimestamp.toLocalDateTime());
-                }
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(InvitationDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception e) {
-            Logger.getLogger(e.getMessage());
-        }
-        return invitation;
-    }
-
-    // nghia - code 10 dong :)) 
-    // hàm lấy tất cả các invitation 
-    public ArrayList<Invitation> getAllInvitation() {
-        ArrayList<Invitation> list = new ArrayList<>();
-        try {
-            String sql = "select * from invitation";
-            Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                Invitation invitation = mapInvitationFromResultSet(rs);
+                invitation.setAcceptedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(
+                        rs.getTimestamp("AcceptedAt")
+                ));
                 list.add(invitation);
             }
         } catch (SQLException ex) {
             Logger.getLogger(InvitationDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception e) {
-            Logger.getLogger(e.getMessage());
         }
         return list;
     }
 
-    // có thể lấy được tất cả lời mời bằng email
-    // giả sử nghia có email là nghiakhac2005@gmail.com
-    // sẽ trả về list chứa các invitation đến email đấy.
-    public ArrayList<Invitation> getAllInvitationByEmail(String email) {
+    // hàm này để lấy các invitation được gửi bởi một team (invitation sent by team)
+    // trả về này:
+    // invitationid, email, roleId, invitedByid, status, expiredAt, CreatedAt AceeptedAt, 
+    // do team biết rồi nên ko cần, là invi Team thì ko thể là Project, ko cần nốt, 
+    public ArrayList<Invitation> getAllInvitationSentByTeamId(int teamId) {
         ArrayList<Invitation> list = new ArrayList<>();
-        String query = "select * from invitation where email = ? ";
+        String query = "select * from invitation where teamId = ? ";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            PreparedStatement ps = connection.prepareStatement(query);
-            ResultSet rs = ps.executeQuery();
+            ps = connection.prepareStatement(query);
+            ps.setInt(1, teamId);
+            rs = ps.executeQuery();
             while (rs.next()) {
-                Invitation mappedInvitation = new Invitation();
-                mappedInvitation = mapInvitationFromResultSet(rs);
-                list.add(mappedInvitation);
+                Invitation invitation = new Invitation();
+
+                invitation.setInvitationId(rs.getInt("InvitationID"));
+                invitation.setEmail(rs.getString("Email"));
+                invitation.setRoleId(rs.getInt("RoleID"));
+                invitation.setInvitedById(rs.getInt("InvitedByID"));
+                invitation.setStatus(rs.getString("Status"));
+
+                invitation.setExpiresAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(
+                        rs.getTimestamp("ExpiresAt")
+                ));
+
+                invitation.setCreatedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(
+                        rs.getTimestamp("CreatedAt")
+                ));
+
+                invitation.setAcceptedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(
+                        rs.getTimestamp("AcceptedAt")
+                ));
+                list.add(invitation);
             }
         } catch (SQLException ex) {
             Logger.getLogger(InvitationDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -116,73 +116,113 @@ public class InvitationDAO extends DBContext {
         return list;
     }
 
-    // thuần gemini, xóa vài dòng
-    public boolean createInvitation(Invitation invitation) {
-        // SQL Server có thể tự động điền Token (UNIQUEIDENTIFIER DEFAULT NEWID()) và CreatedAt,
-        // nhưng chúng ta sẽ chèn các giá trị này để kiểm soát tốt hơn.
-        String SQL_INSERT = "INSERT INTO Invitation ("
-                + "Email, RoleID, Token, Status, ExpiresAt, "
-                + "ProjectID, TeamID, CreatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = null;
-        boolean success = false;
-        try {
-            ps = connection.prepareStatement(SQL_INSERT);
-            // 1. Gán giá trị cho các cột theo thứ tự của câu lệnh SQL
-            int i = 1;
-            // Required Fields
-            ps.setString(i++, invitation.getEmail());
-            ps.setInt(i++, invitation.getRoleId());
-            ps.setInt(i++, invitation.getInvitedById());
+    public boolean addInvitation(Invitation invitation) {
+        String sql = "INSERT INTO Invitation "
+                + "(Email, RoleID, InvitedByID, TeamID, ProjectID, ExpiresAt, CreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-            ps.setString(i++, invitation.getStatus());
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            // ExpiresAt (LocalDateTime -> Timestamp)
-            ps.setTimestamp(i++, Timestamp.valueOf(invitation.getExpiresAt()));
+            // 1. Email
+            ps.setString(1, invitation.getEmail());
 
-            // Optional Fields (Phải xử lý NULL)
-            // ProjectID
-            if (invitation.getProjectId() != null) {
-                ps.setInt(i++, invitation.getProjectId());
-            } else {
-                ps.setNull(i++, java.sql.Types.INTEGER);
-            }
+            // 2. RoleID
+            ps.setInt(2, invitation.getRoleId());
 
-            // TeamID
+            // 3. InvitedByID
+            ps.setInt(3, invitation.getInvitedById());
+
+            // 4. TeamID (Xử lý Null)
             if (invitation.getTeamId() != null) {
-                ps.setInt(i++, invitation.getTeamId());
+                ps.setInt(4, invitation.getTeamId());
             } else {
-                ps.setNull(i++, java.sql.Types.INTEGER);
+                ps.setNull(4, Types.INTEGER);
             }
 
-            // CreatedAt (LocalDateTime -> Timestamp)
-            // Giả sử bạn set CreatedAt ngay trước khi gọi hàm này
+            // 5. ProjectID (Xử lý Null)
+            if (invitation.getProjectId() != null) {
+                ps.setInt(5, invitation.getProjectId());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+
+            // 6. ExpiresAt
+            if (invitation.getExpiresAt() != null) {
+                ps.setTimestamp(6, Timestamp.valueOf(invitation.getExpiresAt()));
+            } else {
+                ps.setNull(6, Types.TIMESTAMP);
+            }
+
+            // 7. CreatedAt
             if (invitation.getCreatedAt() != null) {
-                ps.setTimestamp(i++, Timestamp.valueOf(invitation.getCreatedAt()));
+                ps.setTimestamp(7, Timestamp.valueOf(invitation.getCreatedAt()));
             } else {
-                // Nếu không set, sử dụng thời điểm hiện tại của Java
-                ps.setTimestamp(i++, Timestamp.valueOf(LocalDateTime.now()));
+                ps.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
             }
 
-            // 2. Thực thi lệnh INSERT
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                success = true;
-            }
+            // Thực thi
+            return ps.executeUpdate() > 0;
+
         } catch (SQLException e) {
-            Logger.getLogger(e.getMessage());
-            // Xử lý các lỗi liên quan đến ràng buộc (Constraint Violations)
-        } finally {
-            // 3. Đóng tài nguyên
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-            } catch (SQLException e) {
-                Logger.getLogger(e.getMessage());
-            }
+            e.printStackTrace();
+            return false;
         }
-        return success;
     }
 
+    public boolean editInvitation(Invitation updatedInvitation) {
+        boolean result = false;
+        PreparedStatement ps = null;
+        try {
+
+            // 2. Câu lệnh SQL
+            // Lưu ý: Em giả định tên bảng là 'invitation' và tên cột trong DB như bên dưới.
+            // Anh nhớ check lại tên cột trong SQL Server/MySQL của anh nhé.
+            String sql = "UPDATE invitation "
+                    + "SET email = ?, "
+                    + "    role_id = ?, "
+                    + "    expires_at = ?, "
+                    + "    created_at = ? " // Đây là chỗ update cái biến localCreatedAt anh muốn
+                    + "WHERE invitationid = ?"; // Đây là cái WHERE để chọn thằng cần update
+
+            ps = connection.prepareStatement(sql);
+
+            // 3. Set giá trị cho các dấu chấm hỏi (?)
+            // ? thứ 1: Email
+            ps.setString(1, updatedInvitation.getEmail());
+
+            // ? thứ 2: Role ID (int)
+            ps.setInt(2, updatedInvitation.getRoleId());
+
+            // ? thứ 3: Expires At (chuyển LocalDateTime -> Timestamp)
+            ps.setTimestamp(3, Timestamp.valueOf(updatedInvitation.getExpiresAt()));
+
+            // ? thứ 4: Created At (Update thời gian hiện tại như anh yêu cầu)
+            // Nếu trong object anh chưa set, em lấy luôn giờ hiện tại ở đây
+            // Nhưng tốt nhất là anh set vào object trước khi truyền vào hàm này.
+            // Ở đây em lấy từ object ra nhé:
+            if (updatedInvitation.getCreatedAt() != null) {
+                ps.setTimestamp(4, Timestamp.valueOf(updatedInvitation.getCreatedAt()));
+            } else {
+                // Phòng trường hợp null thì lấy giờ hiện tại
+                // okeee cảm ơn em
+                ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            }
+
+            // ? thứ 5: Invitation ID (Cái điều kiện WHERE)
+            ps.setInt(5, updatedInvitation.getInvitationId());
+
+            // 4. Thực thi
+            int rowsAffected = ps.executeUpdate();
+
+            // Nếu số dòng bị ảnh hưởng > 0 tức là update thành công
+            if (rowsAffected > 0) {
+                result = true;
+            }
+
+        } catch (SQLException e) {
+            Logger.getLogger("đã có lỗi ở inviDAO");
+        } 
+        return result;
+
+    }
 }
