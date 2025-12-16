@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static utilities.DateTimeConverter.convertSqlTimestampToLocalDateTime;
 
 public class TaskDAO extends DBContext{
 
@@ -18,31 +17,33 @@ public class TaskDAO extends DBContext{
         List<ProjectTask> list = new ArrayList<>();
         
         String sql = """
-            SELECT T.TaskID, T.TaskName, T.TaskCode, T.Status, 
+            SELECT T.TaskID, T.TaskName, T.Status, T.Deadline, T.EstimateHourToDo,
                    P.ProjectName, P.ProjectID
             FROM ProjectTask T
             JOIN TaskAssignee TA ON T.TaskID = TA.TaskID
             LEFT JOIN Project P ON T.ProjectID = P.ProjectID
-            WHERE TM.UserID = ? AND T.IsActive = 1
+            WHERE TA.UserID = ? 
             ORDER BY P.ProjectName, T.TaskName
         """;
         
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                ProjectTask t = new ProjectTask();
-                t.setTaskId(rs.getInt("TaskID"));
-                t.setTaskName(rs.getString("TaskName"));
-                t.setTaskCode(rs.getString("TaskCode"));
-                t.setStatus(rs.getString("Status"));
-                t.setProjectName(rs.getString("ProjectName"));
-                Integer projectId = rs.getObject("ProjectID", Integer.class);
-                t.setProjectId(projectId);
-                
-                list.add(t);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProjectTask t = new ProjectTask();
+                    t.setTaskId(rs.getInt("TaskID"));
+                    t.setTaskName(rs.getString("TaskName"));
+                    t.setStatus(rs.getString("Status"));
+                    t.setDeadline(rs.getTimestamp("Deadline"));
+                    Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                    t.setEstimateHourToDo(estimateHours);
+                    // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
+                    Integer projectId = rs.getObject("ProjectID", Integer.class);
+                    t.setProjectId(projectId);
+                    
+                    list.add(t);
+                }
             }
         } catch (SQLException ex) {
             Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -62,8 +63,8 @@ public class TaskDAO extends DBContext{
             }
             
             StringBuilder sql = new StringBuilder(
-                "SELECT pt.TaskID, pt.ProjectID, pt.TaskCode, pt.TaskName, pt.Description, " +
-                "pt.IsActive, pt.CreatedAt, pt.Status, p.ProjectName " +
+                "SELECT pt.TaskID, pt.ProjectID, pt.TaskName, pt.Description, " +
+                "pt.Deadline, pt.EstimateHourToDo, pt.CreatedAt, pt.Status, p.ProjectName " +
                 "FROM ProjectTask pt " +
                 "LEFT JOIN Project p ON pt.ProjectID = p.ProjectID"
             );
@@ -97,13 +98,14 @@ public class TaskDAO extends DBContext{
                     t.setTaskId(rs.getInt("TaskID"));
                     Integer projectId = rs.getObject("ProjectID", Integer.class);
                     t.setProjectId(projectId);
-                    t.setTaskCode(rs.getString("TaskCode"));
                     t.setTaskName(rs.getString("TaskName"));
                     t.setDescription(rs.getString("Description"));
-                    t.setIsActive(rs.getBoolean("IsActive"));
-                    t.setCreatedAt(convertSqlTimestampToLocalDateTime(rs.getTimestamp("CreatedAt")));
+                    t.setDeadline(rs.getTimestamp("Deadline"));
+                    Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                    t.setEstimateHourToDo(estimateHours);
+                    t.setCreatedAt(rs.getTimestamp("CreatedAt"));
                     t.setStatus(rs.getString("Status"));
-                    t.setProjectName(rs.getString("ProjectName"));
+                    // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
                     list.add(t);
                 }
             } catch (SQLException ex) {
@@ -174,8 +176,8 @@ public class TaskDAO extends DBContext{
             return null;
         }
         
-        String sql = "SELECT pt.TaskID, pt.ProjectID, pt.TaskCode, pt.TaskName, pt.Description, " +
-                "pt.IsActive, pt.CreatedAt, pt.Status, p.ProjectName " +
+        String sql = "SELECT pt.TaskID, pt.ProjectID, pt.TaskName, pt.Description, " +
+                "pt.Deadline, pt.EstimateHourToDo, pt.CreatedAt, pt.Status, p.ProjectName " +
                 "FROM ProjectTask pt " +
                 "LEFT JOIN Project p ON pt.ProjectID = p.ProjectID " +
                 "WHERE pt.TaskID = ?";
@@ -189,13 +191,14 @@ public class TaskDAO extends DBContext{
                 t.setTaskId(rs.getInt("TaskID"));
                 Integer projectId = rs.getObject("ProjectID", Integer.class);
                 t.setProjectId(projectId);
-                t.setTaskCode(rs.getString("TaskCode"));
                 t.setTaskName(rs.getString("TaskName"));
                 t.setDescription(rs.getString("Description"));
-                t.setIsActive(rs.getBoolean("IsActive"));
-                t.setCreatedAt(convertSqlTimestampToLocalDateTime(rs.getTimestamp("CreatedAt")));
+                t.setDeadline(rs.getTimestamp("Deadline"));
+                Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                t.setEstimateHourToDo(estimateHours);
+                t.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 t.setStatus(rs.getString("Status"));
-                t.setProjectName(rs.getString("ProjectName"));
+                // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
                 return t;
             }
         } catch (SQLException ex) {
@@ -212,23 +215,36 @@ public class TaskDAO extends DBContext{
         
         String sql = """
             UPDATE ProjectTask 
-            SET ProjectID = ?, TaskCode = ?, TaskName = ?, Description = ?, 
-                IsActive = ?, Status = ?
+            SET ProjectID = ?, TaskName = ?, Description = ?, 
+                Deadline = ?, EstimateHourToDo = ?, Status = ?
             WHERE TaskID = ?
             """;
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            int paramIndex = 1;
+            
             if (task.getProjectId() == null) {
-                ps.setNull(1, java.sql.Types.INTEGER);
+                ps.setNull(paramIndex++, java.sql.Types.INTEGER);
             } else {
-                ps.setInt(1, task.getProjectId());
+                ps.setInt(paramIndex++, task.getProjectId());
             }
-            ps.setString(2, task.getTaskCode());
-            ps.setString(3, task.getTaskName());
-            ps.setString(4, task.getDescription());
-            ps.setBoolean(5, task.getIsActive());
-            ps.setString(6, task.getStatus());
-            ps.setInt(7, task.getTaskId());
+            ps.setString(paramIndex++, task.getTaskName());
+            ps.setString(paramIndex++, task.getDescription());
+            
+            if (task.getDeadline() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(paramIndex++, task.getDeadline());
+            }
+            
+            if (task.getEstimateHourToDo() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.DOUBLE);
+            } else {
+                ps.setDouble(paramIndex++, task.getEstimateHourToDo());
+            }
+            
+            ps.setString(paramIndex++, task.getStatus());
+            ps.setInt(paramIndex++, task.getTaskId());
             
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -241,21 +257,34 @@ public class TaskDAO extends DBContext{
     public boolean createTask(ProjectTask task) {
         
         String sql = """
-            INSERT INTO ProjectTask (ProjectID, TaskCode, TaskName, Description, IsActive, Status)
+            INSERT INTO ProjectTask (ProjectID, TaskName, Description, Deadline, EstimateHourToDo, Status)
             VALUES (?, ?, ?, ?, ?, ?)
             """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            int paramIndex = 1;
+            
             if (task.getProjectId() == null) {
-                ps.setNull(1, java.sql.Types.INTEGER);
+                ps.setNull(paramIndex++, java.sql.Types.INTEGER);
             } else {
-                ps.setInt(1, task.getProjectId());
+                ps.setInt(paramIndex++, task.getProjectId());
             }
-            ps.setString(2, task.getTaskCode());
-            ps.setString(3, task.getTaskName());
-            ps.setString(4, task.getDescription());
-            ps.setBoolean(5, task.getIsActive());
-            ps.setString(6, task.getStatus());
+            ps.setString(paramIndex++, task.getTaskName());
+            ps.setString(paramIndex++, task.getDescription());
+            
+            if (task.getDeadline() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(paramIndex++, task.getDeadline());
+            }
+            
+            if (task.getEstimateHourToDo() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.DOUBLE);
+            } else {
+                ps.setDouble(paramIndex++, task.getEstimateHourToDo());
+            }
+            
+            ps.setString(paramIndex++, task.getStatus() != null ? task.getStatus() : ProjectTask.STATUS_TODO);
 
             int rows = ps.executeUpdate();
             if (rows > 0) {

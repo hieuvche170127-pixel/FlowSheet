@@ -62,10 +62,10 @@ public class ProjectDetailsController extends HttpServlet {
         if (currentUser == null) {
 
             currentUser = new UserAccount();
-            currentUser.setUserId(3);
+            currentUser.setUserID(3);
             currentUser.setUsername("stu_anh");
             currentUser.setFullName("Nguyen Hoang Anh (Test)");
-            currentUser.setRoleId(1);
+            currentUser.setRoleID(1);
 
             session.setAttribute("user", currentUser);
             System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");

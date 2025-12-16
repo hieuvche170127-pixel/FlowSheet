@@ -1,8 +1,9 @@
 package controller;
 
 import dao.UserDAO;
-import entity.User;
+import entity.UserAccount;
 
+import entity.UserAccount;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -43,7 +44,7 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        User newUser = new User();
+        UserAccount newUser = new UserAccount();
         newUser.setUsername(username);
         newUser.setPassword(password);          // plain text – matches current lab setup
         newUser.setFullName(fullName);

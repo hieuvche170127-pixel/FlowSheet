@@ -1,7 +1,7 @@
 package dao;
 
 import dal.DBContext;
-import entity.User;
+import entity.UserAccount;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 
 public class UserDAO extends DBContext {
 
-    public List<User> getAllUsers() {
-        List<User> list = new ArrayList<>();
+    public List<UserAccount> getAllUsers() {
+        List<UserAccount> list = new ArrayList<>();
 
         String sql = "SELECT * FROM UserAccount WHERE RoleID = 1 AND IsActive = 1";
 
@@ -23,7 +23,7 @@ public class UserDAO extends DBContext {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                User u = new User();
+                UserAccount u = new UserAccount();
                 u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
@@ -38,7 +38,7 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-    public User login(String username, String password) {
+    public UserAccount login(String username, String password) {
         String sql = """
             SELECT u.UserID, u.Username, u.FullName, u.Email, u.RoleID, r.RoleCode 
             FROM UserAccount u 
@@ -53,7 +53,7 @@ public class UserDAO extends DBContext {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                User u = new User();
+                UserAccount u = new UserAccount();
                 u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
@@ -81,7 +81,7 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public boolean createUser(User user) {
+    public boolean createUser(UserAccount user) {
         String sql = """
             INSERT INTO UserAccount (Username, PasswordHash, FullName, Email, RoleID)
             VALUES (?, ?, ?, ?, ?)
@@ -109,14 +109,14 @@ public class UserDAO extends DBContext {
     }
 
     //---------------------- ADD/UPDATE -----------------------------
-    public List<User> findAll() {
-        List<User> list = new ArrayList<>();
+    public List<UserAccount> findAll() {
+        List<UserAccount> list = new ArrayList<>();
         String sql = "SELECT * FROM UserAccount";
 
         try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                User u = new User();
+                UserAccount u = new UserAccount();
                 u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));          // DB column: Username
                 u.setFullName(rs.getString("FullName"));
@@ -136,8 +136,8 @@ public class UserDAO extends DBContext {
      * Your old findMembersByTeam(int teamId), now using entity.User. Returns
      * all members (Student + Supervisor) of a given team.
      */
-    public List<User> findMembersByTeam(int teamId) {
-        List<User> list = new ArrayList<>();
+    public List<UserAccount> findMembersByTeam(int teamId) {
+        List<UserAccount> list = new ArrayList<>();
 
         String sql
                 = "SELECT ua.* "
@@ -152,7 +152,7 @@ public class UserDAO extends DBContext {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    User u = new User();
+                    UserAccount u = new UserAccount();
                     u.setUserID(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
@@ -170,21 +170,9 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-    public boolean isEmailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
+
     // Update user profile (full name and email)
-    public boolean updateUserProfile(User user) {
+    public boolean updateUserProfile(UserAccount user) {
         String sql = """
             UPDATE UserAccount 
             SET FullName = ?, Email = ?

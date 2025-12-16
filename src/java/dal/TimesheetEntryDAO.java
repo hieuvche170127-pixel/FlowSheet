@@ -5,9 +5,10 @@
 package dal;
 
 import utilities.DateTimeConverter;
-import entity.TimeSheetEntry;
+import entity.TimeSheet;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -19,10 +20,10 @@ import java.sql.ResultSet;
  */
 public class TimesheetEntryDAO extends DBContext {
 
-    private TimeSheetEntry mapTimesheetFromResultset(ResultSet rs) throws Exception {
-        TimeSheetEntry timesheet = null;
+    private TimeSheet mapTimesheetFromResultset(ResultSet rs) throws Exception {
+        TimeSheet timesheet = null;
         try {
-            timesheet = new TimeSheetEntry();
+            timesheet = new TimeSheet();
 
             // 1. Primary Key
             timesheet.setEntryId(rs.getInt("entryId"));
@@ -71,14 +72,33 @@ public class TimesheetEntryDAO extends DBContext {
         return timesheet;
     }
 
-    public ArrayList<TimeSheetEntry> getAllTimesheet() {
-        ArrayList<TimeSheetEntry> list = new ArrayList<>();
+    public ArrayList<TimeSheet> getAllTimesheet() {
+        ArrayList<TimeSheet> list = new ArrayList<>();
         try {
             String sql = "select * from timesheetentry";
             Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
-                TimeSheetEntry timesheet = mapTimesheetFromResultset(rs);
+                TimeSheet timesheet = mapTimesheetFromResultset(rs);
+                list.add(timesheet);
+            }
+            // Đóng tài nguyên
+            rs.close();
+            st.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
+    }
+    
+    public List<TimeSheet> getPendingTimesheetEntries() {
+        List<TimeSheet> list = new ArrayList<>();
+        try {
+            String sql = "select * from timesheetentry where status = 'Submitted' or status = 'Draft' order by createdAt desc";
+            Statement st = connection.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                TimeSheet timesheet = mapTimesheetFromResultset(rs);
                 list.add(timesheet);
             }
             // Đóng tài nguyên
