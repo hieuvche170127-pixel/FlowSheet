@@ -4,125 +4,95 @@
  */
 package entity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 
 /**
  *
  * @author Admin
  */
 public class TimeSheetEntry {
-    private Integer entryId;      
+       private int entryId;
+    private int timesheetId; // Khóa ngoại
+    private Date workDate;   // java.sql.Date (chỉ chứa ngày, không giờ)
+    private Time startTime;  // java.sql.Time (chỉ chứa giờ)
+    private Time endTime;    // java.sql.Time
+    
+    // Default = 0 trong SQL -> trong Java int mặc định cũng là 0
+    private int delayMinutes; 
+    
+    private String note;
+    private Timestamp createdAt;
 
-    // Foreign Keys (INT NOT NULL)
-    private Integer userId;      // member
-    
-    // Optional Foreign Keys (INT NULL)
-    private Integer projectId;   // optional
-    private Integer taskId;      // optional
-    
-    // Date/Time Fields
-    private LocalDate workDate;  // DATE NOT NULL
-    private LocalTime startTime; // TIME NULL
-    private LocalTime endTime;   // TIME NULL
-    
-    // Data Fields
-    private Integer minutesWorked; // INT NOT NULL
-    private String note;         // NVARCHAR(MAX) NULL
-    
-    // System/Audit Fields
-    private LocalDateTime createdAt; // DATETIME2 NOT NULL
-    private LocalDateTime updatedAt; // DATETIME2 NOT NULL
-    
-    // Fields added via ALTER TABLE
-    private String status;         // NVARCHAR(20) NOT NULL DEFAULT 'PENDING'
-    private Integer approvedById;  // INT NULL (FK to UserAccount)
-    private LocalDateTime approvedAt; // DATETIME2 NULL
-
+    // --- Constructor Rỗng ---
     public TimeSheetEntry() {
     }
-    
 
-    public TimeSheetEntry(Integer entryId, Integer userId, Integer projectId, Integer taskId, LocalDate workDate, LocalTime startTime, LocalTime endTime, Integer minutesWorked, String note, LocalDateTime createdAt, LocalDateTime updatedAt, String status, Integer approvedById, LocalDateTime approvedAt) {
+    // --- Constructor Đầy Đủ ---
+    public TimeSheetEntry(int entryId, int timesheetId, Date workDate, Time startTime, Time endTime, int delayMinutes, String note, Timestamp createdAt) {
         this.entryId = entryId;
-        this.userId = userId;
-        this.projectId = projectId;
-        this.taskId = taskId;
+        this.timesheetId = timesheetId;
         this.workDate = workDate;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.minutesWorked = minutesWorked;
+        setDelayMinutes(delayMinutes); // Validate delay không âm
         this.note = note;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.status = status;
-        this.approvedById = approvedById;
-        this.approvedAt = approvedAt;
     }
 
-    public Integer getEntryId() {
+    // --- Getters & Setters ---
+
+    public int getEntryId() {
         return entryId;
     }
 
-    public void setEntryId(Integer entryId) {
+    public void setEntryId(int entryId) {
         this.entryId = entryId;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public int getTimesheetId() {
+        return timesheetId;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setTimesheetId(int timesheetId) {
+        this.timesheetId = timesheetId;
     }
 
-    public Integer getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Integer projectId) {
-        this.projectId = projectId;
-    }
-
-    public Integer getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(Integer taskId) {
-        this.taskId = taskId;
-    }
-
-    public LocalDate getWorkDate() {
+    public Date getWorkDate() {
         return workDate;
     }
 
-    public void setWorkDate(LocalDate workDate) {
+    public void setWorkDate(Date workDate) {
         this.workDate = workDate;
     }
 
-    public LocalTime getStartTime() {
+    public Time getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalTime startTime) {
+    public void setStartTime(Time startTime) {
         this.startTime = startTime;
     }
 
-    public LocalTime getEndTime() {
+    public Time getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalTime endTime) {
+    public void setEndTime(Time endTime) {
         this.endTime = endTime;
     }
 
-    public Integer getMinutesWorked() {
-        return minutesWorked;
+    public int getDelayMinutes() {
+        return delayMinutes;
     }
 
-    public void setMinutesWorked(Integer minutesWorked) {
-        this.minutesWorked = minutesWorked;
+    // Validate: Thời gian nghỉ không được là số âm
+    public void setDelayMinutes(int delayMinutes) {
+        if (delayMinutes < 0) {
+            throw new IllegalArgumentException("Thời gian delay không được âm.");
+        }
+        this.delayMinutes = delayMinutes;
     }
 
     public String getNote() {
@@ -133,45 +103,12 @@ public class TimeSheetEntry {
         this.note = note;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Integer getApprovedById() {
-        return approvedById;
-    }
-
-    public void setApprovedById(Integer approvedById) {
-        this.approvedById = approvedById;
-    }
-
-    public LocalDateTime getApprovedAt() {
-        return approvedAt;
-    }
-
-    public void setApprovedAt(LocalDateTime approvedAt) {
-        this.approvedAt = approvedAt;
-    }
-    
     
 }

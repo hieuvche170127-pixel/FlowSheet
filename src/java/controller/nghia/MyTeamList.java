@@ -4,9 +4,9 @@
  */
 package controller.nghia;
 
-import dao.TeamDAO;
-import dao.TeamMemberDAO;
-import entity.User;
+import dal.TeamDAO;
+import dal.TeamMemberDAO;
+import entity.UserAccount;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -67,7 +67,7 @@ public class MyTeamList extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8"); // Đặt Content Type và Encoding
 
         HttpSession session = request.getSession(true);
-        User user = (User) session.getAttribute("user");
+        UserAccount user = (UserAccount) session.getAttribute("user");
         if (user == null) {
             response.sendRedirect("login.jsp");
             // tuy không cần return (hoặc là có) nhưng mà để đây để đánh dấu kết thúc luồng 
