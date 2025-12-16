@@ -11,13 +11,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
-public class UserDAO extends DBContext{
+public class UserDAO extends DBContext {
 
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        
-        String sql = "SELECT * FROM UserAccount WHERE RoleID = 1 AND IsActive = 1"; 
+
+        String sql = "SELECT * FROM UserAccount WHERE RoleID = 1 AND IsActive = 1";
 
         try {
             PreparedStatement ps = connection.prepareStatement(sql);
@@ -30,15 +29,15 @@ public class UserDAO extends DBContext{
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
                 u.setRoleID(rs.getInt("RoleID"));
-                
+
                 list.add(u);
             }
         } catch (SQLException ex) {
             Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return list;    
+        return list;
     }
-    
+
     public User login(String username, String password) {
         String sql = """
             SELECT u.UserID, u.Username, u.FullName, u.Email, u.RoleID, r.RoleCode 
@@ -108,15 +107,13 @@ public class UserDAO extends DBContext{
         }
         return false;
     }
-    
-    
+
     //---------------------- ADD/UPDATE -----------------------------
-     public List<User> findAll() {
+    public List<User> findAll() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM UserAccount";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 User u = new User();
@@ -136,19 +133,19 @@ public class UserDAO extends DBContext{
     }
 
     /**
-     * Your old findMembersByTeam(int teamId), now using entity.User.
-     * Returns all members (Student + Supervisor) of a given team.
+     * Your old findMembersByTeam(int teamId), now using entity.User. Returns
+     * all members (Student + Supervisor) of a given team.
      */
     public List<User> findMembersByTeam(int teamId) {
         List<User> list = new ArrayList<>();
 
-        String sql =
-                "SELECT ua.* " +
-                "FROM TeamMember tm " +
-                "JOIN UserAccount ua ON tm.UserID = ua.UserID " +
-                "JOIN [Role] r ON ua.RoleID = r.RoleID " +
-                "WHERE tm.TeamID = ? " +
-                "  AND r.RoleName IN ('Student', 'Supervisor')";
+        String sql
+                = "SELECT ua.* "
+                + "FROM TeamMember tm "
+                + "JOIN UserAccount ua ON tm.UserID = ua.UserID "
+                + "JOIN [Role] r ON ua.RoleID = r.RoleID "
+                + "WHERE tm.TeamID = ? "
+                + "  AND r.RoleName IN ('Student', 'Supervisor')";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, teamId);
@@ -173,6 +170,19 @@ public class UserDAO extends DBContext{
         return list;
     }
 
+    public boolean isEmailExists(String email) {
+        String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
     // Update user profile (full name and email)
     public boolean updateUserProfile(User user) {
         String sql = """
@@ -209,5 +219,18 @@ public class UserDAO extends DBContext{
         }
         return false;
     }
-    
+
+    public boolean isEmailExists(String email) {
+        String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
 }

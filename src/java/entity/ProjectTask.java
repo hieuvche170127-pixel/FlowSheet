@@ -4,7 +4,7 @@
  */
 package entity;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 /**
  *
@@ -12,37 +12,78 @@ import java.time.LocalDateTime;
  */
 public class ProjectTask {
 
-    private Integer taskId;         // INT IDENTITY(1,1) PRIMARY KEY (Integer là Wrapper Class của int)
-    private Integer projectId;      // INT NOT NULL
-    private String taskCode;    // NVARCHAR(50) NOT NULL UNIQUE
-    private String taskName;    // NVARCHAR(200) NOT NULL
-    private String description; // NVARCHAR(MAX) NULL (String có thể là null)
-    private Boolean isActive;   // BIT NOT NULL DEFAULT 1 (Boolean là Wrapper Class của boolean)
-    private LocalDateTime createdAt; // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-    private String status;      // NVARCHAR(20) NOT NULL DEFAULT N'TO_DO'
-    //CHECK (Status IN (N'TO_DO', N'COMPLETE'));
-    private String assigneeNames;
-    
+    // 1. Khai báo các "Hard String" ở đây để dùng chung
+    // public static final: nghĩa là hằng số, không đổi được
+    public static final String STATUS_TODO = "TO_DO";
+    public static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
+    public static final String STATUS_SUSPENDED = "SUSPENDED";
+
+    // Các trường dữ liệu
+    private int taskId;
+    private Integer projectId;
+    private String taskName;
+    private String description;
+    private Timestamp deadline;
+    private Double estimateHourToDo;
+    private Timestamp createdAt;
+
+    // Vẫn dùng String như bình thường
+    private String status;
+
     public ProjectTask() {
+        // Mặc định khi tạo mới là TO_DO
+        this.status = STATUS_TODO;
     }
 
-    
-    public ProjectTask(Integer taskId, Integer projectId, String taskCode, String taskName, String description, Boolean isActive, LocalDateTime createdAt, String status) {
+    // Constructor đầy đủ
+    public ProjectTask(int taskId, Integer projectId, String taskName, String description, Timestamp deadline, Double estimateHourToDo, Timestamp createdAt, String status) {
         this.taskId = taskId;
         this.projectId = projectId;
-        this.taskCode = taskCode;
         this.taskName = taskName;
         this.description = description;
-        this.isActive = isActive;
+        this.deadline = deadline;
+        this.estimateHourToDo = estimateHourToDo;
         this.createdAt = createdAt;
-        this.status = status;
+        // Gọi hàm setter để nó tự kiểm tra tính hợp lệ
+        setStatus(status);
     }
 
-    public Integer getTaskId() {
+    // --- Getter & Setter (Phần quan trọng nhất) ---
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * Hàm này sẽ kiểm tra xem string truyền vào có đúng chuẩn SQL không. Nếu
+     * sai sẽ báo lỗi ngay lập tức để bạn biết đường sửa.
+     */
+    public void setStatus(String status) {
+        if (status == null) {
+            // Tùy logic: có thể set mặc định hoặc báo lỗi. Ở đây mình set mặc định.
+            this.status = STATUS_TODO;
+            return;
+        }
+
+        // Chuyển về chữ hoa hết để so sánh cho chắc ăn (ví dụ 'to_do' vẫn nhận)
+        String upperStatus = status.toUpperCase();
+
+        if (upperStatus.equals(STATUS_TODO)
+                || upperStatus.equals(STATUS_IN_PROGRESS)
+                || upperStatus.equals(STATUS_SUSPENDED)) {
+
+            this.status = upperStatus; // Đúng thì gán
+        } else {
+            // Sai thì ném lỗi ra console
+            throw new IllegalArgumentException("Status không hợp lệ: '" + status + "'. Chỉ chấp nhận: TO_DO, IN_PROGRESS, SUSPENDED");
+        }
+    }
+
+    // ... Các Getter/Setter khác giữ nguyên ...
+    public int getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(Integer taskId) {
+    public void setTaskId(int taskId) {
         this.taskId = taskId;
     }
 
@@ -52,14 +93,6 @@ public class ProjectTask {
 
     public void setProjectId(Integer projectId) {
         this.projectId = projectId;
-    }
-
-    public String getTaskCode() {
-        return taskCode;
-    }
-
-    public void setTaskCode(String taskCode) {
-        this.taskCode = taskCode;
     }
 
     public String getTaskName() {
@@ -78,37 +111,27 @@ public class ProjectTask {
         this.description = description;
     }
 
-    public Boolean getIsActive() {
-        return isActive;
+    public Timestamp getDeadline() {
+        return deadline;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setDeadline(Timestamp deadline) {
+        this.deadline = deadline;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Double getEstimateHourToDo() {
+        return estimateHourToDo;
+    }
+
+    public void setEstimateHourToDo(Double estimateHourToDo) {
+        this.estimateHourToDo = estimateHourToDo;
+    }
+
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getAssigneeNames() {
-        return assigneeNames;
-    }
-
-    public void setAssigneeNames(String assigneeNames) {
-        this.assigneeNames = assigneeNames;
-    }
-
-    
 }

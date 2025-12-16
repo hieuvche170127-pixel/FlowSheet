@@ -8,11 +8,11 @@ package commonconstant;
  *
  * @author Admin
  */
-public class JSPUrll {
+public class Attributes {
+    public static final String USERSESSION = "user";
 
-    public static final String STUDENTHOMEPAGE = "studentHomePage.jsp";
-
-    private JSPUrll() {
+    private Attributes() {
     }
-
+    
+    
 }
