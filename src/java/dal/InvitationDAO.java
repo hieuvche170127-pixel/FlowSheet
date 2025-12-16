@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.UUID;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import utilities.DateTimeConverter;
@@ -221,8 +220,45 @@ public class InvitationDAO extends DBContext {
 
         } catch (SQLException e) {
             Logger.getLogger("đã có lỗi ở inviDAO");
-        } 
+        }
         return result;
 
+    }
+
+    /**
+     * Kiểm tra xem đã có lời mời nào đang CHỜ (Pending) và CÒN HẠN gửi đến
+     * email này chưa. Logic: Trùng Team, Trùng người mời, Trùng Email nhận,
+     * Status = PENDING, ExpiresAt > Hiện tại.
+     */
+    public boolean hasPendingTeamInvitation(int teamId, int invitedById, String email, int roleID) {
+        boolean exists = false;
+
+        // Dùng SYSDATETIME() của SQL Server để so sánh thời gian chính xác
+        String sql = "SELECT COUNT(*) FROM Invitation "
+                + "WHERE TeamID = ? "
+                + "AND InvitedByID = ? "
+                + "AND Email = ? "
+                + "AND Status = 'PENDING' "
+                + "AND AcceptedAt IS NULL "
+                + "AND Roleid = ? "
+                + "AND ExpiresAt > SYSDATETIME()"; // Chỉ lấy cái chưa hết hạn
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            ps.setInt(2, invitedById);
+            ps.setString(3, email);
+            ps.setInt(4, roleID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Nếu đếm được > 0 tức là đã có lời mời
+                    int count = rs.getInt(1);
+                    exists = count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return exists;
     }
 }

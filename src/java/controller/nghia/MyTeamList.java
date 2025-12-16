@@ -79,6 +79,7 @@ public class MyTeamList extends HttpServlet {
         ArrayList<Team> myTeamList = teamDao.getAllTeamByUserId(user.getUserID());
         request.setAttribute("myTeamList", myTeamList);
         request.getRequestDispatcher("nghiapages/my_team_list.jsp").forward(request, response);
+        return;
     }
 
     /**

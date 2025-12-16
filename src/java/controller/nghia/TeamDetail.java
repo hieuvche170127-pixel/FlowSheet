@@ -6,13 +6,13 @@ package controller.nghia;
 
 import dal.InvitationDAO;
 import dao.RoleDAO;
-import dao.TeamDAO;
-import dao.TeamMemberDAO;
+import dal.TeamDAO;
+import dal.TeamMemberDAO;
 import dao.UserDAO;
 
 import entity.Invitation;
 import entity.Team;
-import entity.User;
+import entity.UserAccount;
 import entity.Role;
 import entity.TeamMember;
 
@@ -84,7 +84,7 @@ public class TeamDetail extends HttpServlet {
 
         // chặn session ở mọi nơi
         HttpSession session = request.getSession(true);
-        User user = (User) session.getAttribute("user");
+        UserAccount user = (UserAccount) session.getAttribute("user");
         if (user == null) {
             response.sendRedirect("login.jsp");
             // tuy không cần return (hoặc là có) nhưng mà để đây để đánh dấu kết thúc luồng 
@@ -101,7 +101,7 @@ public class TeamDetail extends HttpServlet {
         try {
             int intTeamID = Integer.parseInt(StringteamID);
             Team teamFoundByID = teamDao.findById(intTeamID);
-            List<User> teamMate = userDao.findMembersByTeam(intTeamID);
+            List<UserAccount> teamMate = userDao.findMembersByTeam(intTeamID);
             ArrayList<Invitation> invitationSendByTeam = inviDao.getAllInvitationSentByTeamId(intTeamID);
             List<Role> allRole = roleDao.findAll();
             ArrayList<TeamMember> teamMemberList = teamMemberDao.getAllTeamMembersByTeamId(intTeamID);

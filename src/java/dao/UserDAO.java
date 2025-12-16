@@ -208,17 +208,40 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public boolean isEmailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
+    // lấy userid bằng email
+    /**
+     * Truy vấn ID người dùng (UserID) từ cơ sở dữ liệu dựa trên địa chỉ Email.
+     * <p>
+     * Phương thức sẽ tìm kiếm trong bảng {@code UserAccount}.
+     * </p>
+     *
+     * @param email Địa chỉ email cần tìm kiếm (không được null hoặc chỉ chứa
+     * khoảng trắng).
+     * @return Giá trị {@code UserID} nếu tìm thấy. Trả về {@code -1} nếu không
+     * tìm thấy email tương ứng hoặc xảy ra lỗi truy vấn database.
+     * @throws IllegalArgumentException Nếu tham số {@code email} là null hoặc
+     * rỗng.
+     */
+    public int getUserIdByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email String must not null");
+        }
+        int result = -1;
+        // Câu lệnh SQL (dựa trên bảng UserAccount của bạn)
+        String sql = "SELECT UserID FROM UserAccount WHERE Email = ?";
+
+        // Sử dụng try-with-resources để tự động đóng Connection, PreparedStatement và ResultSet
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    result = rs.getInt("UserID");
+                }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Nên dùng Logger để ghi log thay vì printStackTrace
         }
-        return false;
+
+        return result;
     }
 }

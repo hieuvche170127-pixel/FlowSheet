@@ -121,4 +121,49 @@ public class TeamMemberDAO extends DBContext {
         }
         return result;
     }
+
+    /**
+     * Lấy thông tin thành viên trong nhóm dựa trên UserID và TeamID.
+     *
+     * @param userID ID của người dùng.
+     * @param teamID ID của nhóm. 
+     * @return  TeamMember chứa thông tin thành viên (mapping RoleID sang
+     * String role). Logic: RoleID = 4 -> "Team Member", còn lại -> "Team
+     * Leader".
+     */
+    public TeamMember getTeamMemberByUserIDAndTeamId(int userID, int teamID) {
+        TeamMember teammem = null;
+
+        // Chỉ lấy những cột cần thiết
+        String query = "SELECT TeamID, UserID, RoleID FROM TeamMember WHERE UserID = ? AND TeamID = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, userID);
+            ps.setInt(2, teamID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    teammem = new TeamMember();
+
+                    // 1. Map ID cơ bản
+                    teammem.setTeamId(rs.getInt("TeamID"));
+                    teammem.setUserId(rs.getInt("UserID"));
+
+                    // 2. Xử lý Logic Role (Int -> String) theo yêu cầu
+                    int dbRoleId = rs.getInt("RoleID");
+
+                    if (dbRoleId == 4) {
+                        teammem.setRole("Team Member");
+                    } else {
+                        // Trường hợp còn lại (RoleID = 5 hoặc khác 4) coi là Leader
+                        teammem.setRole("Team Leader");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return teammem;
+    }
 }

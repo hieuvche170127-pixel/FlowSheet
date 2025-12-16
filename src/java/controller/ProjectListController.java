@@ -95,8 +95,8 @@ public class ProjectListController extends HttpServlet {
         int pageSize = 10;
         
         int totalRecords = projectDAO.countProjects(
-                currentUser.getUserID(),
-                currentUser.getRoleID(),
+                currentUser.getUserID(), 
+                currentUser.getRoleID(), 
                 searchKeyword, 
                 statusTab 
         );
