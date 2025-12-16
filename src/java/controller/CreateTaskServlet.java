@@ -1,10 +1,10 @@
 package controller;
 
-import dao.ProjectDAO;
+import dal.ProjectDAO;
 import dao.TaskDAO;
 import entity.Project;
-import entity.Task;
-import entity.User;
+import entity.ProjectTask;
+import entity.UserAccount;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,18 +24,16 @@ public class CreateTaskServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-//        HttpSession session = req.getSession(false);
-//        User user = (User) session.getAttribute("user");
-//
-//        if (user == null || (!"2".equals(user.getRoleID()) && !"3".equals(user.getRoleID()))) {
-//            resp.sendRedirect("login");  // Restrict access
-//            return;
-//        }
+        HttpSession session = req.getSession(false);
+        UserAccount user = (UserAccount) session.getAttribute("user");
+
+        if (user == null || user.getRoleId()==1 && user.getRoleId()==3) {
+            resp.sendRedirect("view");  // Restrict access
+            return;
+        }
 
         List<Project> projects = projectDAO.getAllProjects();
-//        if (projects == null) {
-//            projects = new ArrayList<>();
-//        }
+
         req.setAttribute("projects", projects);
         req.getRequestDispatcher("/createTask.jsp").forward(req, resp);
     }
@@ -43,13 +41,13 @@ public class CreateTaskServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-//        HttpSession session = req.getSession(false);
-//        User user = (User) session.getAttribute("user");
-//
-//        if (user == null || (!"2".equals(user.getRoleID()) && !"3".equals(user.getRoleID()))) {
-//            resp.sendRedirect("login");
-//            return;
-//        }
+        HttpSession session = req.getSession(false);
+        UserAccount user = (UserAccount) session.getAttribute("user");
+
+        if (user == null || user.getRoleId()==1 && user.getRoleId()==3) {
+            resp.sendRedirect("view");
+            return;
+        }
 
         String taskCode = req.getParameter("taskCode");
         String taskName = req.getParameter("taskName");
@@ -58,7 +56,7 @@ public class CreateTaskServlet extends HttpServlet {
 
         Integer projectId = (projectIdStr != null && !projectIdStr.isEmpty()) ? Integer.parseInt(projectIdStr) : null;
 
-        Task task = new Task();
+        ProjectTask task = new ProjectTask();
         task.setTaskCode(taskCode);
         task.setTaskName(taskName);
         task.setDescription(description);
@@ -71,7 +69,7 @@ public class CreateTaskServlet extends HttpServlet {
         } else {
             req.setAttribute("error", "Failed to create task. Please try again.");
         }
-
-        doGet(req, resp);  // Reload form with message
+        req.getRequestDispatcher("/task/view").forward(req, resp);
+//        doGet(req, resp);  // Reload form with message
     }
 }
