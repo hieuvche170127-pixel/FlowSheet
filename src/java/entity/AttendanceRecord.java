@@ -3,122 +3,52 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package entity;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
+import java.sql.Date;
 /**
  *
- * @author Admin
+ * @author nghia ocho
+ * class này dùng để lưu lại ai đi vào ngày nào
+ * // giả sử đi làm ngày hôm qua thì add vào - thuần CRUD, hoàn toàn ko có cơ chế pending chờ duyệt
+ * 
  */
+
 public class AttendanceRecord {
-    // Primary Key (INT IDENTITY)
-    private Integer attendanceId; 
+    private Integer attendanceID; // Sử dụng Integer để có thể nhận giá trị NULL ban đầu
+    private Integer userID;
+    private Date attendanceDate; 
 
-    // Required Fields
-    private Integer userId;            // INT NOT NULL
-    private LocalDate attendanceDate;  // DATE NOT NULL
-    private String status;             // NVARCHAR(20) NOT NULL DEFAULT 'OPEN'
-
-    // Optional Fields (TIME NULL)
-    private LocalTime clockInTime;     // TIME NULL
-    private LocalTime clockOutTime;    // TIME NULL
-    
-    // Calculated Field (INT NULL)
-    private Integer totalMinutes;      // INT NULL
-    
-    // System/Audit Fields
-    private LocalDateTime createdAt;   // DATETIME2 NOT NULL
-    private LocalDateTime updatedAt;   // DATETIME2 NOT NULL
+    public AttendanceRecord(Integer attendanceID, Integer userID, Date attendanceDate) {
+        this.attendanceID = attendanceID;
+        this.userID = userID;
+        this.attendanceDate = attendanceDate;
+    }
 
     public AttendanceRecord() {
     }
 
-    public AttendanceRecord(Integer attendanceId, Integer userId, LocalDate attendanceDate, String status, LocalTime clockInTime, LocalTime clockOutTime, Integer totalMinutes, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.attendanceId = attendanceId;
-        this.userId = userId;
-        this.attendanceDate = attendanceDate;
-        this.status = status;
-        this.clockInTime = clockInTime;
-        this.clockOutTime = clockOutTime;
-        this.totalMinutes = totalMinutes;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    public Integer getAttendanceID() {
+        return attendanceID;
     }
 
-    public Integer getAttendanceId() {
-        return attendanceId;
+    public void setAttendanceID(Integer attendanceID) {
+        this.attendanceID = attendanceID;
     }
 
-    public void setAttendanceId(Integer attendanceId) {
-        this.attendanceId = attendanceId;
+    public Integer getUserID() {
+        return userID;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public void setUserID(Integer userID) {
+        this.userID = userID;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public LocalDate getAttendanceDate() {
+    public Date getAttendanceDate() {
         return attendanceDate;
     }
 
-    public void setAttendanceDate(LocalDate attendanceDate) {
+    public void setAttendanceDate(Date attendanceDate) {
         this.attendanceDate = attendanceDate;
     }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalTime getClockInTime() {
-        return clockInTime;
-    }
-
-    public void setClockInTime(LocalTime clockInTime) {
-        this.clockInTime = clockInTime;
-    }
-
-    public LocalTime getClockOutTime() {
-        return clockOutTime;
-    }
-
-    public void setClockOutTime(LocalTime clockOutTime) {
-        this.clockOutTime = clockOutTime;
-    }
-
-    public Integer getTotalMinutes() {
-        return totalMinutes;
-    }
-
-    public void setTotalMinutes(Integer totalMinutes) {
-        this.totalMinutes = totalMinutes;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
     
     
 }

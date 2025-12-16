@@ -637,34 +637,30 @@ GO
 -- một khi rời khỏi project sẽ ko thể quay lại 
 -- và trong thực tế thì có thể đâu đó xảy ra trường hợp đó. 
 -- Projectmember/ project assignee 
-CREATE TABLE ProjectAssignee (
-    -- Khóa chính Tự tăng (Surrogate Key)
-    ProjectAssigneeID INT IDENTITY(1,1) PRIMARY KEY, 
+CREATE TABLE ProjectMember (
+    ProjectID INT NOT NULL,
+    UserID    INT NOT NULL,
     
-    ProjectID      INT NOT NULL,
-    UserID         INT NOT NULL,
+    -- Thay đổi: Lưu RoleID thay vì chuỗi
+    RoleID    INT NOT NULL, 
     
-    RoleInProject  NVARCHAR(50) NULL,      
-    AssignedAt     DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
+    JoinedAt  DATETIME DEFAULT GETDATE(),
 
-    -- Thời điểm rời đi (Để NULL nếu đang tham gia)
-    LeftAt         DATETIME2   NULL, 
-    
-    -- Ghi chú về lý do rời đi (Tùy chọn)
-    LeaveReason    NVARCHAR(255) NULL, 
+    -- 1. Khóa chính tổ hợp (Mỗi User chỉ có 1 vai trò trong 1 Project tại 1 thời điểm)
+    CONSTRAINT PK_ProjectMember PRIMARY KEY (ProjectID, UserID),
 
-    -- *** Ràng buộc mới (Loại bỏ Khóa chính kết hợp, thay bằng Khóa Duy nhất) ***
-    -- Ràng buộc Duy nhất: Ngăn chặn việc cùng một người tham gia CÙNG một dự án
-    -- mà không có LeftAt (chưa rời đi)
-    -- CONSTRAINT UQ_ProjectAssignee UNIQUE (ProjectID, UserID), -- KHÔNG DÙNG NỮA
-    
-    -- Khóa ngoại: Tham chiếu đến Project
-    CONSTRAINT FK_ProjectAssignee_Project FOREIGN KEY (ProjectID) 
-        REFERENCES Project(ProjectID) 
-        ON DELETE CASCADE, 
-    
-    -- Khóa ngoại: Tham chiếu đến UserAccount
-    CONSTRAINT FK_ProjectAssignee_User FOREIGN KEY (UserID) 
-        REFERENCES UserAccount(UserID)
+    -- 2. Các Khóa ngoại cơ bản
+    CONSTRAINT FK_ProjectMember_Project FOREIGN KEY (ProjectID) 
+        REFERENCES Project(ProjectID) ON DELETE CASCADE,
+
+    CONSTRAINT FK_ProjectMember_User FOREIGN KEY (UserID) 
+        REFERENCES UserAccount(UserID) ON DELETE CASCADE,
+
+    -- 3. Khóa ngoại trỏ đến bảng ROLE
+    CONSTRAINT FK_ProjectMember_Role FOREIGN KEY (RoleID) 
+        REFERENCES Role(RoleID),
+
+    -- 4. QUAN TRỌNG: Check giá trị RoleID chỉ được nằm trong khoảng 6-8
+    -- (PROJECT_MEMBER, PROJECT_LEADER, PROJECT_COLEAD)
+    CONSTRAINT CK_ProjectMember_RoleValid CHECK (RoleID >= 6 AND RoleID <= 8)
 );
-GO

@@ -219,5 +219,18 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
+
+    public boolean isEmailExists(String email) {
+        String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
 }

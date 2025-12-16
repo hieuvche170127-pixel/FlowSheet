@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-defaultm.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package dao;
+package dal;
 
 import dal.DBContext;
 import java.sql.Connection;
@@ -14,10 +10,6 @@ import java.util.List;
 import entity.TeamMember;
 import java.security.Timestamp;
 
-/**
- *
- * @author Admin
- */
 public class TeamMemberDAO extends DBContext {
 
     public List<TeamMember> findAll() throws SQLException {
