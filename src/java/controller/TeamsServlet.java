@@ -4,7 +4,7 @@
  */
 package controller;
 
-import dao.ProjectDAO;
+import dal.ProjectDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -14,9 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.util.List;
 import entity.Team;
-import dao.TeamDAO;
+import dal.TeamDAO;
 import dao.UserDAO;
-import entity.User;
+import entity.UserAccount;
 import java.util.HashMap;
 import java.util.Map;
 import entity.UserAccount;
@@ -83,7 +83,7 @@ public class TeamsServlet extends HttpServlet {
             }
 
             Map<Integer, List<String>> projectCodesByTeam = new HashMap<>();
-            Map<Integer, List<User>> membersByTeam = new HashMap<>();
+            Map<Integer, List<UserAccount>> membersByTeam = new HashMap<>();
 
             for (Team t : teams) {
                 int teamId = t.getTeamID();

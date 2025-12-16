@@ -1,8 +1,8 @@
 package controller;
 
 import dao.TaskDAO;
-import entity.Task;
-import entity.User;
+import entity.ProjectTask;
+import entity.UserAccount;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -32,8 +32,16 @@ public class ViewTaskServlet extends HttpServlet {
         String taskNameFilter = req.getParameter("taskName");
         String projectNameFilter = req.getParameter("projectName");
         
+        // Combine filters into a single search string (method searches in TaskName and ProjectName)
+        String searchFilter = null;
+        if (taskNameFilter != null && !taskNameFilter.trim().isEmpty()) {
+            searchFilter = taskNameFilter.trim();
+        } else if (projectNameFilter != null && !projectNameFilter.trim().isEmpty()) {
+            searchFilter = projectNameFilter.trim();
+        }
+        
         // Get filtered tasks
-        List<Task> tasks = taskDAO.getTasksWithFilter(taskNameFilter, projectNameFilter);
+        List<ProjectTask> tasks = taskDAO.getTasksWithFilter(searchFilter);
         if (tasks == null) {
             tasks = new ArrayList<>();
         }

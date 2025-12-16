@@ -4,9 +4,9 @@
  */
 package controller;
 
-import dao.ProjectDAO;
+import dal.ProjectDAO;
 import dao.RoleDAO;
-import dao.TeamDAO;
+import dal.TeamDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -16,14 +16,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.util.List;
 import entity.TeamMember;
-import dao.TeamMemberDAO;
+import dal.TeamMemberDAO;
 import dao.UserDAO;
 import entity.Project;
 import java.util.HashMap;
 import java.util.Map;
 import entity.Role;
 import entity.Team;
-import entity.User;
+import entity.UserAccount;
 import entity.UserAccount;
 
 /**
@@ -99,7 +99,7 @@ public class TeamMembersServlet extends HttpServlet {
 
         try {
             Team team = teamDAO.findById(teamId);
-            List<User> members = userAccountDAO.findMembersByTeam(teamId);       // students + supervisors
+            List<UserAccount> members = userAccountDAO.findMembersByTeam(teamId);       // students + supervisors
             List<Project> projects = projectDAO.findProjectsByTeam(teamId);
 
             request.setAttribute("team", team);
