@@ -1,14 +1,12 @@
 package controller;
 
 import dao.UserDAO;
-import entity.User;
+import entity.UserAccount;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import commonconstant.JSPUrll;
-
-import commonconstant.Attributes;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -28,7 +26,7 @@ public class LoginServlet extends HttpServlet {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
-        User user = userDAO.login(username, password);
+        UserAccount user = userDAO.login(username, password);
 
         if (user != null) {
             HttpSession session = req.getSession();

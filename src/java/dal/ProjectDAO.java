@@ -4,7 +4,6 @@ import dao.UserDAO;
 import entity.Project;
 import entity.Team;
 import entity.UserAccount;
-import java.security.Timestamp;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -247,7 +246,7 @@ public class ProjectDAO extends DBContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UserAccount u = new UserAccount();
-                    u.setUserId(rs.getInt("UserID"));
+                    u.setUserID(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
@@ -350,7 +349,7 @@ public class ProjectDAO extends DBContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UserAccount u = new UserAccount();
-                    u.setUserId(rs.getInt("UserID"));
+                    u.setUserID(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
@@ -531,7 +530,7 @@ public class ProjectDAO extends DBContext {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UserAccount u = new UserAccount();
-                u.setUserId(rs.getInt("UserID"));
+                u.setUserID(rs.getInt("UserID"));
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
                 list.add(u);

@@ -1,7 +1,7 @@
 package dao;
 
 import dal.DBContext;
-import entity.User;
+import entity.UserAccount;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 
 public class UserDAO extends DBContext {
 
-    public List<User> getAllUsers() {
-        List<User> list = new ArrayList<>();
+    public List<UserAccount> getAllUsers() {
+        List<UserAccount> list = new ArrayList<>();
 
         String sql = "SELECT * FROM UserAccount WHERE RoleID = 1 AND IsActive = 1";
 
@@ -23,7 +23,7 @@ public class UserDAO extends DBContext {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                User u = new User();
+                UserAccount u = new UserAccount();
                 u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
@@ -38,7 +38,7 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-    public User login(String username, String password) {
+    public UserAccount login(String username, String password) {
         String sql = """
             SELECT u.UserID, u.Username, u.FullName, u.Email, u.RoleID, r.RoleCode 
             FROM UserAccount u 
@@ -53,7 +53,7 @@ public class UserDAO extends DBContext {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                User u = new User();
+                UserAccount u = new UserAccount();
                 u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
@@ -81,7 +81,7 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public boolean createUser(User user) {
+    public boolean createUser(UserAccount user) {
         String sql = """
             INSERT INTO UserAccount (Username, PasswordHash, FullName, Email, RoleID)
             VALUES (?, ?, ?, ?, ?)
@@ -109,14 +109,14 @@ public class UserDAO extends DBContext {
     }
 
     //---------------------- ADD/UPDATE -----------------------------
-    public List<User> findAll() {
-        List<User> list = new ArrayList<>();
+    public List<UserAccount> findAll() {
+        List<UserAccount> list = new ArrayList<>();
         String sql = "SELECT * FROM UserAccount";
 
         try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                User u = new User();
+                UserAccount u = new UserAccount();
                 u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));          // DB column: Username
                 u.setFullName(rs.getString("FullName"));
@@ -136,8 +136,8 @@ public class UserDAO extends DBContext {
      * Your old findMembersByTeam(int teamId), now using entity.User. Returns
      * all members (Student + Supervisor) of a given team.
      */
-    public List<User> findMembersByTeam(int teamId) {
-        List<User> list = new ArrayList<>();
+    public List<UserAccount> findMembersByTeam(int teamId) {
+        List<UserAccount> list = new ArrayList<>();
 
         String sql
                 = "SELECT ua.* "
@@ -152,7 +152,7 @@ public class UserDAO extends DBContext {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    User u = new User();
+                    UserAccount u = new UserAccount();
                     u.setUserID(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
@@ -183,8 +183,9 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
+
     // Update user profile (full name and email)
-    public boolean updateUserProfile(User user) {
+    public boolean updateUserProfile(UserAccount user) {
         String sql = """
             UPDATE UserAccount 
             SET FullName = ?, Email = ?
@@ -220,17 +221,40 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public boolean isEmailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
+    // lấy userid bằng email
+    /**
+     * Truy vấn ID người dùng (UserID) từ cơ sở dữ liệu dựa trên địa chỉ Email.
+     * <p>
+     * Phương thức sẽ tìm kiếm trong bảng {@code UserAccount}.
+     * </p>
+     *
+     * @param email Địa chỉ email cần tìm kiếm (không được null hoặc chỉ chứa
+     * khoảng trắng).
+     * @return Giá trị {@code UserID} nếu tìm thấy. Trả về {@code -1} nếu không
+     * tìm thấy email tương ứng hoặc xảy ra lỗi truy vấn database.
+     * @throws IllegalArgumentException Nếu tham số {@code email} là null hoặc
+     * rỗng.
+     */
+    public int getUserIdByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email String must not null");
+        }
+        int result = -1;
+        // Câu lệnh SQL (dựa trên bảng UserAccount của bạn)
+        String sql = "SELECT UserID FROM UserAccount WHERE Email = ?";
+
+        // Sử dụng try-with-resources để tự động đóng Connection, PreparedStatement và ResultSet
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    result = rs.getInt("UserID");
+                }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Nên dùng Logger để ghi log thay vì printStackTrace
         }
-        return false;
+
+        return result;
     }
 }
