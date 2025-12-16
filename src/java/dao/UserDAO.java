@@ -170,6 +170,43 @@ public class UserDAO extends DBContext {
         return list;
     }
 
+    // Update user profile (full name and email)
+    public boolean updateUserProfile(User user) {
+        String sql = """
+            UPDATE UserAccount 
+            SET FullName = ?, Email = ?
+            WHERE UserID = ?
+            """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getEmail());
+            ps.setInt(3, user.getUserID());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    // Change password (plain-text for lab consistency)
+    public boolean changePassword(int userId, String newPassword) {
+        String sql = """
+            UPDATE UserAccount 
+            SET PasswordHash = ?
+            WHERE UserID = ?
+            """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newPassword);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
     public boolean isEmailExists(String email) {
         String sql = "SELECT COUNT(*) FROM UserAccount WHERE email = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
