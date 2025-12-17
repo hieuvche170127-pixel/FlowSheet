@@ -1,6 +1,7 @@
 package dao;
 
 import dal.DBContext;
+import entity.User;
 import entity.UserAccount;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,11 +25,11 @@ public class UserDAO extends DBContext {
 
             while (rs.next()) {
                 UserAccount u = new UserAccount();
-                u.setUserID(rs.getInt("UserID"));
+                u.setUserId(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
-                u.setRoleID(rs.getInt("RoleID"));
+                u.setRoleId(rs.getInt("RoleID"));
 
                 list.add(u);
             }
@@ -54,11 +55,11 @@ public class UserDAO extends DBContext {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 UserAccount u = new UserAccount();
-                u.setUserID(rs.getInt("UserID"));
+                u.setUserId(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
-                u.setRoleID(rs.getInt("RoleID"));
+                u.setRoleId(rs.getInt("RoleID"));
                 return u;
             }
         } catch (SQLException ex) {
@@ -89,16 +90,16 @@ public class UserDAO extends DBContext {
 
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword()); // plain text – matches current seed data
+            ps.setString(2, user.getPasswordHash()); // plain text – matches current seed data
             ps.setString(3, user.getFullName());
             ps.setString(4, user.getEmail());
-            ps.setInt(5, user.getRoleID());
+            ps.setInt(5, user.getRoleId());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
-                    user.setUserID(rs.getInt(1));
+                    user.setUserId(rs.getInt(1));
                 }
                 return true;
             }
@@ -117,11 +118,11 @@ public class UserDAO extends DBContext {
 
             while (rs.next()) {
                 UserAccount u = new UserAccount();
-                u.setUserID(rs.getInt("UserID"));
+                u.setUserId(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));          // DB column: Username
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
-                u.setRoleID(rs.getInt("RoleID"));
+                u.setRoleId(rs.getInt("RoleID"));
                 // if entity.User has phone / isActive / createdAt / updatedAt, set them here too
 
                 list.add(u);
@@ -136,30 +137,32 @@ public class UserDAO extends DBContext {
      * Your old findMembersByTeam(int teamId), now using entity.User. Returns
      * all members (Student + Supervisor) of a given team.
      */
-    public List<UserAccount> findMembersByTeam(int teamId) {
-        List<UserAccount> list = new ArrayList<>();
+    public List<User> findMembersByTeam(int teamId) {
+        List<User> list = new ArrayList<>();
 
         String sql
-                = "SELECT ua.* "
+                = "SELECT ua.UserID, ua.Username, ua.FullName, ua.Email, "
+                + "       tm.RoleID AS TeamRoleID, r.RoleName AS TeamRoleName "
                 + "FROM TeamMember tm "
                 + "JOIN UserAccount ua ON tm.UserID = ua.UserID "
-                + "JOIN [Role] r ON ua.RoleID = r.RoleID "
-                + "WHERE tm.TeamID = ? "
-                + "  AND r.RoleName IN ('Student', 'Supervisor')";
+                + "JOIN [Role] r ON tm.RoleID = r.RoleID "
+                + "WHERE tm.TeamID = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, teamId);
-
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    UserAccount u = new UserAccount();
-                    u.setUserID(rs.getInt("UserID"));
+                    User u = new User();
+                    u.setUserId(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
-                    u.setRoleID(rs.getInt("RoleID"));
-                    // again, set more fields if your entity.User defines them
 
+                    // IMPORTANT: use TeamMember.RoleID, not UserAccount.RoleID
+                    u.setRoleId(rs.getInt("TeamRoleID"));
+
+                    // if your User entity has extra field, set team role name too
+                    // u.setRoleName(rs.getString("TeamRoleName"));
                     list.add(u);
                 }
             }
@@ -170,9 +173,8 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-
     // Update user profile (full name and email)
-    public boolean updateUserProfile(UserAccount user) {
+    public boolean updateUserProfile(User user) {
         String sql = """
             UPDATE UserAccount 
             SET FullName = ?, Email = ?
@@ -182,7 +184,7 @@ public class UserDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
-            ps.setInt(3, user.getUserID());
+            ps.setInt(3, user.getUserId());
             return ps.executeUpdate() > 0;
         } catch (SQLException ex) {
             Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -208,40 +210,42 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // lấy userid bằng email
-    /**
-     * Truy vấn ID người dùng (UserID) từ cơ sở dữ liệu dựa trên địa chỉ Email.
-     * <p>
-     * Phương thức sẽ tìm kiếm trong bảng {@code UserAccount}.
-     * </p>
-     *
-     * @param email Địa chỉ email cần tìm kiếm (không được null hoặc chỉ chứa
-     * khoảng trắng).
-     * @return Giá trị {@code UserID} nếu tìm thấy. Trả về {@code -1} nếu không
-     * tìm thấy email tương ứng hoặc xảy ra lỗi truy vấn database.
-     * @throws IllegalArgumentException Nếu tham số {@code email} là null hoặc
-     * rỗng.
-     */
-    public int getUserIdByEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("email String must not null");
-        }
-        int result = -1;
-        // Câu lệnh SQL (dựa trên bảng UserAccount của bạn)
-        String sql = "SELECT UserID FROM UserAccount WHERE Email = ?";
+    // Tìm thành viên theo team + keyword (username hoặc full name)
+    public List<User> findMembersByTeamAndKeyword(int teamId, String keyword) {
+        List<User> list = new ArrayList<>();
 
-        // Sử dụng try-with-resources để tự động đóng Connection, PreparedStatement và ResultSet
+        String sql
+                = "SELECT ua.UserID, ua.Username, ua.FullName, ua.Email, "
+                + "       tm.RoleID AS TeamRoleID "
+                + "FROM TeamMember tm "
+                + "JOIN UserAccount ua ON tm.UserID = ua.UserID "
+                + "WHERE tm.TeamID = ? "
+                + "  AND (ua.Username LIKE ? OR ua.FullName LIKE ?)";
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, email);
+            ps.setInt(1, teamId);
+            String pattern = "%" + keyword + "%";
+            ps.setString(2, pattern);
+            ps.setString(3, pattern);
+
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    result = rs.getInt("UserID");
+                while (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("UserID"));
+                    u.setUsername(rs.getString("Username"));
+                    u.setFullName(rs.getString("FullName"));
+                    u.setEmail(rs.getString("Email"));
+
+                    // ✅ Team role (4/5), not lab role (1/2/3)
+                    u.setRoleId(rs.getInt("TeamRoleID"));
+                    list.add(u);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace(); // Nên dùng Logger để ghi log thay vì printStackTrace
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return result;
+        return list;
     }
+
 }
