@@ -2,8 +2,10 @@ package controller;
 
 import dal.TaskReportDAO;
 import dao.TaskDAO;
+import dal.TimesheetEntryDAO;
 import entity.ProjectTask;
 import entity.TaskReport;
+import entity.TimesheetEntry;
 import entity.UserAccount;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,6 +21,15 @@ public class CreateTaskReportController extends HttpServlet {
 
     private final TaskReportDAO taskReportDAO = new TaskReportDAO();
     private final TaskDAO taskDAO = new TaskDAO();
+    private final TimesheetEntryDAO timesheetEntryDAO = new TimesheetEntryDAO();
+
+    private void loadFormData(HttpServletRequest req, UserAccount user) {
+        List<ProjectTask> userTasks = taskDAO.getAllTasksByUserId(user.getUserID());
+        List<TimesheetEntry> entries = timesheetEntryDAO.getEntriesByUserId(user.getUserID());
+        req.setAttribute("tasks", userTasks);
+        req.setAttribute("timesheetEntries", entries);
+        req.setAttribute("user", user);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -31,11 +42,7 @@ public class CreateTaskReportController extends HttpServlet {
             return;
         }
 
-        // Get tasks assigned to the current user
-        List<ProjectTask> userTasks = taskDAO.getAllTasksByUserId(user.getUserID());
-        req.setAttribute("tasks", userTasks);
-        req.setAttribute("user", user);
-
+        loadFormData(req, user);
         req.getRequestDispatcher("/createTaskReport.jsp").forward(req, resp);
     }
 
@@ -61,7 +68,8 @@ public class CreateTaskReportController extends HttpServlet {
             // Validate required fields
             if (taskIdStr == null || taskIdStr.trim().isEmpty()) {
                 req.setAttribute("error", "Please select a task.");
-                doGet(req, resp);
+                loadFormData(req, user);
+                req.getRequestDispatcher("/createTaskReport.jsp").forward(req, resp);
                 return;
             }
 
@@ -74,7 +82,8 @@ public class CreateTaskReportController extends HttpServlet {
             
             if (!isTaskAssigned) {
                 req.setAttribute("error", "You are not assigned to this task.");
-                doGet(req, resp);
+                loadFormData(req, user);
+                req.getRequestDispatcher("/createTaskReport.jsp").forward(req, resp);
                 return;
             }
 
@@ -124,7 +133,14 @@ public class CreateTaskReportController extends HttpServlet {
             if (timesheetEntryIdStr != null && !timesheetEntryIdStr.trim().isEmpty()) {
                 try {
                     Integer timesheetEntryId = Integer.parseInt(timesheetEntryIdStr);
-                    report.setTimesheetEntryId(timesheetEntryId);
+                    TimesheetEntry entry = timesheetEntryDAO.findByIdAndUser(timesheetEntryId, user.getUserID());
+                    if (entry == null) {
+                        req.setAttribute("error", "Selected timesheet entry is not valid for your account.");
+                        loadFormData(req, user);
+                        req.getRequestDispatcher("/createTaskReport.jsp").forward(req, resp);
+                        return;
+                    }
+                    report.setTimesheetEntryId(entry.getEntryId());
                 } catch (NumberFormatException e) {
                     // If invalid, just leave it as null
                     report.setTimesheetEntryId(null);

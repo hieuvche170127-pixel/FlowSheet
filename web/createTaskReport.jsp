@@ -2,6 +2,7 @@
 <%@page import="java.util.List"%>
 <%@page import="entity.ProjectTask"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -149,12 +150,27 @@
                         </div>
 
                         <div class="form-floating mb-4">
-                            <input type="number" class="form-control" id="timesheetEntryId" 
-                                   name="timesheetEntryId" min="0" placeholder="Optional">
+                            <select class="form-select" id="timesheetEntryId" name="timesheetEntryId">
+                                <option value="">-- Link a Timesheet Entry (optional) --</option>
+                                <c:forEach var="entry" items="${timesheetEntries}">
+                                    <option value="${entry.entryId}">
+                                        <fmt:formatDate value="${entry.workDate}" pattern="yyyy-MM-dd"/>
+                                        &nbsp;|&nbsp;
+                                        <fmt:formatDate value="${entry.startTime}" type="time" pattern="HH:mm"/> - 
+                                        <fmt:formatDate value="${entry.endTime}" type="time" pattern="HH:mm"/>
+                                        &nbsp;(${entry.minutesWorked} mins)
+                                    </option>
+                                </c:forEach>
+                            </select>
                             <label for="timesheetEntryId">
-                                <i class="fas fa-link me-2"></i>Timesheet Entry ID (Optional)
+                                <i class="fas fa-link me-2"></i>Timesheet Entry (Optional)
                             </label>
-                            <div class="form-text">Link this report to a specific timesheet entry if applicable</div>
+                            <div class="form-text">
+                                Link this report to one of your logged timesheet entries for traceability.
+                                <c:if test="${empty timesheetEntries}">
+                                    <br/>You don't have any timesheet entries yet.
+                                </c:if>
+                            </div>
                         </div>
 
                         <div class="d-flex gap-2">

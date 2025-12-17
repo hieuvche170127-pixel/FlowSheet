@@ -30,7 +30,7 @@ public class CreateTaskServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         UserAccount user = (UserAccount) session.getAttribute("user");
 
-        if (user == null || user.getRoleID()==1 && user.getRoleID()==3) {
+        if (user == null || user.getRoleID()==1) {
             resp.sendRedirect("view");  // Restrict access
             return;
         }
@@ -47,7 +47,7 @@ public class CreateTaskServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         UserAccount user = (UserAccount) session.getAttribute("user");
 
-        if (user == null || user.getRoleID()==1 && user.getRoleID()==3) {
+        if (user == null || user.getRoleID()==1) {
             resp.sendRedirect("view");
             return;
         }
