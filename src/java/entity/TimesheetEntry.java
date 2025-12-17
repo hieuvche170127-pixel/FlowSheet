@@ -15,6 +15,9 @@ public class TimesheetEntry {
 
     private int entryId;
     private int timesheetId;
+    // Optional reference fields populated via JOINs when available
+    private Integer projectId;
+    private Integer taskId;
 
     // Dùng hàng cổ java.sql
     private Date workDate;
@@ -42,6 +45,22 @@ public class TimesheetEntry {
 
     public void setTimesheetId(int timesheetId) {
         this.timesheetId = timesheetId;
+    }
+
+    public Integer getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Integer projectId) {
+        this.projectId = projectId;
+    }
+
+    public Integer getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Integer taskId) {
+        this.taskId = taskId;
     }
 
     public Date getWorkDate() {
@@ -92,6 +111,19 @@ public class TimesheetEntry {
         this.createdAt = createdAt;
     }
 
+    /**
+     * Derived value to keep compatibility with views expecting a minutesWorked field.
+     */
+    public int getMinutesWorked() {
+        if (startTime == null || endTime == null) {
+            return 0;
+        }
+        long diffMillis = endTime.getTime() - startTime.getTime();
+        long minutes = diffMillis / (60 * 1000);
+        long worked = minutes - delayMinutes;
+        return (int) Math.max(worked, 0);
+    }
+
     public TimesheetEntry(int entryId, int timesheetId, Date workDate, Time startTime, Time endTime, int delayMinutes, String note, Timestamp createdAt) {
         this.entryId = entryId;
         this.timesheetId = timesheetId;
@@ -102,8 +134,9 @@ public class TimesheetEntry {
         this.note = note;
         this.createdAt = createdAt;
     }
-    
-    
-    
-    
+
+
+
+
 }
+

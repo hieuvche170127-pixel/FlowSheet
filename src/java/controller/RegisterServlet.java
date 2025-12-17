@@ -46,7 +46,7 @@ public class RegisterServlet extends HttpServlet {
 
         UserAccount newUser = new UserAccount();
         newUser.setUsername(username);
-        newUser.setPassword(password);          // plain text – matches current lab setup
+        newUser.setPasswordHash(password);          // plain text – matches current lab setup
         newUser.setFullName(fullName);
         newUser.setEmail(email);
         newUser.setRoleID(1);                   // Hardcoded STUDENT (RoleID = 1)
