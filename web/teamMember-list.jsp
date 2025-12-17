@@ -2,18 +2,21 @@
 <%@page import="java.lang.Integer"%>
 <%@page import="java.util.Map"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="java.util.List, entity.TeamMember, entity.User, entity.Team, entity.Project" %>
+<%@page import="java.util.List, entity.TeamMember, entity.UserAccount, entity.Team, entity.Project" %>
 
 <%
     //List<TeamMember> teamMembers = (List<TeamMember>) request.getAttribute("teamMembers");
     Team team = (Team) request.getAttribute("team");
-    List<User> userAccounts = (List<User>) request.getAttribute("userAccounts");
+    List<UserAccount> userAccounts = (List<UserAccount>) request.getAttribute("userAccounts");
     List<Project> projects = (List<Project>) request.getAttribute("projects");
     String activeTab = (String) request.getAttribute("activeTab");
     if (activeTab == null) {
         activeTab = "members";
     }
     Map<Integer, String> roleMap = (Map<Integer, String>) request.getAttribute("roleMap");
+
+    Boolean canManageTeamObj = (Boolean) request.getAttribute("canManageTeam");
+    boolean canManageTeam = (canManageTeamObj != null && canManageTeamObj);
 
 %>
 <!DOCTYPE html>
@@ -225,6 +228,47 @@
             .details-link:hover {
                 text-decoration: underline;
             }
+
+            .member-username {
+                font-size: 14px;
+                font-weight: 700;
+                margin-bottom: 2px;
+                color: #222;
+            }
+
+            .member-actions {
+                margin-top: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .member-actions select {
+                padding: 6px 10px;
+                border-radius: 10px;
+                border: 1px solid #ccd2e0;
+                font-size: 13px;
+            }
+
+            .btn-primary {
+                padding: 7px 12px;
+                border-radius: 12px;
+                border: none;
+                background: #00bfa5;
+                color: #fff;
+                cursor: pointer;
+                font-size: 13px;
+            }
+
+            .btn-kick {
+                padding: 7px 12px;
+                border-radius: 12px;
+                border: 1px solid #ff5a6b;
+                background: #fff;
+                color: #ff5a6b;
+                cursor: pointer;
+                font-size: 13px;
+            }
         </style>
 
     </head>
@@ -241,7 +285,13 @@
             <!-- Fake team header for now (we can bind real team info later) -->
             <div class="team-header">
                 <div class="team-info-left">
-                    <div class="team-avatar">T</div>
+                    <%  String teamInitial = "T";
+                        if (team != null && team.getTeamName() != null && !team.getTeamName().isEmpty()) {
+                            teamInitial = team.getTeamName().substring(0, 1).toUpperCase();
+                        }
+                    %>
+                    <div class="team-avatar"><%= teamInitial%></div>
+
                     <div>
                         <div class="team-name">
                             <%= (team != null && team.getTeamName() != null) ? team.getTeamName() : "Team"%>
@@ -249,6 +299,7 @@
                         <!-- later you can show Created On, etc. -->
                     </div>
                 </div>
+                <% if (canManageTeam) {%>              
                 <div class="team-actions-right">
                     <form method="post" action="teamMember" style="display:flex; gap:6px; align-items:center;">
                         <input type="hidden" name="action" value="updateTeam">
@@ -272,6 +323,7 @@
                         <button class="btn-outline btn-danger" type="submit">Delete Team</button>
                     </form>
                 </div>
+                <% }%>
             </div>
 
             <!-- Tabs + Search -->
@@ -287,18 +339,16 @@
                 </a>
 
                 <div class="search-wrapper">
-                    <div class="search-wrapper">
-                        <form method="get" action="teamMember" style="display:flex;align-items:center;gap:6px;">
-                            <input type="hidden" name="teamId" value="<%= team.getTeamID()%>">
-                            <input type="hidden" name="tab" value="members">
-                            <input type="text"
-                                   class="search-input"
-                                   name="q"
-                                   value="<%= request.getAttribute("q") != null ? request.getAttribute("q") : ""%>"
-                                   placeholder="Search by member name..." />
-                            <button class="search-btn" type="submit">&#128269;</button>
-                        </form>
-                    </div>
+                    <form method="get" action="teamMember" style="display:flex;align-items:center;gap:6px;">
+                        <input type="hidden" name="teamId" value="<%= team.getTeamID()%>">
+                        <input type="hidden" name="tab" value="members">
+                        <input type="text"
+                               class="search-input"
+                               name="q"
+                               value="<%= request.getAttribute("q") != null ? request.getAttribute("q") : ""%>"
+                               placeholder="Search by member name..." />
+                        <button class="search-btn" type="submit">&#128269;</button>
+                    </form>
                 </div>
             </div>
 
@@ -307,12 +357,12 @@
             <div class="cards-grid">
                 <%
                     if (userAccounts != null) {
-                        for (User u : userAccounts) {
+                        for (UserAccount u : userAccounts) {
 
                             String userName = u.getUsername();
                             String fullName = u.getFullName();
                             String email = u.getEmail();
-                            Integer roleId = u.getRoleId();
+                            int roleId = u.getRoleID();
                             String roleName = roleMap != null ? roleMap.get(roleId) : null;
 
                             // simple initials: first 2 letters of username (fallback if null/short)
@@ -329,25 +379,30 @@
                     <div class="member-email"><%= email%></div>
                     <div class="member-role"><%= roleName != null ? roleName : ""%></div>
 
-                    <form action="teamMember" method="post" style="margin-top:10px;">
-                        <input type="hidden" name="action" value="changeRole"/>
-                        <input type="hidden" name="teamId" value="<%= team.getTeamID()%>"/>
-                        <input type="hidden" name="userId" value="<%= u.getUserId()%>"/>
+                    <% if (canManageTeam) {%>
+                    <div class="member-actions">
+                        <form action="teamMember" method="post">
+                            <input type="hidden" name="action" value="changeRole"/>
+                            <input type="hidden" name="teamId" value="<%= team.getTeamID()%>"/>
+                            <input type="hidden" name="userId" value="<%= u.getUserID()%>"/>
 
-                        <select name="roleId">
-                            <option value="4" <%= (u.getRoleId() == 4) ? "selected" : ""%>>Team Member</option>
-                            <option value="5" <%= (u.getRoleId() == 5) ? "selected" : ""%>>Team Leader</option>
-                        </select>
-                        <button type="submit" class="btn-outline">Change role</button>
-                    </form>
+                            <select name="roleId">
+                                <option value="4" <%= (u.getRoleID() == 4) ? "selected" : ""%>>Team Member</option>
+                                <option value="5" <%= (u.getRoleID() == 5) ? "selected" : ""%>>Team Leader</option>
+                            </select>
 
-                    <form action="teamMember" method="post" onsubmit="return confirm('Kick this member out of the team?');">
-                        <input type="hidden" name="action" value="kick"/>
-                        <input type="hidden" name="teamId" value="<%= team.getTeamID()%>"/>
-                        <input type="hidden" name="userId" value="<%= u.getUserId()%>"/>
-                        <button type="submit" class="btn-outline btn-danger">Kick Team Member</button>
-                    </form>
+                            <button class="btn-primary" type="submit">Change role</button>
+                        </form>
 
+                        <form action="teamMember" method="post" 
+                              onsubmit="return confirm('Kick ' + '<%= u.getUsername() %>' + ' out of this team?');">
+                            <input type="hidden" name="action" value="kick"/>
+                            <input type="hidden" name="teamId" value="<%= team.getTeamID()%>"/>
+                            <input type="hidden" name="userId" value="<%= u.getUserID()%>"/>
+                            <button class="btn-kick" type="submit">Kick Team Member</button>
+                        </form>
+                    </div>
+                    <% } %>
                 </div>
                 <%
                         }
