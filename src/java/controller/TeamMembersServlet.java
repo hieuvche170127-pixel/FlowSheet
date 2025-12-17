@@ -4,9 +4,9 @@
  */
 package controller;
 
-import dao.ProjectDAO;
+import dal.ProjectDAO;
 import dao.RoleDAO;
-import dao.TeamDAO;
+import dal.TeamDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -16,7 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.util.List;
 import entity.TeamMember;
-import dao.TeamMemberDAO;
+import dal.TeamMemberDAO;
+import dal.TeamProjectDAO;
 import dao.UserDAO;
 import entity.Project;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ public class TeamMembersServlet extends HttpServlet {
     private TeamDAO teamDAO = new TeamDAO();
 
     private ProjectDAO projectDAO = new ProjectDAO();
+
+    private TeamProjectDAO teamProjectDAO = new TeamProjectDAO();
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -81,6 +84,7 @@ public class TeamMembersServlet extends HttpServlet {
         //UPDATE
         String teamIdParam = request.getParameter("teamId");
         if (teamIdParam == null) {
+            // no teamId → you can redirect back or show error; for now go back
             response.sendRedirect("team");
             return;
         }
@@ -91,21 +95,31 @@ public class TeamMembersServlet extends HttpServlet {
             tab = "members";
         }
 
-        if (teamIdParam == null) {
-            // no teamId → you can redirect back or show error; for now go back
-            response.sendRedirect("team");
-            return;
-        }
+        String memberKeyword = request.getParameter("q"); // từ ô search
 
         try {
             Team team = teamDAO.findById(teamId);
-            List<User> members = userAccountDAO.findMembersByTeam(teamId);       // students + supervisors
+
+            List<User> members;
+            if (memberKeyword != null && !memberKeyword.trim().isEmpty()) {
+                members = userAccountDAO.findMembersByTeamAndKeyword(teamId, memberKeyword.trim());
+            } else {
+                members = userAccountDAO.findMembersByTeam(teamId);
+            }       // students + supervisors
+
             List<Project> projects = projectDAO.findProjectsByTeam(teamId);
+
+            String message = request.getParameter("msg");
+            if (message != null) {
+                request.setAttribute("msg", message);
+            }
 
             request.setAttribute("team", team);
             request.setAttribute("userAccounts", members);
+            request.setAttribute("teamRoles", roleDAO.findTeamRoles());
             request.setAttribute("projects", projects);
             request.setAttribute("activeTab", tab);
+            request.setAttribute("q", memberKeyword);
 
             request.getRequestDispatcher("/teamMember-list.jsp")
                     .forward(request, response);
@@ -128,7 +142,81 @@ public class TeamMembersServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        String teamIdParam = request.getParameter("teamId");
+
+        if (teamIdParam == null) {
+            response.sendRedirect("team");
+            return;
+        }
+        int teamId;
+        try {
+            teamId = Integer.parseInt(teamIdParam);
+        } catch (NumberFormatException e) {
+            response.sendRedirect("team");
+            return;
+        }
+
+        try {
+            if ("deleteTeam".equals(action)) {
+                // Xử lý delete team (phần 4 – bên dưới, dùng TeamDAO)
+                deleteTeamAndRelations(teamId);
+                response.sendRedirect(request.getContextPath() + "/team");
+                return;
+                
+            } else if ("kick".equals(action)) {
+
+                // 1) lấy userId từ form
+                String userIdParam = request.getParameter("userId");
+                int userId = Integer.parseInt(userIdParam);
+
+                // 2) gọi DAO kick
+                boolean ok = teamMemberDAO.kickMember(teamId, userId);
+
+                // 3) quay lại tab members và báo msg
+                response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg="
+                        + (ok ? "Kicked+successfully" : "Kick+failed"));
+                return;
+
+            } else if ("changeRole".equals(action)) {
+
+                String userIdParam = request.getParameter("userId");
+                String roleIdParam = request.getParameter("roleId");
+
+                int userId = Integer.parseInt(userIdParam);
+                int newRoleId = Integer.parseInt(roleIdParam);
+
+                boolean ok = teamMemberDAO.changeRole(teamId, userId, newRoleId);
+
+                response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg="
+                        + (ok ? "Role+updated" : "Role+update+failed"));
+                return;
+
+            } else if ("updateTeam".equals(action)) {
+
+                String teamName = request.getParameter("teamName");
+                String description = request.getParameter("description");
+
+                boolean ok = teamDAO.updateTeamInfo(teamId, teamName, description);
+
+                response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg="
+                        + (ok ? "Team+updated" : "Team+update+failed"));
+                return;
+            }
+            
+            // action không hợp lệ
+            response.sendRedirect("teamMember?teamId=" + teamId);
+
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
+
+    private void deleteTeamAndRelations(int teamId) throws SQLException {
+        // xóa TeamProject, TeamMember, rồi Team
+        teamProjectDAO.deleteByTeam(teamId);
+        teamMemberDAO.deleteByTeam(teamId);
+        teamDAO.deleteTeam(teamId);
     }
 
     /**

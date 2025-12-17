@@ -68,10 +68,10 @@ public class CreateTeamController extends HttpServlet {
         if (currentUser == null) {
         // Tạo ra một user giả
         currentUser = new UserAccount();
-        currentUser.setUserId(2); // QUAN TRỌNG: ID này phải tồn tại trong bảng UserAccount
+        currentUser.setUserID(2); // QUAN TRỌNG: ID này phải tồn tại trong bảng UserAccount
         currentUser.setUsername("sup_hoa");
         currentUser.setFullName("Nguyen Thi Hoa (Test)");
-        currentUser.setRoleId(2); // Role Supervisor
+        currentUser.setRoleID(2); // Role Supervisor
 
         session.setAttribute("user", currentUser);
         System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
@@ -157,7 +157,7 @@ public class CreateTeamController extends HttpServlet {
             Team newTeam = new Team();
             newTeam.setTeamName(teamName);
             newTeam.setDescription(description);
-            newTeam.setCreatedBy(creator.getUserId());
+            newTeam.setCreatedBy(creator.getUserID());
 
             List<TeamMember> members = new ArrayList<>();
             for (int i = 0; i < memberIdsRaw.length; i++) {
