@@ -129,7 +129,7 @@ public class ProjectDAO extends DBContext {
         sql.append("p.Description, p.StartDate, p.Deadline, p.Status ");
         sql.append("FROM Project p ");
         
-        boolean isAdmin = (roleId == 3);
+        boolean isAdmin = (roleId == 3 || roleId == 2);
         
         if (!isAdmin) {
             sql.append("JOIN TeamProject tp ON p.ProjectID = tp.ProjectID ");
@@ -370,7 +370,7 @@ public class ProjectDAO extends DBContext {
         sql.append("SELECT COUNT(DISTINCT p.ProjectID) ");
         sql.append("FROM Project p ");
 
-        boolean isAdmin = (roleId == 3);
+        boolean isAdmin = (roleId == 3 || roleId == 2);
         if (!isAdmin) {
             sql.append("JOIN TeamProject tp ON p.ProjectID = tp.ProjectID ");
             sql.append("JOIN TeamMember tm ON tp.TeamID = tm.TeamID ");
@@ -429,7 +429,7 @@ public class ProjectDAO extends DBContext {
         sql.append("p.Description, p.StartDate, p.Deadline, p.Status, p.CreatedAt ");
         sql.append("FROM Project p ");
 
-        boolean isAdmin = (roleId == 3);
+        boolean isAdmin = (roleId == 3 || roleId == 2);
         if (!isAdmin) {
             sql.append("JOIN TeamProject tp ON p.ProjectID = tp.ProjectID ");
             sql.append("JOIN TeamMember tm ON tp.TeamID = tm.TeamID ");
