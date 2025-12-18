@@ -3,10 +3,12 @@ package controller;
 import dal.ProjectDAO;
 import dal.TeamDAO;
 import dal.TimesheetEntryDAO;
+import dal.TimesheetDAO;
 import dal.UserAccountDAO;
 import entity.Project;
 import entity.Team;
 import entity.TimesheetEntry;
+import entity.TimeSheet;
 import entity.UserAccount;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,11 +16,14 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/supervisor/dashboard")
 public class SupervisorDashboardController extends HttpServlet {
 
-    private final TimesheetEntryDAO timesheetDAO = new TimesheetEntryDAO();
+    private final TimesheetEntryDAO timesheetEntryDAO = new TimesheetEntryDAO();
+    private final TimesheetDAO timesheetDAO = new TimesheetDAO();
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TeamDAO teamDAO = new TeamDAO();
     private final UserAccountDAO userDAO = new UserAccountDAO();
@@ -36,8 +41,8 @@ public class SupervisorDashboardController extends HttpServlet {
         }
 
         try {
-            // Get pending timesheet entries
-            List<TimesheetEntry> pendingEntries = timesheetDAO.getPendingTimesheetEntries();
+            // Get pending timesheet entries from submitted timesheets
+            List<TimesheetEntry> pendingEntries = timesheetEntryDAO.getPendingTimesheetEntries();
             
             // Get all active projects
             List<Project> projects = projectDAO.findAll();
@@ -88,7 +93,7 @@ public class SupervisorDashboardController extends HttpServlet {
             req.getRequestDispatcher("/supervisor/dashboard.jsp").forward(req, resp);
             
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(SupervisorDashboardController.class.getName()).log(Level.SEVERE, "Error loading supervisor dashboard", e);
             req.setAttribute("error", "Error loading dashboard: " + e.getMessage());
             req.getRequestDispatcher("/supervisor/dashboard.jsp").forward(req, resp);
         }

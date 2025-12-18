@@ -5,11 +5,10 @@
 package dal;
 
 import entity.TimeSheet;
-import java.util.ArrayList;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
  *
@@ -113,6 +112,43 @@ public class TimesheetDAO extends DBContext {
             e.printStackTrace();
         }
         return null; // Trả về null nếu ID không tồn tại trong DB
+    }
+
+    /**
+     * Lấy danh sách các TimeSheet đang chờ supervisor review (status = Submitted).
+     * 
+     * @return Danh sách các TimeSheet có status = "Submitted", sắp xếp theo LastUpdatedAt DESC
+     */
+    public ArrayList<TimeSheet> getPendingTimesheets() {
+        ArrayList<TimeSheet> list = new ArrayList<>();
+        
+        String sql = "SELECT [TimesheetID], [UserID], [DayStart], [DayEnd], [LastUpdatedAt], [Status] "
+                + "FROM [Timesheet] "
+                + "WHERE [Status] = ? "
+                + "ORDER BY [LastUpdatedAt] DESC";
+        
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setString(1, TimeSheet.STATUS_SUBMITTED);
+            
+            try (ResultSet rs = stm.executeQuery()) {
+                while (rs.next()) {
+                    TimeSheet ts = new TimeSheet(
+                            rs.getInt("TimesheetID"),
+                            rs.getInt("UserID"),
+                            rs.getDate("DayStart"),
+                            rs.getDate("DayEnd"),
+                            rs.getTimestamp("LastUpdatedAt"),
+                            rs.getString("Status")
+                    );
+                    list.add(ts);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi tại getPendingTimesheets: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return list;
     }
 
 }

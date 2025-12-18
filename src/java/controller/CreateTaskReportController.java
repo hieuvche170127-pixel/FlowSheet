@@ -35,6 +35,11 @@ public class CreateTaskReportController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendRedirect(req.getContextPath() + "/login.jsp");
+            return;
+        }
+        
         UserAccount user = (UserAccount) session.getAttribute("user");
 
         if (user == null) {
@@ -50,6 +55,11 @@ public class CreateTaskReportController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendRedirect(req.getContextPath() + "/login.jsp");
+            return;
+        }
+        
         UserAccount user = (UserAccount) session.getAttribute("user");
 
         if (user == null) {
