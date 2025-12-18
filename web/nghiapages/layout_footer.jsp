@@ -27,18 +27,27 @@
     });
 
     // Tải trạng thái Sidebar khi trang được load (giúp giữ trạng thái khi F5)
-    document.addEventListener('DOMContentLoaded', (event) => {
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('sidebar-toggle-btn');
+        if (!btn)
+            return;
+
+        btn.addEventListener('click', function () {
+            const body = document.body;
+
+            if (body.classList.contains('sidebar-collapse')) {
+                body.classList.remove('sidebar-collapse');
+                localStorage.setItem('sidebarState', 'expanded');
+            } else {
+                body.classList.add('sidebar-collapse');
+                localStorage.setItem('sidebarState', 'collapsed');
+            }
+        });
+
         const savedState = localStorage.getItem('sidebarState');
-
-        // Xóa class mặc định nếu có và áp dụng trạng thái đã lưu
         document.body.classList.remove('sidebar-collapse');
-
-        if (savedState === 'collapsed') {
+        if (savedState === 'collapsed')
             document.body.classList.add('sidebar-collapse');
-        } else if (!savedState || savedState === 'expanded') {
-            // Mặc định mở nếu không có trạng thái lưu hoặc là 'expanded'
-            // Không làm gì cả vì body đã không có class 'sidebar-collapse'
-        }
     });
 </script>
 </body>
