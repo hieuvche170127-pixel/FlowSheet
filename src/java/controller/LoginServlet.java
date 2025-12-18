@@ -10,6 +10,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import commonconstant.JSPUrll;
 
+import commonconstant.Attributes;
+
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
@@ -36,12 +38,14 @@ public class LoginServlet extends HttpServlet {
             session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
             // Role-based redirect
-            String redirectUrl = switch (user.getRoleID()) {
-                //case "Adminstrator"      -> "admin/dashboard.jsp";
-                //case "Supervisor" -> "supervisor/dashboard.jsp";
-                //default           -> "student/timesheet.jsp"; // STUDENT
-                default           -> JSPUrll.STUDENTHOMEPAGE;
-            };
+            String redirectUrl;
+            if (user.getRoleID() != null && (user.getRoleID() == 2 || user.getRoleID() == 3)) {
+                // Supervisor or Admin -> supervisor dashboard
+                redirectUrl = req.getContextPath() + "/supervisor/dashboard";
+            } else {
+                // Default: student homepage
+                redirectUrl = req.getContextPath() + "/" + JSPUrll.STUDENTHOMEPAGE;
+            }
             resp.sendRedirect(redirectUrl);
         } else {
             req.setAttribute("error", "Invalid username or password");

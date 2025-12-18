@@ -1,6 +1,8 @@
 package controller;
 
 import dao.TaskDAO;
+import dal.ProjectDAO;
+import entity.Project;
 import entity.ProjectTask;
 import entity.UserAccount;
 import jakarta.servlet.ServletException;
@@ -9,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,37 +22,56 @@ public class ViewTaskServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-//        HttpSession session = req.getSession(false);
-//        User user = (User) session.getAttribute("user");
+        HttpSession session = req.getSession(false);
+        UserAccount user = (UserAccount) session.getAttribute("user");
 
-//        if (user == null || (!"2".equals(user.getRoleID()) && !"3".equals(user.getRoleID()))) {
-//            resp.sendRedirect("login");
-//            return;
-//        }
+        if (user == null || user.getRoleID() == 1) {
+            resp.sendRedirect(req.getContextPath() + "/");
+            return;
+        }
         TaskDAO taskDAO = new TaskDAO();
+        ProjectDAO projectDAO = new ProjectDAO();
         
         // Get filter parameters
-        String taskNameFilter = req.getParameter("taskName");
-        String projectNameFilter = req.getParameter("projectName");
-        
-        // Combine filters into a single search string (method searches in TaskName and ProjectName)
-        String searchFilter = null;
-        if (taskNameFilter != null && !taskNameFilter.trim().isEmpty()) {
-            searchFilter = taskNameFilter.trim();
-        } else if (projectNameFilter != null && !projectNameFilter.trim().isEmpty()) {
-            searchFilter = projectNameFilter.trim();
+        String searchFilter = req.getParameter("search");
+        String projectIdParam = req.getParameter("projectId");
+
+        // Project filter: null = all, -1 = lab/unassigned, other = project id
+        Integer projectIdFilter = null;
+        boolean labSelected = false;
+        if (projectIdParam != null && !projectIdParam.isEmpty()) {
+            if ("lab".equalsIgnoreCase(projectIdParam)) {
+                projectIdFilter = -1;
+                labSelected = true;
+            } else {
+                try {
+                    projectIdFilter = Integer.parseInt(projectIdParam);
+                } catch (NumberFormatException ignored) {
+                    // invalid projectId ignored; defaults to all
+                }
+            }
+        }
+
+        // Normalize search filter
+        if (searchFilter != null && searchFilter.trim().isEmpty()) {
+            searchFilter = null;
+        } else if (searchFilter != null) {
+            searchFilter = searchFilter.trim();
         }
         
         // Get filtered tasks
-        List<ProjectTask> tasks = taskDAO.getTasksWithFilter(searchFilter);
+        List<ProjectTask> tasks = taskDAO.getTasksWithFilter(projectIdFilter, searchFilter);
         if (tasks == null) {
             tasks = new ArrayList<>();
         }
         
         // Set attributes for display
         req.setAttribute("tasks", tasks);
-        req.setAttribute("taskNameFilter", taskNameFilter != null ? taskNameFilter : "");
-        req.setAttribute("projectNameFilter", projectNameFilter != null ? projectNameFilter : "");
+        req.setAttribute("searchFilter", searchFilter != null ? searchFilter : "");
+        req.setAttribute("projectIdFilter", projectIdFilter);
+        req.setAttribute("labSelected", labSelected);
+        List<Project> projects = projectDAO.getAllProjectsForTeam();
+        req.setAttribute("projects", projects);
         
         req.getRequestDispatcher("/viewTask.jsp").forward(req, resp);
     }
@@ -57,13 +79,13 @@ public class ViewTaskServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-//        HttpSession session = req.getSession(false);
-//        User user = (User) session.getAttribute("user");
+        HttpSession session = req.getSession(false);
+        UserAccount user = (UserAccount) session.getAttribute("user");
 
-//        if (user == null || (!"2".equals(user.getRoleID()) && !"3".equals(user.getRoleID()))) {
-//            resp.sendRedirect("login");
-//            return;
-//        }
+        if (user == null || user.getRoleID() == 1) {
+            resp.sendRedirect(req.getContextPath() + "/");
+            return;
+        }
 
         TaskDAO taskDAO = new TaskDAO();
         String action = req.getParameter("action");

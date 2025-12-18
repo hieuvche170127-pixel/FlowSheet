@@ -29,6 +29,8 @@ public class ProjectTask {
 
     // Vẫn dùng String như bình thường
     private String status;
+    // Optional display-only field from joins
+    private String projectName;
 
     public ProjectTask() {
         // Mặc định khi tạo mới là TO_DO
@@ -133,5 +135,13 @@ public class ProjectTask {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }

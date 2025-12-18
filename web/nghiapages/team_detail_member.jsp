@@ -144,6 +144,7 @@
                             <th>Full Name</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -156,12 +157,57 @@
                                 <td>${member.username}</td>
                                 <td>${member.fullName}</td>
                                 <td>${member.email}</td>
+                                
+                                <!--                         
                                 <td>
-                                    <c:forEach var="tm" items="${teamMemberList}">
-                                        <c:if test="${tm.userId == member.userID}">
-                                            <span class="badge bg-info text-dark">${tm.role}</span>
-                                        </c:if>
-                                    </c:forEach>
+                                <c:forEach var="tm" items="${teamMemberList}">
+                                    <c:if test="${tm.userId == member.userID}">
+                                        <span class="badge bg-info text-dark">
+                                        ${memberRoleNameByUserId[member.userID]}
+                                    </span>
+                                    </c:if>
+                                </c:forEach>
+                                </td>
+                                -->
+                                
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        ${memberRoleNameByUserId[member.userID]}
+                                    </span>
+                                </td>
+                                <td>
+                                    <c:if test="${canManageTeam}">
+                                        <!-- Change Role -->
+                                        <form action="${pageContext.request.contextPath}/teamMember" method="post" class="d-inline">
+                                            <input type="hidden" name="action" value="changeRole"/>
+                                            <input type="hidden" name="teamId" value="${team.teamID}"/>
+                                            <input type="hidden" name="userId" value="${member.userID}"/>
+
+                                            <select name="roleId" class="form-select form-select-sm d-inline-block" style="width:160px;">
+                                                <option value="4" ${memberRoleIdByUserId[member.userID] == 4 ? 'selected' : ''}>Team Member</option>
+                                                <option value="5" ${memberRoleIdByUserId[member.userID] == 5 ? 'selected' : ''}>Team Leader</option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-sm btn-primary">Change</button>
+                                        </form>
+
+                                        <!-- Kick -->
+                                        <form action="${pageContext.request.contextPath}/TeamDetail?teamId?"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Kick this member out of the team?');">
+                                            <input type="hidden" name="action" value="kick"/>
+                                            <input type="hidden" name="teamId" value="${team.teamID}"/>
+                                            <input type="hidden" name="userId" value="${member.userID}"/>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fa fa-user-times"></i>
+                                            </button>
+                                        </form>
+                                    </c:if>
+
+                                    <c:if test="${not canManageTeam}">
+                                        <span class="text-muted">-</span>
+                                    </c:if>
                                 </td>
                             </tr>
                         </c:forEach>

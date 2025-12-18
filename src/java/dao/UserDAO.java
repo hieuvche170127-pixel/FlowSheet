@@ -140,12 +140,11 @@ public class UserDAO extends DBContext {
         List<UserAccount> list = new ArrayList<>();
 
         String sql
-                = "SELECT ua.* "
+                = "SELECT ua.UserID, ua.Username, ua.FullName, ua.Email, "
+                + "       tm.RoleID AS TeamRoleID "
                 + "FROM TeamMember tm "
                 + "JOIN UserAccount ua ON tm.UserID = ua.UserID "
-                + "JOIN [Role] r ON ua.RoleID = r.RoleID "
-                + "WHERE tm.TeamID = ? "
-                + "  AND r.RoleName IN ('Student', 'Supervisor')";
+                + "WHERE tm.TeamID = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, teamId);
@@ -157,9 +156,46 @@ public class UserDAO extends DBContext {
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
-                    u.setRoleID(rs.getInt("RoleID"));
-                    // again, set more fields if your entity.User defines them
 
+                    // ✅ this must be 4/5
+                    u.setRoleID(rs.getInt("TeamRoleID"));
+                    list.add(u);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return list;
+    }
+
+    // Tìm thành viên theo team + keyword (username hoặc full name)
+    public List<UserAccount> findMembersByTeamAndKeyword(int teamId, String keyword) {
+        List<UserAccount> list = new ArrayList<>();
+
+        String sql
+                = "SELECT ua.UserID, ua.Username, ua.FullName, ua.Email, "
+                + "       tm.RoleID AS TeamRoleID "
+                + "FROM TeamMember tm "
+                + "JOIN UserAccount ua ON tm.UserID = ua.UserID "
+                + "WHERE tm.TeamID = ? "
+                + "  AND (ua.Username LIKE ? OR ua.FullName LIKE ?)";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            String pattern = "%" + keyword + "%";
+            ps.setString(2, pattern);
+            ps.setString(3, pattern);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UserAccount u = new UserAccount();
+                    u.setUserID(rs.getInt("UserID"));
+                    u.setUsername(rs.getString("Username"));
+                    u.setFullName(rs.getString("FullName"));
+                    u.setEmail(rs.getString("Email"));
+
+                    // ✅ Team role (4/5), not lab role (1/2/3)
+                    u.setRoleID(rs.getInt("TeamRoleID"));
                     list.add(u);
                 }
             }
@@ -170,6 +206,17 @@ public class UserDAO extends DBContext {
         return list;
     }
 
+    public int getAccountRoleId(int userId) throws SQLException {
+        String sql = "SELECT RoleID FROM UserAccount WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("RoleID") : -1; // -1 means not found
+            }
+        }
+    }
+
+    //----------------------  UPDATE  ----------------------------------------------------//
     // Update user profile (full name and email)
     public boolean updateUserProfile(UserAccount user) {
         String sql = """
