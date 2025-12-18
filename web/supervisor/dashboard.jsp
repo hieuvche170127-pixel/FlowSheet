@@ -40,7 +40,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/projects">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/supervisor/projects">
                             <i class="fas fa-project-diagram me-1"></i>Projects
                         </a>
                     </li>
@@ -236,13 +236,17 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a href="${pageContext.request.contextPath}/projects" 
+                            <a href="${pageContext.request.contextPath}/supervisor/projects" 
                                class="btn btn-outline-primary">
                                 <i class="fas fa-project-diagram me-2"></i>View All Projects
                             </a>
                             <a href="${pageContext.request.contextPath}/teams" 
                                class="btn btn-outline-primary">
                                 <i class="fas fa-users me-2"></i>Manage Teams
+                            </a>
+                            <a href="${pageContext.request.contextPath}/task/view"
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-tasks me-2"></i>Tasks
                             </a>
                             <a href="${pageContext.request.contextPath}/project/create" 
                                class="btn btn-outline-success">
@@ -283,7 +287,7 @@
                                     </c:forEach>
                                 </div>
                                 <div class="text-center mt-3">
-                                    <a href="${pageContext.request.contextPath}/projects" 
+                                    <a href="${pageContext.request.contextPath}/supervisor/projects" 
                                        class="btn btn-sm btn-outline-info">
                                         View All Projects
                                     </a>
