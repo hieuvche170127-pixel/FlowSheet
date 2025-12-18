@@ -18,18 +18,20 @@ public class UserAccount {
     private String fullName;
     private String email;
     private String phone;
-    private int roleID;
+    private Integer roleID;
     private boolean isActive;
 
     // Thay thế Timestamp bằng LocalDateTime
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private String roleInProject;
+
     // Constructors (Bạn có thể thêm các Constructor cần thiết)
     public UserAccount() {
     }
 
-    public UserAccount(int userID, String username, String password, String fullName, String email, String phone, int roleID, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public UserAccount(int userID, String username, String password, String fullName, String email, String phone, Integer roleID, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.userID = userID;
         this.username = username;
         this.password = password;
@@ -92,11 +94,11 @@ public class UserAccount {
         this.phone = phone;
     }
 
-    public int getRoleID() {
+    public Integer getRoleID() {
         return roleID;
     }
 
-    public void setRoleID(int roleID) {
+    public void setRoleID(Integer roleID) {
         this.roleID = roleID;
     }
 
@@ -122,6 +124,14 @@ public class UserAccount {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getRoleInProject() {
+        return roleInProject;
+    }
+
+    public void setRoleInProject(String roleInProject) {
+        this.roleInProject = roleInProject;
     }
 
     // Bạn có thể thêm phương thức toString() để dễ debug

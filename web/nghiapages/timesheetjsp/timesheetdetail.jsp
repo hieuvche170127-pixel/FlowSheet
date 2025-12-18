@@ -95,7 +95,6 @@
                                 </c:otherwise>
                             </c:choose>
                         </td>
-
                         <!-- Ghi chú -->
                         <td>
                             <!-- Xử lý nếu null -->

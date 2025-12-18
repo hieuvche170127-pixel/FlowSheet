@@ -199,9 +199,10 @@ public class TaskReportDAO extends DBContext {
         return report;
     }
 
-    /** nghia&gemini
-     * Lấy danh sách tất cả TaskReport liên quan đến một Timesheet cụ thể. Hàm
-     * này thực hiện JOIN giữa TaskReport và TimesheetEntry để lọc dữ liệu.
+    /**
+     * nghia&gemini Lấy danh sách tất cả TaskReport liên quan đến một Timesheet
+     * cụ thể. Hàm này thực hiện JOIN giữa TaskReport và TimesheetEntry để lọc
+     * dữ liệu.
      *
      * * @param timesheetId ID của Timesheet tổng
      * @return Danh sách các TaskReport tìm thấy
@@ -233,4 +234,6 @@ public class TaskReportDAO extends DBContext {
 
         return list;
     }
+
+
 }

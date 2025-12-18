@@ -17,29 +17,39 @@ import java.util.ArrayList;
  */
 public class ProjectTaskDAO extends DBContext {
 
-   private TaskReport mapResultSetToReport(ResultSet rs) throws SQLException {
-    TaskReport report = new TaskReport();
-    
-    report.setReportId(rs.getInt("ReportID"));
-    report.setUserId(rs.getInt("UserID"));
-    report.setTaskId(rs.getInt("TaskID"));
-    report.setReportDescription(rs.getString("ReportDescription"));
-    
-    // Sử dụng getDouble cho DECIMAL
-    report.setEstimateWorkPercentDone(rs.getDouble("EstimateWorkPercentDone"));
-    report.setTotalHourUsed(rs.getDouble("TotalHourUsed"));
-    
-    // Xử lý Integer có thể null cho TimesheetEntryID
-    int entryId = rs.getInt("TimesheetEntryID");
-    if (rs.wasNull()) {
-        report.setTimesheetEntryId(null);
-    } else {
-        report.setTimesheetEntryId(entryId);
+    private ProjectTask mapProjectTaskFromResultSet(ResultSet rs) throws Exception {
+        ProjectTask task = null;
+        try {
+            task = new ProjectTask();
+
+            // 1. Primary Key
+            task.setTaskId(rs.getInt("taskId"));
+
+            // 2. Foreign Key (Sử dụng getObject để xử lý trường hợp projectId bị NULL trong DB)
+            task.setProjectId((Integer) rs.getObject("projectId"));
+
+            // 3. Thông tin cơ bản
+            task.setTaskName(rs.getString("taskName"));
+            task.setDescription(rs.getString("description"));
+
+            // 4. Các trường thời gian (Dùng trực tiếp Timestamp theo Entity của bạn)
+            task.setDeadline(rs.getTimestamp("deadline"));
+            task.setCreatedAt(rs.getTimestamp("createdAt"));
+
+            // 5. Trường số thực (Sử dụng getObject để tránh lỗi nếu estimateHourToDo là NULL)
+            task.setEstimateHourToDo((Double) rs.getObject("estimateHourToDo"));
+
+            // 6. Trạng thái (Sử dụng setter để trigger logic kiểm tra tính hợp lệ trong Entity)
+            task.setStatus(rs.getString("status"));
+
+            // 7. (Tùy chọn) Nếu trong câu SQL có Join với bảng Project để lấy tên
+            // task.setProjectName(rs.getString("projectName"));
+        } catch (Exception e) {
+            // Log lỗi hoặc ném tiếp để tầng DAO xử lý
+            throw e;
+        }
+        return task;
     }
-    
-    report.setCreatedAt(rs.getTimestamp("CreatedAt"));
-    return report;
-}
 
     /**
      * Lấy tất cả ProjectTask từ database
@@ -82,6 +92,5 @@ public class ProjectTaskDAO extends DBContext {
         }
         return list;
     }
-    
-    
+
 }

@@ -33,7 +33,6 @@
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
                     <th>Start Date (Mon)</th>
                     <th>End Date (Sun)</th>
                     <th>Status</th>
@@ -46,7 +45,6 @@
                     <c:when test="${not empty timesheetList}">
                         <c:forEach items="${timesheetList}" var="ts">
                             <tr>
-                                <td>${ts.timesheetId}</td>
                                 <td><fmt:formatDate value="${ts.dayStart}" pattern="dd/MM/yyyy"/></td>
                                 <td><fmt:formatDate value="${ts.dayEnd}" pattern="dd/MM/yyyy"/></td>
                                 <td>

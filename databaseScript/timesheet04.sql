@@ -287,6 +287,14 @@ CREATE TABLE TaskAssignee (
 );
 GO
 
+INSERT INTO TaskAssignee (TaskID, UserID, AssignedAt)
+VALUES 
+    (3, 5, SYSDATETIME()), -- Gán User 5 vào Task 3
+    (5, 5, SYSDATETIME()), -- Gán User 5 vào Task 5
+    (7, 5, SYSDATETIME()), -- Gán User 5 vào Task 7
+    (9, 5, SYSDATETIME()); -- Gán User 5 vào Task 9
+GO
+
 
 
 
