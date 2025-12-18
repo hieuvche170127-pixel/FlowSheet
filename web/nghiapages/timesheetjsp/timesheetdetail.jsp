@@ -20,14 +20,6 @@
 
     <table class="ts-info">
         <tr>
-            <th>ID</th>
-            <td>${timesheet.timesheetId}</td>
-        </tr>
-        <tr>
-            <th>Người tạo (User ID)</th>
-            <td>${timesheet.userId}</td>
-        </tr>
-        <tr>
             <th>Trạng thái</th>
             <td>
                 ${timesheet.status}
@@ -41,8 +33,6 @@
             <th>Ngày kết thúc</th>
             <td>${timesheet.dayEnd}</td>
         </tr>
-
-        <!--sumary bị lỗi quên chưa add trong entity-->
         <tr>
             <th>Ghi chú (Summary)</th>
             <td>${timesheet.summary}</td>
