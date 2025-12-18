@@ -25,11 +25,11 @@ public class UserAccountDAO extends DBContext {
         UserAccount user = null;
         try {
             user = new UserAccount();
-            user.setUserId(rs.getInt("UserID"));
+            user.setUserID(rs.getInt("UserID"));
 
             // NVARCHAR
             user.setUsername(rs.getString("Username"));
-            user.setPasswordHash(rs.getString("PasswordHash"));
+            user.setPassword(rs.getString("PasswordHash"));
             user.setFullName(rs.getString("FullName"));
 
             // NVARCHAR (NULLABLE)
@@ -37,7 +37,7 @@ public class UserAccountDAO extends DBContext {
             user.setPhone(rs.getString("Phone"));
 
             // INT Foreign Key
-            user.setRoleId(rs.getInt("RoleID"));
+            user.setRoleID(rs.getInt("RoleID"));
 
             // BIT NOT NULL (Mặc dù là Boolean Wrapper, ta dùng getBoolean)
             user.setIsActive(rs.getBoolean("IsActive"));
@@ -122,5 +122,7 @@ public class UserAccountDAO extends DBContext {
     public int getUserIdByUsername(String username) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    
 
 }

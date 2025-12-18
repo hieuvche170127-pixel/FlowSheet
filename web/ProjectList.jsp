@@ -10,7 +10,7 @@
         
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        
+
         <style>
             body {
                 background-color: #f8f9fa;
@@ -97,12 +97,20 @@
                         </div>
                     </form>
 
-                    <div>
-                        <a href="${pageContext.request.contextPath}/project/create" class="btn btn-green">
-                            <i class="fas fa-plus"></i> Create Project
-                        </a>
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+
+                <form action="projects" method="get" class="d-flex align-items-center flex-grow-1">
+
+                    <div class="nav nav-pills me-4">
+                        <button type="submit" name="status" value="Active" 
+                                class="nav-link ${empty param.status || param.status == 'Active' ? 'active' : ''}">
+                            Active
+                        </button>
+                        <button type="submit" name="status" value="Archived" 
+                                class="nav-link ${param.status == 'Archived' ? 'active' : ''}">
+                            Archived
+                        </button>
                     </div>
-                </div>
 
                 <div class="table-responsive">
                     <table class="table align-middle table-hover">

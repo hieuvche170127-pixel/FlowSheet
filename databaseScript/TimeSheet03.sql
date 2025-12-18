@@ -1,4 +1,4 @@
-﻿/* =========================================================
+﻿x/* =========================================================
    Create database
 
 !!!!!!!MUST DO UPDATE PARTS MANUALLY!!!!!!!!!!
@@ -11,13 +11,12 @@ DROP DATABASE LABTimesheet;
 
 
 
+
 CREATE DATABASE LABTimesheet;
 GO
 
 USE LABTimesheet;
 GO
-
-
 
 /* =========================================================
    1. Roles & Users (Members / Supervisors / Admin)
@@ -38,7 +37,7 @@ CREATE TABLE UserAccount (
     Email        NVARCHAR(100)     NULL,
     Phone        NVARCHAR(20)      NULL,
     RoleID       INT           NOT NULL,
-    IsActive     BIT           NOT NULL DEFAULT 1,
+    IsActive     BIT           NOT NULL DEFAULT 1,  -- đây là trạng thái kích hoạt tài khoản hay là người này có phải người của lab hay ko ?
     CreatedAt    DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
     UpdatedAt    DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
 
@@ -65,16 +64,16 @@ VALUES
  (N'stu_anh',  N'stu_hash_1',  N'Nguyen Hoang Anh', N'anh@lab.com',
      (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT')),
  (N'stu_bao',  N'stu_hash_2',  N'Tran Bao Minh', N'bao@lab.com',
-     (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT'));
+     (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT')),
+ (N'nghiakhac2005@gmail.com', N'nghia2432005', N'pham khac nghia',N'nghiakhac2005@gmail.com',1),
+ (N'nghiakhac2345@gmail.com', N'nghiangaongo', N'pham quang nghia',N'khac2005@gmail.com',1),
+ (N'viet2345@gmail.com', N'vietphamnenhehe', N'pham quang viet',N'vietpq2005@gmail.com',1);
 GO
 
 
 /* =========================================================
    2. Projects & Tasks (used by Weekly Timesheet filter)
    ========================================================= */
-
-   -- thêm isleadby và thêm bảng project member 
-
 CREATE TABLE Project (
     ProjectID   INT IDENTITY(1,1) PRIMARY KEY,
     ProjectCode NVARCHAR(50)  NOT NULL UNIQUE,
@@ -97,43 +96,136 @@ ADD CONSTRAINT CHK_Project_Status
 CHECK (Status IN (N'OPEN', N'IN_PROGRESS', N'COMPLETE'));
 GO
 
+INSERT INTO Project (
+    ProjectCode, ProjectName, Description, 
+    IsActive, CreatedAt, StartDate, Deadline, Status
+)
+VALUES
+-- 1. Dự án Phát triển Chính (Đang tiến hành)
+('P_SWP391_A', N'Timesheet Management System', N'Phát triển hệ thống quản lý bảng chấm công cho công ty.', 
+1, '2025-01-05 10:30:00', '2025-01-15', '2025-05-30', 'IN_PROGRESS'),
+
+-- 2. Dự án Nghiên cứu (Hoàn thành)
+('P_RESEARCH_01', N'Nghiên cứu thị trường AI', N'Phân tích xu hướng và công nghệ AI mới trong năm 2025.', 
+0, '2024-09-15 14:00:00', '2024-10-01', '2024-12-31', 'COMPLETE'),
+
+-- 3. Dự án Bảo trì (Đang tiến hành)
+('P_MAINT_WEB', N'Bảo trì và nâng cấp website công ty', N'Cập nhật framework và sửa lỗi bảo mật trên website chính.', 
+1, '2025-02-18 09:45:00', '2025-03-01', '2025-04-30', 'IN_PROGRESS'),
+
+-- 4. Dự án Nội bộ (Mới mở) - Tạo gần đây
+('P_HR_SETUP', N'Triển khai hệ thống E-learning nội bộ', N'Xây dựng nền tảng đào tạo trực tuyến cho nhân viên mới.', 
+1, '2025-03-25 15:20:00', '2025-04-10', '2025-07-10', 'OPEN'),
+
+-- 5. Dự án Thiết kế (Đang tiến hành)
+('P_UX_REDESIGN', N'Thiết kế lại giao diện người dùng sản phẩm', N'Tối ưu hóa UX/UI cho ứng dụng di động.', 
+1, '2025-02-01 11:00:00', '2025-02-20', '2025-05-20', 'IN_PROGRESS'),
+
+
+-- change from projectid not null to null 
+-- vì mình có cả task của lab nữa, và lab thì ngoài project, nên nếu project id là null, nó là lab task. 
+-- nếu giờ thay đổi tên bảng/ database các khóa thì mất thời gian, nên nó là tối ưu về thời gian và công sức nhất. 
+-- date modify: 12/12/25/ 10h57pm made by nghia 
 
 CREATE TABLE ProjectTask (
     TaskID      INT IDENTITY(1,1) PRIMARY KEY,
-    ProjectID   INT           NOT NULL,
+    ProjectID   INT           NULL,
     TaskCode    NVARCHAR(50)  NOT NULL UNIQUE,
     TaskName    NVARCHAR(200) NOT NULL,
     Description NVARCHAR(MAX)     NULL,
-    IsActive    BIT           NOT NULL DEFAULT 1,
+    IsActive    BIT           NOT NULL DEFAULT 1,  -- đây là kiểu nó có thể thực hiện hay ko thể thực hiện (avalable) 
     CreatedAt   DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    Status      NVARCHAR(20)  NOT NULL DEFAULT N'TO_DO';
 
     CONSTRAINT FK_ProjectTask_Project
         FOREIGN KEY (ProjectID) REFERENCES Project(ProjectID)
 );
 GO
--- Add task status
-ALTER TABLE ProjectTask
-ADD Status NVARCHAR(20) NOT NULL DEFAULT N'TO_DO';
-GO
 
 ALTER TABLE ProjectTask
 ADD CONSTRAINT CHK_ProjectTask_Status
-CHECK (Status IN (N'TO_DO', N'COMPLETE'));
+CHECK (Status IN (N'TO_DO', N'COMPLETE'));  -- ở đây có thể thêm suspend ? ko suspend để ở trên được.
 GO
 
-/* Sample project & tasks */
-INSERT INTO Project (ProjectCode, ProjectName, Description)
-VALUES (N'PRJ001', N'AI Research Platform', N'Example lab project for testing');
-GO
-
-INSERT INTO ProjectTask (ProjectID, TaskCode, TaskName, Description)
+INSERT INTO ProjectTask (
+    ProjectID, TaskCode, TaskName, Description, IsActive, CreatedAt, Status
+)
 VALUES
- ((SELECT ProjectID FROM Project WHERE ProjectCode = N'PRJ001'),
-    N'TASK001', N'Data Cleaning',  N'Prepare and clean datasets'),
- ((SELECT ProjectID FROM Project WHERE ProjectCode = N'PRJ001'),
-    N'TASK002', N'Model Training', N'Train ML models');
-GO
+-- =================================================================
+-- 1. ProjectID = 1: P_SWP391_A (Timesheet Management System)
+-- StartDate: 2025-01-15
+-- =================================================================
+(1, 'SWP_T001', N'Phân tích Yêu cầu', N'Thu thập và phân tích chi tiết yêu cầu người dùng.', 
+1, '2025-01-08 10:00:00', 'COMPLETE'),
+(1, 'SWP_T002', N'Thiết kế CSDL', N'Thiết kế sơ đồ ERD và cấu trúc các bảng SQL.', 
+1, '2025-01-12 14:30:00', 'COMPLETE'),
+(1, 'SWP_T003', N'Phát triển API Đăng nhập', N'Xây dựng các API cho chức năng xác thực người dùng.', 
+1, '2025-01-20 09:00:00', 'TO_DO'),
+(1, 'SWP_T004', N'Xây dựng Giao diện Trang chủ', N'Phát triển giao diện người dùng (FE) cho trang tổng quan.', 
+1, '2025-02-01 11:00:00', 'TO_DO'),
+(1, 'SWP_T005', N'Thiết kế Module Timesheet', N'Thiết kế luồng nghiệp vụ và giao diện nhập Timesheet.', 
+1, '2025-02-15 15:00:00', 'TO_DO'),
+(1, 'SWP_T006', N'Viết Test Case cho Auth', N'Viết các kịch bản kiểm thử cho module đăng nhập.', 
+1, '2025-03-01 10:00:00', 'TO_DO'),
 
+-- =================================================================
+-- 2. ProjectID = 2: P_RESEARCH_01 (Nghiên cứu thị trường AI) - Project COMPLETE
+-- StartDate: 2024-10-01
+-- =================================================================
+(2, 'RES_T001', N'Lên danh sách Nguồn dữ liệu', N'Xác định các báo cáo, bài báo khoa học liên quan.', 
+1, '2024-09-18 11:00:00', 'COMPLETE'),
+(2, 'RES_T002', N'Thu thập Dữ liệu thị trường', N'Đọc và tóm tắt thông tin từ các nguồn đã chọn.', 
+1, '2024-09-25 09:00:00', 'COMPLETE'),
+(2, 'RES_T003', N'Phân tích xu hướng (Trend Analysis)', N'Phân loại và phân tích các xu hướng AI nổi bật.', 
+1, '2024-10-10 13:00:00', 'COMPLETE'),
+(2, 'RES_T004', N'Viết Báo cáo tổng hợp', N'Soạn thảo báo cáo cuối cùng.', 
+1, '2024-11-01 16:00:00', 'COMPLETE'),
+(2, 'RES_T005', N'Thiết kế Slide thuyết trình', N'Tạo slide trình bày kết quả nghiên cứu.', 
+1, '2024-12-05 10:00:00', 'COMPLETE'),
+
+-- =================================================================
+-- 3. ProjectID = 3: P_MAINT_WEB (Bảo trì và nâng cấp website)
+-- StartDate: 2025-03-01
+-- =================================================================
+(3, 'MNT_T001', N'Đánh giá Phiên bản Framework', N'Kiểm tra và xác định lộ trình nâng cấp Framework.', 
+1, '2025-02-20 09:30:00', 'COMPLETE'),
+(3, 'MNT_T002', N'Xử lý lỗ hổng XSS', N'Sửa chữa các lỗ hổng Cross-Site Scripting.', 
+1, '2025-03-05 10:00:00', 'TO_DO'),
+(3, 'MNT_T003', N'Nâng cấp Database Driver', N'Cập nhật driver kết nối CSDL.', 
+1, '2025-03-10 14:00:00', 'TO_DO'),
+(3, 'MNT_T004', N'Tối ưu hóa hình ảnh tĩnh', N'Nén và tối ưu hóa tốc độ tải các tệp hình ảnh tĩnh.', 
+1, '2025-03-15 11:00:00', 'TO_DO'),
+
+-- =================================================================
+-- 4. ProjectID = 4: P_HR_SETUP (Triển khai hệ thống E-learning)
+-- StartDate: 2025-04-10
+-- =================================================================
+(4, 'HR_T001', N'Lựa chọn Nền tảng LMS', N'Nghiên cứu và chọn nền tảng LMS phù hợp.', 
+1, '2025-03-28 15:30:00', 'COMPLETE'),
+(4, 'HR_T002', N'Thiết lập môi trường Server', N'Cài đặt và cấu hình máy chủ cho hệ thống LMS.', 
+1, '2025-04-01 09:00:00', 'TO_DO'),
+(4, 'HR_T003', N'Phát triển Module Đăng ký', N'Code module cho phép người dùng đăng ký khóa học.', 
+1, '2025-04-05 14:00:00', 'TO_DO'),
+(4, 'HR_T004', N'Tạo Khóa học Thử nghiệm', N'Tạo 3 khóa học mẫu để kiểm tra tính năng hệ thống.', 
+1, '2025-04-08 10:00:00', 'TO_DO'),
+(4, 'HR_T005', N'Viết Tài liệu Hướng dẫn', N'Viết tài liệu hướng dẫn sử dụng cho người quản trị.', 
+1, '2025-04-15 16:00:00', 'TO_DO'),
+
+-- =================================================================
+-- 5. ProjectID = 5: P_UX_REDESIGN (Thiết kế lại giao diện người dùng)
+-- StartDate: 2025-02-20
+-- =================================================================
+(5, 'UX_T001', N'Nghiên cứu Người dùng', N'Tiến hành phỏng vấn và khảo sát người dùng.', 
+1, '2025-02-05 09:00:00', 'COMPLETE'),
+(5, 'UX_T002', N'Vẽ Wireframe (Low-fidelity)', N'Tạo bản nháp cấu trúc cơ bản của các trang.', 
+1, '2025-02-10 14:00:00', 'COMPLETE'),
+(5, 'UX_T003', N'Thiết kế Mockup (High-fidelity)', N'Hoàn thiện giao diện đồ họa chi tiết.', 
+1, '2025-02-25 10:30:00', 'TO_DO'),
+(5, 'UX_T004', N'Tạo Prototype tương tác', N'Sử dụng công cụ để tạo bản thử nghiệm có thể tương tác.', 
+1, '2025-03-15 11:00:00', 'TO_DO'),
+(5, 'UX_T005', N'Kiểm thử khả năng sử dụng (Usability Test)', N'Thực hiện kiểm thử với nhóm người dùng mẫu.', 
+1, '2025-04-01 14:00:00', 'TO_DO');
+GO
 
 /* =========================================================
    3. WEEKLY TIMESHEET DATA
@@ -143,6 +235,9 @@ GO
    UI will aggregate these rows into a weekly grid (Mon–Sun).
 */
 
+-- Business rule: 
+-- sau khi được review, thì timesheet sẽ ko còn có thể chỉnh sửa?
+-- vì nếu thầy/supervisor đã xem và đánh giá cái timesheetentry đó, thì người tạo ko được sửa nữa.
 CREATE TABLE TimesheetEntry (
     EntryID        INT IDENTITY(1,1) PRIMARY KEY,
     UserID         INT           NOT NULL,          -- member
@@ -151,7 +246,7 @@ CREATE TABLE TimesheetEntry (
     WorkDate       DATE          NOT NULL,          -- day of work
     StartTime      TIME              NULL,          -- optional
     EndTime        TIME              NULL,          -- optional
-    MinutesWorked  INT           NOT NULL,          -- total minutes for that row
+    MinutesWorked  INT           NOT NULL,          -- total minutes for that row --estimate the time has work = end-start- delay time
     Note           NVARCHAR(MAX)    NULL,
     CreatedAt      DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
     UpdatedAt      DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
@@ -166,6 +261,7 @@ CREATE TABLE TimesheetEntry (
         FOREIGN KEY (TaskID)    REFERENCES ProjectTask(TaskID)
 );
 GO
+
 
 --Update
 ALTER TABLE TimesheetEntry
@@ -208,6 +304,10 @@ VALUES
         '2025-01-07', '13:00', '16:00', 180, N'Cleaning dataset B'
     );
 GO
+
+
+
+
 
 
 /* =========================================================
@@ -425,7 +525,7 @@ GO
 CREATE TABLE Invitation (
     InvitationID INT IDENTITY(1,1) PRIMARY KEY,
     Email        NVARCHAR(200) NOT NULL,
-    RoleID       INT          NOT NULL,       -- role for the invited user
+    RoleID       INT          NOT NULL,       -- role for the invited user could be team member /project mem/ project lead/ project co-leader
     InvitedByID  INT          NOT NULL,       -- who invited team lead or project lead or supervisor
     Token        UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
     Status       NVARCHAR(20)  NOT NULL DEFAULT N'PENDING',
@@ -543,5 +643,41 @@ CREATE TABLE TeamMember (
     -- Khóa ngoại
     CONSTRAINT FK_TeamMember_Team FOREIGN KEY (TeamID) REFERENCES Team(TeamID) ON DELETE CASCADE,
     CONSTRAINT FK_TeamMember_User FOREIGN KEY (UserID) REFERENCES UserAccount(UserID)
+);
+GO
+
+-- dùng khóa chính tự tăng thay vì cặp khóa chính vì nếu là cặp khóa chính,
+-- một khi rời khỏi project sẽ ko thể quay lại 
+-- và trong thực tế thì có thể đâu đó xảy ra trường hợp đó. 
+
+CREATE TABLE ProjectAssignee (
+    -- Khóa chính Tự tăng (Surrogate Key)
+    ProjectAssigneeID INT IDENTITY(1,1) PRIMARY KEY, 
+    
+    ProjectID      INT NOT NULL,
+    UserID         INT NOT NULL,
+    
+    RoleInProject  NVARCHAR(50) NULL,      
+    AssignedAt     DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
+
+    -- Thời điểm rời đi (Để NULL nếu đang tham gia)
+    LeftAt         DATETIME2   NULL, 
+    
+    -- Ghi chú về lý do rời đi (Tùy chọn)
+    LeaveReason    NVARCHAR(255) NULL, 
+
+    -- *** Ràng buộc mới (Loại bỏ Khóa chính kết hợp, thay bằng Khóa Duy nhất) ***
+    -- Ràng buộc Duy nhất: Ngăn chặn việc cùng một người tham gia CÙNG một dự án
+    -- mà không có LeftAt (chưa rời đi)
+    -- CONSTRAINT UQ_ProjectAssignee UNIQUE (ProjectID, UserID), -- KHÔNG DÙNG NỮA
+    
+    -- Khóa ngoại: Tham chiếu đến Project
+    CONSTRAINT FK_ProjectAssignee_Project FOREIGN KEY (ProjectID) 
+        REFERENCES Project(ProjectID) 
+        ON DELETE CASCADE, 
+    
+    -- Khóa ngoại: Tham chiếu đến UserAccount
+    CONSTRAINT FK_ProjectAssignee_User FOREIGN KEY (UserID) 
+        REFERENCES UserAccount(UserID)
 );
 GO

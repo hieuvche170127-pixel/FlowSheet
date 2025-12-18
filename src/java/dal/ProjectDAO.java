@@ -4,7 +4,6 @@ import dao.UserDAO;
 import entity.Project;
 import entity.Team;
 import entity.UserAccount;
-import java.security.Timestamp;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -247,7 +246,7 @@ public class ProjectDAO extends DBContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UserAccount u = new UserAccount();
-                    u.setUserId(rs.getInt("UserID"));
+                    u.setUserID(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
@@ -350,7 +349,7 @@ public class ProjectDAO extends DBContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UserAccount u = new UserAccount();
-                    u.setUserId(rs.getInt("UserID"));
+                    u.setUserID(rs.getInt("UserID"));
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
@@ -531,7 +530,7 @@ public class ProjectDAO extends DBContext {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UserAccount u = new UserAccount();
-                u.setUserId(rs.getInt("UserID"));
+                u.setUserID(rs.getInt("UserID"));
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
                 list.add(u);
@@ -594,5 +593,138 @@ public class ProjectDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // phần dưới là nghĩa code nhé :)))
+      /**
+     * Map dữ liệu từ ResultSet sang Project object
+     *
+     * @param rs - ResultSet từ query
+     * @return Project object đã được map đầy đủ dữ liệu
+     * @throws Exception
+     */
+    private Project mapProjectFromResultSet(ResultSet rs) throws Exception {
+        Project project = null;
+        try {
+            project = new Project();
+
+            // 1. Primary Key
+            project.setProjectID(rs.getInt("projectID"));
+
+            // 2. Basic Information
+            project.setProjectCode(rs.getString("projectCode"));
+            project.setProjectName(rs.getString("projectName"));
+            project.setDescription(rs.getString("description"));
+
+            // 3. Boolean Field
+            project.setIsActive(rs.getBoolean("isActive"));
+
+            // 4. Date Fields
+            // startDate và deadline là java.sql.Date -> convert sang LocalDate nếu cần
+            project.setStartDate(rs.getDate("startDate"));
+            project.setDeadline(rs.getDate("deadline"));
+
+            // 5. Timestamp Field
+            project.setCreatedAt(rs.getTimestamp("createdAt"));
+
+            // 6. Status Field
+            project.setStatus(rs.getString("status"));
+
+        } catch (Exception e) {
+            throw e;
+        }
+        return project;
+    }
+
+    public ArrayList<Project> getAllProject() {
+        ArrayList<Project> list = new ArrayList<>();
+        try {
+            String sql = "select * from project";
+            Statement st = connection.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                Project p = mapProjectFromResultSet(rs);
+                list.add(p);
+            }
+            rs.close();
+            st.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Project> getAllProjects() {
+        List<Project> list = new ArrayList<>();
+        String sql = "SELECT * FROM Project";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql); 
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Project p = new Project();
+                p.setProjectID(rs.getInt("ProjectID"));
+                p.setProjectCode(rs.getString("ProjectCode"));
+                p.setProjectName(rs.getString("ProjectName"));
+                p.setDescription(rs.getString("Description"));
+                p.setIsActive(rs.getBoolean("IsActive"));
+                p.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                p.setStartDate(rs.getDate("StartDate"));
+                p.setDeadline(rs.getDate("Deadline"));
+                p.setStatus(rs.getString("Status"));
+                list.add(p);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return list;
+    }
+
+    public ArrayList<Project> getALlProjectUserWithIdInvolve(int userId) {
+        ArrayList<Project> list = new ArrayList<>();
+        try {
+            String sql = "SELECT DISTINCT p.*\n"
+                    + "FROM Project p\n"
+                    + "INNER JOIN TeamProject tp ON p.ProjectID = tp.ProjectID\n"
+                    + "INNER JOIN Team t ON tp.TeamID = t.TeamID\n"
+                    + "INNER JOIN TeamMember tm ON t.TeamID = tm.TeamID\n"
+                    + "WHERE tm.UserID = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Project p = mapProjectFromResultSet(rs);
+                list.add(p);
+            }
+            rs.close();
+            ps.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
+    }
+
+        public List<Project> getAllProjects() {
+        List<Project> list = new ArrayList<>();
+        String sql = "SELECT * FROM Project";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql); 
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Project p = new Project();
+                p.setProjectID(rs.getInt("ProjectID"));
+                p.setProjectCode(rs.getString("ProjectCode"));
+                p.setProjectName(rs.getString("ProjectName"));
+                p.setDescription(rs.getString("Description"));
+                p.setIsActive(rs.getBoolean("IsActive"));
+                p.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                p.setStartDate(rs.getDate("StartDate"));
+                p.setDeadline(rs.getDate("Deadline"));
+                p.setStatus(rs.getString("Status"));
+                list.add(p);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return list;
     }
 }

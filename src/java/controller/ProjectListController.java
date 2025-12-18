@@ -59,10 +59,10 @@ public class ProjectListController extends HttpServlet {
         if (currentUser == null) {
         
         currentUser = new UserAccount();
-        currentUser.setUserId(3); 
+        currentUser.setUserID(3); 
         currentUser.setUsername("stu_anh");
         currentUser.setFullName("Nguyen Hoang Anh (Test)");
-        currentUser.setRoleId(1);
+        currentUser.setRoleID(1);
 
         session.setAttribute("user", currentUser);
         System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
@@ -95,8 +95,8 @@ public class ProjectListController extends HttpServlet {
         int pageSize = 10;
         
         int totalRecords = projectDAO.countProjects(
-                currentUser.getUserId(), 
-                currentUser.getRoleId(), 
+                currentUser.getUserID(), 
+                currentUser.getRoleID(), 
                 searchKeyword, 
                 statusTab 
         );
@@ -110,8 +110,8 @@ public class ProjectListController extends HttpServlet {
         if(pageIndex > endPage && endPage > 0) pageIndex = endPage;
         
         List<Project> projectList = projectDAO.searchProjectsWithPaging(
-                currentUser.getUserId(),
-                currentUser.getRoleId(),
+                currentUser.getUserID(),
+                currentUser.getRoleID(),
                 searchKeyword,
                 statusTab,
                 pageIndex,

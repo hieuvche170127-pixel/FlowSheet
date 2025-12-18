@@ -1,7 +1,7 @@
 package dao;
 
 import dal.DBContext;
-import entity.Task;
+import entity.ProjectTask;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,36 +13,37 @@ import java.util.logging.Logger;
 
 public class TaskDAO extends DBContext{
 
-    public List<Task> getAllTasksByUserId(int userId) {
-        List<Task> list = new ArrayList<>();
+    public List<ProjectTask> getAllTasksByUserId(int userId) {
+        List<ProjectTask> list = new ArrayList<>();
         
         String sql = """
-            SELECT T.TaskID, T.TaskName, T.TaskCode, T.Status, 
+            SELECT T.TaskID, T.TaskName, T.Status, T.Deadline, T.EstimateHourToDo,
                    P.ProjectName, P.ProjectID
             FROM ProjectTask T
             JOIN TaskAssignee TA ON T.TaskID = TA.TaskID
             LEFT JOIN Project P ON T.ProjectID = P.ProjectID
-            WHERE TM.UserID = ? AND T.IsActive = 1
+            WHERE TA.UserID = ? 
             ORDER BY P.ProjectName, T.TaskName
         """;
         
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Task t = new Task();
-                t.setTaskId(rs.getInt("TaskID"));
-                t.setTaskName(rs.getString("TaskName"));
-                t.setTaskCode(rs.getString("TaskCode"));
-                t.setStatus(rs.getString("Status"));
-                
-                String pjName = rs.getString("ProjectName");
-                t.setProjectName(pjName != null ? pjName : "Cá nhân");
-                t.setProjectId(rs.getInt("ProjectID"));
-                
-                list.add(t);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProjectTask t = new ProjectTask();
+                    t.setTaskId(rs.getInt("TaskID"));
+                    t.setTaskName(rs.getString("TaskName"));
+                    t.setStatus(rs.getString("Status"));
+                    t.setDeadline(rs.getTimestamp("Deadline"));
+                    Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                    t.setEstimateHourToDo(estimateHours);
+                    Integer projectId = rs.getObject("ProjectID", Integer.class);
+                    t.setProjectId(projectId);
+                    t.setProjectName(rs.getString("ProjectName"));
+                    
+                    list.add(t);
+                }
             }
         } catch (SQLException ex) {
             Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -50,40 +51,49 @@ public class TaskDAO extends DBContext{
         return list;
     }
 
-        public List<Task> getAllTasks() {
+        public List<ProjectTask> getAllTasks() {
             return getTasksWithFilter(null, null);
         }
         
-        public List<Task> getTasksWithFilter(String taskName, String projectName) {
-            List<Task> list = new ArrayList<>();
+        public List<ProjectTask> getTasksWithFilter(Integer projectIdFilter, String search) {
+            List<ProjectTask> list = new ArrayList<>();
             if (connection == null) {
                 Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
                 return list;
             }
             
             StringBuilder sql = new StringBuilder(
-                "SELECT pt.TaskID, pt.ProjectID, pt.TaskCode, pt.TaskName, pt.Description, " +
-                "pt.IsActive, pt.CreatedAt, pt.Status, p.ProjectName " +
+                "SELECT pt.TaskID, pt.ProjectID, pt.TaskName, pt.Description, " +
+                "pt.Deadline, pt.EstimateHourToDo, pt.CreatedAt, pt.Status, p.ProjectName " +
                 "FROM ProjectTask pt " +
-                "LEFT JOIN Project p ON pt.ProjectID = p.ProjectID " +
-                "WHERE pt.IsActive = 1"
+                "LEFT JOIN Project p ON pt.ProjectID = p.ProjectID"
             );
             
             List<String> conditions = new ArrayList<>();
             List<Object> parameters = new ArrayList<>();
-            
-            if (taskName != null && !taskName.trim().isEmpty()) {
-                conditions.add("pt.TaskName LIKE ?");
-                parameters.add("%" + taskName.trim() + "%");
+
+            if (projectIdFilter != null) {
+                if (projectIdFilter == -1) {
+                    conditions.add("pt.ProjectID IS NULL");
+                } else {
+                    conditions.add("pt.ProjectID = ?");
+                    parameters.add(projectIdFilter);
+                }
             }
             
-            if (projectName != null && !projectName.trim().isEmpty()) {
-                conditions.add("p.ProjectName LIKE ?");
-                parameters.add("%" + projectName.trim() + "%");
+            if (search != null && !search.trim().isEmpty()) {
+                String searchValue = search.trim();
+                // Search in TaskID (as string), TaskName, and ProjectName with OR logic
+                // Convert TaskID to string for partial matching (e.g., "1" matches 1, 10, 11, etc.)
+                conditions.add("(CAST(pt.TaskID AS NVARCHAR) LIKE ? OR pt.TaskName LIKE ? OR p.ProjectName LIKE ?)");
+                String likePattern = "%" + searchValue + "%";
+                parameters.add(likePattern); // TaskID as string
+                parameters.add(likePattern); // TaskName
+                parameters.add(likePattern); // ProjectName
             }
             
             if (!conditions.isEmpty()) {
-                sql.append(" AND ").append(String.join(" AND ", conditions));
+                sql.append(" WHERE ").append(String.join(" AND ", conditions));
             }
 
             try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
@@ -93,16 +103,19 @@ public class TaskDAO extends DBContext{
                 
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
-                    Task t = new Task();
+                    ProjectTask t = new ProjectTask();
                     t.setTaskId(rs.getInt("TaskID"));
-                    t.setProjectId(rs.getInt("ProjectID"));
-                    t.setTaskCode(rs.getString("TaskCode"));
+                    Integer projectId = rs.getObject("ProjectID", Integer.class);
+                    t.setProjectId(projectId);
+                    t.setProjectName(rs.getString("ProjectName"));
                     t.setTaskName(rs.getString("TaskName"));
                     t.setDescription(rs.getString("Description"));
-                    t.setIsActive(rs.getBoolean("IsActive"));
+                    t.setDeadline(rs.getTimestamp("Deadline"));
+                    Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                    t.setEstimateHourToDo(estimateHours);
                     t.setCreatedAt(rs.getTimestamp("CreatedAt"));
                     t.setStatus(rs.getString("Status"));
-                    t.setProjectName(rs.getString("ProjectName"));
+                    // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
                     list.add(t);
                 }
             } catch (SQLException ex) {
@@ -127,15 +140,14 @@ public class TaskDAO extends DBContext{
                 ps.setInt(1, taskId);
                 ps.executeUpdate();
             }
-            
-            // Optionally, set TaskID to NULL in TimesheetEntry (since TaskID is nullable)
-            // Or we can leave it as is since it's nullable and won't block deletion
-            String updateTimesheetSql = "UPDATE TimesheetEntry SET TaskID = NULL WHERE TaskID = ?";
-            try (PreparedStatement ps = connection.prepareStatement(updateTimesheetSql)) {
+
+            // Also clear TaskReport entries to avoid FK issues on DBs without cascade
+            String deleteTaskReportSql = "DELETE FROM TaskReport WHERE TaskID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(deleteTaskReportSql)) {
                 ps.setInt(1, taskId);
                 ps.executeUpdate();
             }
-            
+
             // Finally, delete the task from ProjectTask table
             String deleteTaskSql = "DELETE FROM ProjectTask WHERE TaskID = ?";
             try (PreparedStatement ps = connection.prepareStatement(deleteTaskSql)) {
@@ -167,14 +179,14 @@ public class TaskDAO extends DBContext{
         return false;
     }
 
-    public Task getTaskById(int taskId) {
+    public ProjectTask getTaskById(int taskId) {
         if (connection == null) {
             Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
             return null;
         }
         
-        String sql = "SELECT pt.TaskID, pt.ProjectID, pt.TaskCode, pt.TaskName, pt.Description, " +
-                "pt.IsActive, pt.CreatedAt, pt.Status, p.ProjectName " +
+        String sql = "SELECT pt.TaskID, pt.ProjectID, pt.TaskName, pt.Description, " +
+                "pt.Deadline, pt.EstimateHourToDo, pt.CreatedAt, pt.Status, p.ProjectName " +
                 "FROM ProjectTask pt " +
                 "LEFT JOIN Project p ON pt.ProjectID = p.ProjectID " +
                 "WHERE pt.TaskID = ?";
@@ -184,16 +196,18 @@ public class TaskDAO extends DBContext{
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                Task t = new Task();
+                ProjectTask t = new ProjectTask();
                 t.setTaskId(rs.getInt("TaskID"));
-                t.setProjectId(rs.getInt("ProjectID"));
-                t.setTaskCode(rs.getString("TaskCode"));
+                Integer projectId = rs.getObject("ProjectID", Integer.class);
+                t.setProjectId(projectId);
                 t.setTaskName(rs.getString("TaskName"));
                 t.setDescription(rs.getString("Description"));
-                t.setIsActive(rs.getBoolean("IsActive"));
+                t.setDeadline(rs.getTimestamp("Deadline"));
+                Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                t.setEstimateHourToDo(estimateHours);
                 t.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 t.setStatus(rs.getString("Status"));
-                t.setProjectName(rs.getString("ProjectName"));
+                // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
                 return t;
             }
         } catch (SQLException ex) {
@@ -202,33 +216,44 @@ public class TaskDAO extends DBContext{
         return null;
     }
 
-    public boolean updateTask(Task task) {
+    public boolean updateTask(ProjectTask task) {
         if (connection == null) {
             Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
             return false;
         }
         
-        // ProjectID is NOT NULL in database, so we need to ensure it's not null
-        if (task.getProjectId() == null) {
-            Logger.getLogger(TaskDAO.class.getName()).log(Level.WARNING, "Cannot update task: ProjectID is required (NOT NULL in database)");
-            return false;
-        }
-        
         String sql = """
             UPDATE ProjectTask 
-            SET ProjectID = ?, TaskCode = ?, TaskName = ?, Description = ?, 
-                IsActive = ?, Status = ?
+            SET ProjectID = ?, TaskName = ?, Description = ?, 
+                Deadline = ?, EstimateHourToDo = ?, Status = ?
             WHERE TaskID = ?
             """;
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, task.getProjectId());
-            ps.setString(2, task.getTaskCode());
-            ps.setString(3, task.getTaskName());
-            ps.setString(4, task.getDescription());
-            ps.setBoolean(5, task.isIsActive());
-            ps.setString(6, task.getStatus());
-            ps.setInt(7, task.getTaskId());
+            int paramIndex = 1;
+            
+            if (task.getProjectId() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(paramIndex++, task.getProjectId());
+            }
+            ps.setString(paramIndex++, task.getTaskName());
+            ps.setString(paramIndex++, task.getDescription());
+            
+            if (task.getDeadline() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(paramIndex++, task.getDeadline());
+            }
+            
+            if (task.getEstimateHourToDo() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.DOUBLE);
+            } else {
+                ps.setDouble(paramIndex++, task.getEstimateHourToDo());
+            }
+            
+            ps.setString(paramIndex++, task.getStatus());
+            ps.setInt(paramIndex++, task.getTaskId());
             
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -238,25 +263,37 @@ public class TaskDAO extends DBContext{
         return false;
     }
 
-    public boolean createTask(Task task) {
-        // ProjectID is NOT NULL in database, so we need to ensure it's not null
-        if (task.getProjectId() == null) {
-            Logger.getLogger(TaskDAO.class.getName()).log(Level.WARNING, "Cannot create task: ProjectID is required (NOT NULL in database)");
-            return false;
-        }
+    public boolean createTask(ProjectTask task) {
         
         String sql = """
-            INSERT INTO ProjectTask (ProjectID, TaskCode, TaskName, Description, IsActive, Status)
+            INSERT INTO ProjectTask (ProjectID, TaskName, Description, Deadline, EstimateHourToDo, Status)
             VALUES (?, ?, ?, ?, ?, ?)
             """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, task.getProjectId());
-            ps.setString(2, task.getTaskCode());
-            ps.setString(3, task.getTaskName());
-            ps.setString(4, task.getDescription());
-            ps.setBoolean(5, task.isIsActive());
-            ps.setString(6, task.getStatus());
+            int paramIndex = 1;
+            
+            if (task.getProjectId() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(paramIndex++, task.getProjectId());
+            }
+            ps.setString(paramIndex++, task.getTaskName());
+            ps.setString(paramIndex++, task.getDescription());
+            
+            if (task.getDeadline() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(paramIndex++, task.getDeadline());
+            }
+            
+            if (task.getEstimateHourToDo() == null) {
+                ps.setNull(paramIndex++, java.sql.Types.DOUBLE);
+            } else {
+                ps.setDouble(paramIndex++, task.getEstimateHourToDo());
+            }
+            
+            ps.setString(paramIndex++, task.getStatus() != null ? task.getStatus() : ProjectTask.STATUS_TODO);
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
