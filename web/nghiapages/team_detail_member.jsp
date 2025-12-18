@@ -19,24 +19,55 @@
 
         <style>
             /* CSS cho giao diện Tab */
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .tab-controls { display: flex; border-bottom: 2px solid #ccc; }
-            .tab-button { padding: 10px 20px; cursor: pointer; border: none; background-color: #f1f1f1; margin-right: 2px; border-radius: 5px 5px 0 0; transition: background-color 0.3s; }
-            .tab-button:hover { background-color: #ddd; }
-            .tab-button.active { background-color: #fff; border: 1px solid #ccc; border-bottom: none; font-weight: bold; }
-            .tab-content { padding: 20px; border: 1px solid #ccc; border-top: none; }
-            .content-item { display: none; }
-            .content-item.active { display: block; }
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            .tab-controls {
+                display: flex;
+                border-bottom: 2px solid #ccc;
+            }
+            .tab-button {
+                padding: 10px 20px;
+                cursor: pointer;
+                border: none;
+                background-color: #f1f1f1;
+                margin-right: 2px;
+                border-radius: 5px 5px 0 0;
+                transition: background-color 0.3s;
+            }
+            .tab-button:hover {
+                background-color: #ddd;
+            }
+            .tab-button.active {
+                background-color: #fff;
+                border: 1px solid #ccc;
+                border-bottom: none;
+                font-weight: bold;
+            }
+            .tab-content {
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-top: none;
+            }
+            .content-item {
+                display: none;
+            }
+            .content-item.active {
+                display: block;
+            }
 
             /* -- CSS Modal Tự làm (Custom) -- */
             /* ĐÃ SỬA: Đổi tên class để không xung đột với Bootstrap */
-            
+
             .modal-overlay {
-                display: none; 
+                display: none;
                 position: fixed;
                 z-index: 9999;
-                left: 0; top: 0;
-                width: 100%; height: 100%;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
                 background-color: rgba(0,0,0,0.5);
             }
 
@@ -61,7 +92,9 @@
                 font-weight: bold;
                 cursor: pointer;
             }
-            .close-modal:hover { color: black; }
+            .close-modal:hover {
+                color: black;
+            }
         </style>
     </head>
 
@@ -71,7 +104,7 @@
 
     <h1>Chi Tiết Đội: ${team.teamName}</h1>
     <hr>
-    
+
     <!-- Phần thông tin Team -->
     <c:choose>
         <c:when test="${not empty requestScope.team}">
@@ -98,7 +131,7 @@
     </div>
 
     <div class="tab-content">
-        
+
         <!-- CONTENT 1: DANH SÁCH THÀNH VIÊN -->
         <div id="content1" class="content-item active">
             <c:if test="${not empty requestScope.teamMateList}">
@@ -111,6 +144,7 @@
                             <th>Full Name</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,12 +157,57 @@
                                 <td>${member.username}</td>
                                 <td>${member.fullName}</td>
                                 <td>${member.email}</td>
+                                
+                                <!--                         
                                 <td>
-                                    <c:forEach var="tm" items="${teamMemberList}">
-                                        <c:if test="${tm.userId == member.userID}">
-                                            <span class="badge bg-info text-dark">${tm.role}</span>
-                                        </c:if>
-                                    </c:forEach>
+                                <c:forEach var="tm" items="${teamMemberList}">
+                                    <c:if test="${tm.userId == member.userID}">
+                                        <span class="badge bg-info text-dark">
+                                        ${memberRoleNameByUserId[member.userID]}
+                                    </span>
+                                    </c:if>
+                                </c:forEach>
+                                </td>
+                                -->
+                                
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        ${memberRoleNameByUserId[member.userID]}
+                                    </span>
+                                </td>
+                                <td>
+                                    <c:if test="${canManageTeam}">
+                                        <!-- Change Role -->
+                                        <form action="${pageContext.request.contextPath}/teamMember" method="post" class="d-inline">
+                                            <input type="hidden" name="action" value="changeRole"/>
+                                            <input type="hidden" name="teamId" value="${team.teamID}"/>
+                                            <input type="hidden" name="userId" value="${member.userID}"/>
+
+                                            <select name="roleId" class="form-select form-select-sm d-inline-block" style="width:160px;">
+                                                <option value="4" ${memberRoleIdByUserId[member.userID] == 4 ? 'selected' : ''}>Team Member</option>
+                                                <option value="5" ${memberRoleIdByUserId[member.userID] == 5 ? 'selected' : ''}>Team Leader</option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-sm btn-primary">Change</button>
+                                        </form>
+
+                                        <!-- Kick -->
+                                        <form action="${pageContext.request.contextPath}/TeamDetail?teamId?"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Kick this member out of the team?');">
+                                            <input type="hidden" name="action" value="kick"/>
+                                            <input type="hidden" name="teamId" value="${team.teamID}"/>
+                                            <input type="hidden" name="userId" value="${member.userID}"/>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fa fa-user-times"></i>
+                                            </button>
+                                        </form>
+                                    </c:if>
+
+                                    <c:if test="${not canManageTeam}">
+                                        <span class="text-muted">-</span>
+                                    </c:if>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -234,11 +313,11 @@
                                         <td>${inv.createdAt}</td>
                                         <td>${inv.expiresAt}</td>
                                         <td>${inv.acceptedAt != null ? inv.acceptedAt : '-'}</td>
-                                        
+
                                         <!-- CỘT ACTION -->
                                         <td>
                                             <c:set var="isOwner" value="${sessionScope.user.userID == inv.invitedById}" />
-                                            
+
                                             <!-- NÚT EDIT: Đã kiểm tra kỹ các attribute data- -->
                                             <button class="btn btn-sm btn-primary" 
                                                     type="button"
@@ -282,10 +361,10 @@
                     <div class="modal-body">
                         <!-- CÁC TRƯỜNG HIDDEN -->
                         <input type="hidden" id="modalInvId" name="invitationId">
-                        
+
                         <!-- QUAN TRỌNG: Đã thêm field này để JS không bị lỗi null -->
                         <input type="hidden" id="modalInvitedById" name="invitedBy">
-                        
+
                         <input type="hidden" name="action" value="edit">
 
                         <div class="mb-3">
@@ -302,10 +381,10 @@
                             <label class="form-label">Vai trò (Role)</label>
                             <select class="form-select" id="modalRole" name="roleId">
                                 <c:forEach var="role" items="${allRole}">
-                                     <%-- Chỉ hiển thị nếu ID là 4 hoặc 5 --%>
+                                    <%-- Chỉ hiển thị nếu ID là 4 hoặc 5 --%>
                                     <c:if test="${role.roleId == 4 || role.roleId == 5}">
                                         <option value="${role.roleId}" 
-                                            ${role.roleId == invitation.roleId ? 'selected' : ''}>
+                                                ${role.roleId == invitation.roleId ? 'selected' : ''}>
                                             ${role.roleName}
                                         </option>
                                     </c:if>
@@ -335,9 +414,13 @@
         function openContent(evt, contentId) {
             let i, contentItems, tabButtons;
             contentItems = document.getElementsByClassName("content-item");
-            for (i = 0; i < contentItems.length; i++) { contentItems[i].classList.remove("active"); }
+            for (i = 0; i < contentItems.length; i++) {
+                contentItems[i].classList.remove("active");
+            }
             tabButtons = document.getElementsByClassName("tab-button");
-            for (i = 0; i < tabButtons.length; i++) { tabButtons[i].classList.remove("active"); }
+            for (i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
             document.getElementById(contentId).classList.add("active");
             evt.currentTarget.classList.add("active");
         }
@@ -357,39 +440,42 @@
             var invitedBy = button.getAttribute("data-invitedby") || "";
             var email = button.getAttribute("data-email") || "";
             var roleId = button.getAttribute("data-role") || "";
-            var expiresRaw = button.getAttribute("data-expires") || ""; 
+            var expiresRaw = button.getAttribute("data-expires") || "";
 
             // 2. Gán dữ liệu vào form (Đảm bảo ID tồn tại trong HTML)
-            if(document.getElementById("modalInvId")) 
+            if (document.getElementById("modalInvId"))
                 document.getElementById("modalInvId").value = id;
-            
-            if(document.getElementById("modalInvitedById")) 
+
+            if (document.getElementById("modalInvitedById"))
                 document.getElementById("modalInvitedById").value = invitedBy;
 
-            if(document.getElementById("modalEmail")) 
+            if (document.getElementById("modalEmail"))
                 document.getElementById("modalEmail").value = email;
 
-            if(document.getElementById("modalRole")) 
+            if (document.getElementById("modalRole"))
                 document.getElementById("modalRole").value = roleId;
 
             // 3. Xử lý Date Time
             var dateInput = document.getElementById("modalExpiresAt");
             var displaySpan = document.getElementById("currentExpiresDisplay");
-            
-            if(displaySpan) displaySpan.innerText = expiresRaw;
+
+            if (displaySpan)
+                displaySpan.innerText = expiresRaw;
 
             if (expiresRaw) {
                 // Xử lý chuỗi ngày tháng: Thay khoảng trắng thành 'T' để hợp lệ với input type="datetime-local"
                 // Định dạng input cần: YYYY-MM-DDTHH:mm
                 var formattedDate = expiresRaw.replace(" ", "T");
-                
+
                 // Cắt bỏ phần giây nếu có (độ dài > 16)
                 if (formattedDate.length > 16) {
                     formattedDate = formattedDate.substring(0, 16);
                 }
-                if(dateInput) dateInput.value = formattedDate;
+                if (dateInput)
+                    dateInput.value = formattedDate;
             } else {
-                if(dateInput) dateInput.value = "";
+                if (dateInput)
+                    dateInput.value = "";
             }
 
             // 4. Gọi Bootstrap Modal
@@ -405,6 +491,6 @@
 
     <!-- Import Bootstrap JS Bundle (Bắt buộc phải có) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <%@ include file="layout_footer.jsp" %>
 </html>

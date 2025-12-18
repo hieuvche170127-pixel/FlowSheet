@@ -6,7 +6,7 @@ import dal.TimesheetEntryDAO;
 import dal.UserAccountDAO;
 import entity.Project;
 import entity.Team;
-import entity.TimeSheet;
+import entity.TimesheetEntry;
 import entity.UserAccount;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -37,7 +37,7 @@ public class SupervisorDashboardController extends HttpServlet {
 
         try {
             // Get pending timesheet entries
-            List<TimeSheet> pendingEntries = timesheetDAO.getPendingTimesheetEntries();
+            List<TimesheetEntry> pendingEntries = timesheetDAO.getPendingTimesheetEntries();
             
             // Get all active projects
             List<Project> projects = projectDAO.findAll();
@@ -67,7 +67,7 @@ public class SupervisorDashboardController extends HttpServlet {
             int totalStudents = students.size();
             
             // Get recent pending entries (limit to 10)
-            List<TimeSheet> recentPending = pendingEntries.size() > 10 
+            List<TimesheetEntry> recentPending = pendingEntries.size() > 10 
                     ? pendingEntries.subList(0, 10) 
                     : pendingEntries;
             

@@ -74,17 +74,6 @@
             border-color: #667eea;
             box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
         }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-        .checkbox-group label {
-            margin-bottom: 0;
-            font-weight: 500;
-            color: #333;
-        }
     </style>
 </head>
 <body>
@@ -118,12 +107,6 @@
                         <input type="hidden" name="taskId" value="<%= task.getTaskId() %>">
 
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="taskCode" name="taskCode"
-                                   value="<%= task.getTaskCode() != null ? task.getTaskCode() : "" %>" required>
-                            <label for="taskCode"><i class="fas fa-code me-2"></i>Task Code</label>
-                        </div>
-
-                        <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="taskName" name="taskName"
                                    value="<%= task.getTaskName() != null ? task.getTaskName() : "" %>" required>
                             <label for="taskName"><i class="fas fa-tasks me-2"></i>Task Name</label>
@@ -154,16 +137,22 @@
                         <div class="form-floating mb-3">
                             <select class="form-select" id="status" name="status" required>
                                 <option value="TO_DO" <%= "TO_DO".equals(task.getStatus()) ? "selected" : "" %>>TO_DO</option>
-                                <option value="COMPLETE" <%= "COMPLETE".equals(task.getStatus()) ? "selected" : "" %>>COMPLETE</option>
+                                <option value="IN_PROGRESS" <%= "IN_PROGRESS".equals(task.getStatus()) ? "selected" : "" %>>IN_PROGRESS</option>
+                                <option value="SUSPENDED" <%= "SUSPENDED".equals(task.getStatus()) ? "selected" : "" %>>SUSPENDED</option>
                             </select>
                             <label for="status"><i class="fas fa-check-square me-2"></i>Status</label>
                         </div>
 
-                        <div class="checkbox-group">
-                            <input type="hidden" name="isActive" value="false">
-                            <input type="checkbox" id="isActive" name="isActive" value="true"
-                                <%= (task.getIsActive() != null && task.getIsActive()) ? "checked" : "" %>>
-                            <label for="isActive">Active</label>
+                        <div class="form-floating mb-3">
+                            <input type="datetime-local" class="form-control" id="deadline" name="deadline"
+                                   value="<%= task.getDeadline() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(task.getDeadline()) : "" %>">
+                            <label for="deadline"><i class="fas fa-calendar-times me-2"></i>Deadline (Optional)</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="number" class="form-control" id="estimateHourToDo" name="estimateHourToDo"
+                                   step="0.1" min="0" value="<%= task.getEstimateHourToDo() != null ? task.getEstimateHourToDo() : "" %>">
+                            <label for="estimateHourToDo"><i class="fas fa-clock me-2"></i>Estimate Hours (Optional)</label>
                         </div>
 
                         <div class="d-flex gap-3 mt-4">

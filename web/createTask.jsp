@@ -89,11 +89,6 @@
 
                     <form action="create" method="post">
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="taskCode" name="taskCode" required>
-                            <label for="taskCode"><i class="fas fa-code me-2"></i>Task Code</label>
-                        </div>
-
-                        <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="taskName" name="taskName" required>
                             <label for="taskName"><i class="fas fa-tasks me-2"></i>Task Name</label>
                         </div>
@@ -104,7 +99,7 @@
                             <label for="description"><i class="fas fa-file-alt me-2"></i>Description</label>
                         </div>
 
-                        <div class="form-floating mb-4">
+                        <div class="form-floating mb-3">
                             <select class="form-select" id="projectId" name="projectId">
                                 <option value="">None (Lab Default)</option>
                                 <% List<Project> projects = (List<Project>) request.getAttribute("projects");
@@ -115,6 +110,17 @@
                                 } %>
                             </select>
                             <label for="projectId"><i class="fas fa-project-diagram me-2"></i>Assign to Project (Optional)</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="datetime-local" class="form-control" id="deadline" name="deadline">
+                            <label for="deadline"><i class="fas fa-calendar-times me-2"></i>Deadline (Optional)</label>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input type="number" class="form-control" id="estimateHourToDo" name="estimateHourToDo"
+                                   step="0.1" min="0">
+                            <label for="estimateHourToDo"><i class="fas fa-clock me-2"></i>Estimate Hours (Optional)</label>
                         </div>
 
                         <div class="d-flex gap-2">

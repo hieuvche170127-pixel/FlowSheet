@@ -38,9 +38,9 @@ public class TaskDAO extends DBContext{
                     t.setDeadline(rs.getTimestamp("Deadline"));
                     Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
                     t.setEstimateHourToDo(estimateHours);
-                    // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
                     Integer projectId = rs.getObject("ProjectID", Integer.class);
                     t.setProjectId(projectId);
+                    t.setProjectName(rs.getString("ProjectName"));
                     
                     list.add(t);
                 }
@@ -52,10 +52,10 @@ public class TaskDAO extends DBContext{
     }
 
         public List<ProjectTask> getAllTasks() {
-            return getTasksWithFilter(null);
+            return getTasksWithFilter(null, null);
         }
         
-        public List<ProjectTask> getTasksWithFilter(String search) {
+        public List<ProjectTask> getTasksWithFilter(Integer projectIdFilter, String search) {
             List<ProjectTask> list = new ArrayList<>();
             if (connection == null) {
                 Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
@@ -71,6 +71,15 @@ public class TaskDAO extends DBContext{
             
             List<String> conditions = new ArrayList<>();
             List<Object> parameters = new ArrayList<>();
+
+            if (projectIdFilter != null) {
+                if (projectIdFilter == -1) {
+                    conditions.add("pt.ProjectID IS NULL");
+                } else {
+                    conditions.add("pt.ProjectID = ?");
+                    parameters.add(projectIdFilter);
+                }
+            }
             
             if (search != null && !search.trim().isEmpty()) {
                 String searchValue = search.trim();
@@ -98,6 +107,7 @@ public class TaskDAO extends DBContext{
                     t.setTaskId(rs.getInt("TaskID"));
                     Integer projectId = rs.getObject("ProjectID", Integer.class);
                     t.setProjectId(projectId);
+                    t.setProjectName(rs.getString("ProjectName"));
                     t.setTaskName(rs.getString("TaskName"));
                     t.setDescription(rs.getString("Description"));
                     t.setDeadline(rs.getTimestamp("Deadline"));
@@ -130,15 +140,14 @@ public class TaskDAO extends DBContext{
                 ps.setInt(1, taskId);
                 ps.executeUpdate();
             }
-            
-            // Optionally, set TaskID to NULL in TimesheetEntry (since TaskID is nullable)
-            // Or we can leave it as is since it's nullable and won't block deletion
-            String updateTimesheetSql = "UPDATE TimesheetEntry SET TaskID = NULL WHERE TaskID = ?";
-            try (PreparedStatement ps = connection.prepareStatement(updateTimesheetSql)) {
+
+            // Also clear TaskReport entries to avoid FK issues on DBs without cascade
+            String deleteTaskReportSql = "DELETE FROM TaskReport WHERE TaskID = ?";
+            try (PreparedStatement ps = connection.prepareStatement(deleteTaskReportSql)) {
                 ps.setInt(1, taskId);
                 ps.executeUpdate();
             }
-            
+
             // Finally, delete the task from ProjectTask table
             String deleteTaskSql = "DELETE FROM ProjectTask WHERE TaskID = ?";
             try (PreparedStatement ps = connection.prepareStatement(deleteTaskSql)) {

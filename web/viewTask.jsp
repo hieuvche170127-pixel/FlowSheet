@@ -135,20 +135,38 @@
                     <% } %>
 
                     <div class="filter-form">
-                        <form action="view" method="get" class="d-flex align-items-center gap-3">
-                            <div class="form-floating flex-grow-1">
-                                <input type="text" class="form-control" id="search" name="search"
-                                       value="<%= request.getAttribute("searchFilter") != null ? request.getAttribute("searchFilter") : "" %>"
-                                       placeholder="Search by Task ID, Task Name, or Project Name...">
-                                <label for="search"><i class="fas fa-search me-2"></i>Search</label>
+                        <form action="view" method="get" class="row g-3 align-items-end">
+                            <div class="col-lg-5">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="search" name="search"
+                                           value="<%= request.getAttribute("searchFilter") != null ? request.getAttribute("searchFilter") : "" %>"
+                                           placeholder="Search by Task ID, Task Name, or Project Name...">
+                                    <label for="search"><i class="fas fa-search me-2"></i>Search</label>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-filter">
-                                <i class="fas fa-filter me-2"></i>Filter
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-clear"
-                                    onclick="window.location.href='view'">
-                                <i class="fas fa-times me-2"></i>Clear
-                            </button>
+                            <div class="col-lg-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="projectId" name="projectId">
+                                        <option value="" ${empty projectIdFilter ? 'selected' : ''}>All Projects</option>
+                                        <option value="lab" ${labSelected ? 'selected' : ''}>Lab (Unassigned)</option>
+                                        <c:forEach var="p" items="${projects}">
+                                            <option value="${p.projectID}" ${projectIdFilter == p.projectID ? 'selected' : ''}>
+                                                ${p.projectName}
+                                            </option>
+                                        </c:forEach>
+                                    </select>
+                                    <label for="projectId"><i class="fas fa-diagram-project me-2"></i>Project</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-filter flex-grow-1">
+                                    <i class="fas fa-filter me-2"></i>Filter
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-clear"
+                                        onclick="window.location.href='view'">
+                                    <i class="fas fa-times me-2"></i>Clear
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -163,12 +181,12 @@
                             <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Code</th>
                                 <th>Name</th>
                                 <th>Description</th>
                                 <th>Project</th>
                                 <th>Status</th>
-                                <th>Active</th>
+                                <th>Deadline</th>
+                                <th>Estimate Hours</th>
                                 <th>Created At</th>
                                 <th>Action</th>
                             </tr>
@@ -179,21 +197,17 @@
                                     <c:forEach var="task" items="${tasks}">
                                         <tr>
                                             <td>${task.taskId}</td>
-                                            <td>${task.taskCode}</td>
                                             <td>${task.taskName}</td>
                                             <td>${task.description}</td>
                                             <td>${not empty task.projectName ? task.projectName : 'Lab (Unassigned)'}</td>
                                             <td>
-                                                        <span class="badge bg-${task.status == 'COMPLETE' ? 'success' : 'warning'}">
-                                                                ${task.status}
-                                                        </span>
+                                                <span class="badge bg-${task.status == 'TO_DO' ? 'secondary' : task.status == 'IN_PROGRESS' ? 'primary' : task.status == 'SUSPENDED' ? 'warning' : 'success'}">
+                                                    ${task.status}
+                                                </span>
                                             </td>
-                                            <td>
-                                                        <span class="badge bg-${task.isActive ? 'success' : 'danger'}">
-                                                                ${task.isActive ? 'True' : 'False'}
-                                                        </span>
-                                            </td>
-                                            <td>${task.createdAt}</td>
+                                            <td>${task.deadline != null ? task.deadline : 'N/A'}</td>
+                                            <td>${task.estimateHourToDo != null ? task.estimateHourToDo : 'N/A'}</td>
+                                            <td>${task.createdAt != null ? task.createdAt : 'N/A'}</td>
                                             <td class="d-flex gap-2">
                                                 <a href="update?taskId=${task.taskId}" class="btn btn-primary btn-edit btn-sm">
                                                     <i class="fas fa-edit"></i> Edit

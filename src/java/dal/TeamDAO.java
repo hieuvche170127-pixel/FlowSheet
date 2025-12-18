@@ -224,4 +224,25 @@ public class TeamDAO extends DBContext {
 
         return teamList;
     }
+    
+    public void deleteTeam(int teamId) throws SQLException {
+        String sql = "DELETE FROM Team WHERE TeamID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            ps.executeUpdate();
+        }
+    }
+
+    public boolean updateTeamInfo(int teamId, String teamName, String description) throws SQLException {
+        String sql = "UPDATE Team SET TeamName = ?, Description = ? WHERE TeamID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, teamName);
+            ps.setString(2, description);
+            ps.setInt(3, teamId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+    
+    
+    
 }

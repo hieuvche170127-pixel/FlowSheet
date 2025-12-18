@@ -126,10 +126,9 @@ public class TeamMemberDAO extends DBContext {
      * Lấy thông tin thành viên trong nhóm dựa trên UserID và TeamID.
      *
      * @param userID ID của người dùng.
-     * @param teamID ID của nhóm. 
-     * @return  TeamMember chứa thông tin thành viên (mapping RoleID sang
-     * String role). Logic: RoleID = 4 -> "Team Member", còn lại -> "Team
-     * Leader".
+     * @param teamID ID của nhóm.
+     * @return TeamMember chứa thông tin thành viên (mapping RoleID sang String
+     * role). Logic: RoleID = 4 -> "Team Member", còn lại -> "Team Leader".
      */
     public TeamMember getTeamMemberByUserIDAndTeamId(int userID, int teamID) {
         TeamMember teammem = null;
@@ -165,5 +164,48 @@ public class TeamMemberDAO extends DBContext {
         }
 
         return teammem;
+    }
+
+    public void deleteByTeam(int teamId) throws SQLException {
+        String sql = "DELETE FROM TeamMember WHERE TeamID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            ps.executeUpdate();
+        }
+    }
+
+    public boolean kickMember(int teamId, int userId) throws SQLException {
+        String sql = "DELETE FROM TeamMember WHERE TeamID = ? AND UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean changeRole(int teamId, int userId, int newRoleId) throws SQLException {
+        // NewSQL chặn RoleID chỉ được 4 hoặc 5
+        if (newRoleId != 4 && newRoleId != 5) {
+            throw new IllegalArgumentException("RoleID must be 4 (Team Member) or 5 (Team Leader)");
+        }
+
+        String sql = "UPDATE TeamMember SET RoleID = ? WHERE TeamID = ? AND UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, newRoleId);
+            ps.setInt(2, teamId);
+            ps.setInt(3, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public Integer getTeamRoleId(int teamId, int userId) throws SQLException {
+        String sql = "SELECT RoleID FROM TeamMember WHERE TeamID = ? AND UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("RoleID") : null;
+            }
+        }
     }
 }
