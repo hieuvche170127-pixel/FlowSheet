@@ -100,12 +100,12 @@ ADD StartDate DATE NULL,
     Deadline  DATE NULL,
     Status    NVARCHAR(20) NOT NULL DEFAULT N'OPEN';
 GO
-
 -- Optional: enforce allowed statuses
 ALTER TABLE Project
 ADD CONSTRAINT CHK_Project_Status
 CHECK (Status IN (N'OPEN', N'IN_PROGRESS', N'COMPLETE'));
 GO
+
 
 INSERT INTO Project (
     ProjectCode, ProjectName, Description, 
@@ -118,7 +118,7 @@ VALUES
 
 -- 2. Dự án Nghiên cứu (Hoàn thành)
 ('P_RESEARCH_01', N'Nghiên cứu thị trường AI', N'Phân tích xu hướng và công nghệ AI mới trong năm 2025.', 
-0, '2024-09-15 14:00:00', '2024-10-01', '2024-12-31', 'COMPLETE'),
+0, '2024-09-15 14:00:00', '2024-10-01', '2024-12-31', 'IN_PROGRESS'),
 
 -- 3. Dự án Bảo trì (Đang tiến hành)
 ('P_MAINT_WEB', N'Bảo trì và nâng cấp website công ty', N'Cập nhật framework và sửa lỗi bảo mật trên website chính.', 
@@ -126,7 +126,7 @@ VALUES
 
 -- 4. Dự án Nội bộ (Mới mở) - Tạo gần đây
 ('P_HR_SETUP', N'Triển khai hệ thống E-learning nội bộ', N'Xây dựng nền tảng đào tạo trực tuyến cho nhân viên mới.', 
-1, '2025-03-25 15:20:00', '2025-04-10', '2025-07-10', 'OPEN'),
+1, '2025-03-25 15:20:00', '2025-04-10', '2025-07-10', 'IN_PROGRESS'),
 
 -- 5. Dự án Thiết kế (Đang tiến hành)
 ('P_UX_REDESIGN', N'Thiết kế lại giao diện người dùng sản phẩm', N'Tối ưu hóa UX/UI cho ứng dụng di động.', 
@@ -139,69 +139,38 @@ GO
 -- date modify: 12/12/25/ 10h57pm made by nghia
 -- có thể task đấy chưa có chẳng hạn.
 
-
--- bigupdate ver4.
--- Business rule: 
--- sau khi được review, thì timesheet sẽ ko còn có thể chỉnh sửa?
--- vì nếu thầy/supervisor đã xem và đánh giá cái timesheetentry đó, thì người tạo ko được sửa nữa.
-CREATE TABLE Timesheet (
-    TimesheetID     INT IDENTITY(1,1) PRIMARY KEY,
-    UserID          INT           NOT NULL,            -- Người dùng sở hữu Timesheet này
-    DayStart        DATE          NOT NULL,            -- Ngày bắt đầu của Timesheet (thường là ngày làm việc)
-    DayEnd          DATE              NULL,            -- Ngày kết thúc (có thể NULL nếu Timesheet chỉ là cho 1 ngày)
-    LastUpdatedAt   DATETIME2     NOT NULL DEFAULT SYSDATETIME(), -- Cập nhật lần cuối (thay thế cho LastChange)
-    -- Trạng thái: 0=Draft, 1=Submitted, 2=Reviewed/Locked
-    Status          NVARCHAR(20)  NOT NULL DEFAULT N'Draft',
-    -- Ràng buộc: Mỗi người dùng chỉ có một Timesheet cho mỗi ngày (nếu DayEnd NULL)
-    CONSTRAINT UQ_Timesheet_User_DayStart UNIQUE (UserID, DayStart),
-    CONSTRAINT FK_Timesheet_User
-        FOREIGN KEY (UserID) REFERENCES UserAccount(UserID),
-    CONSTRAINT CHK_Timesheet_Status
-        CHECK (Status IN (N'Draft', N'Submitted', N'Reviewed'))
-);
-GO
-
---chèn data vào
-INSERT INTO Timesheet (UserID, DayStart, DayEnd, Status, LastUpdatedAt)
-VALUES 
-(5, '2025-12-08', '2025-12-12', N'Draft', DEFAULT),
-(6, '2025-12-08', '2025-12-12', N'Draft', DEFAULT),
-(7, '2025-12-08', '2025-12-12', N'Draft', DEFAULT);
-
-CREATE TABLE TimesheetEntry (
-    EntryID         INT IDENTITY(1,1) PRIMARY KEY,
-    TimesheetID     INT           NOT NULL,          -- Khóa ngoại liên kết với Timesheet (Header)
-    -- Project/Task có thể NULL (cho công việc không gắn với Project/Task)
-    -- Cột thời gian chi tiết
-    WorkDate        DATE          NOT NULL,          -- Ngày làm việc cụ thể
-    StartTime       TIME          NOT NULL,          -- Bắt đầu (Tôi đề nghị NOT NULL để tính toán dễ hơn)
-    EndTime         TIME          NOT NULL,          -- Kết thúc (Tôi đề nghị NOT NULL để tính toán dễ hơn)
-    -- Số phút làm việc (Tính được: EndTime - StartTime - Delay)
-    -- Giữ cột này vì nó lưu giá trị thực tế sau khi tính toán các khoảng nghỉ
-    DelayMinutes    INT           NOT NULL DEFAULT 0, -- Thời gian nghỉ/delay được loại trừ (ví dụ: ăn trưa)
-    Note            NVARCHAR(MAX)     NULL,
-    CreatedAt       DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
-    CONSTRAINT FK_TimesheetEntry_Timesheet
-        FOREIGN KEY (TimesheetID) REFERENCES Timesheet(TimesheetID) ON DELETE CASCADE,
+-- new table
+-- dùng khóa chính tự tăng thay vì cặp khóa chính vì nếu là cặp khóa chính,
+-- một khi rời khỏi project sẽ ko thể quay lại 
+-- và trong thực tế thì có thể đâu đó xảy ra trường hợp đó. 
+-- Projectmember/ project assignee 
+CREATE TABLE ProjectMember (
+    ProjectID INT NOT NULL,
+    UserID    INT NOT NULL,
     
-  
+    -- Thay đổi: Lưu RoleID thay vì chuỗi
+    RoleID    INT NOT NULL, 
+    
+    JoinedAt  DATETIME DEFAULT GETDATE(),
+
+    -- 1. Khóa chính tổ hợp (Mỗi User chỉ có 1 vai trò trong 1 Project tại 1 thời điểm)
+    CONSTRAINT PK_ProjectMember PRIMARY KEY (ProjectID, UserID),
+
+    -- 2. Các Khóa ngoại cơ bản
+    CONSTRAINT FK_ProjectMember_Project FOREIGN KEY (ProjectID) 
+        REFERENCES Project(ProjectID) ON DELETE CASCADE,
+
+    CONSTRAINT FK_ProjectMember_User FOREIGN KEY (UserID) 
+        REFERENCES UserAccount(UserID) ON DELETE CASCADE,
+
+    -- 3. Khóa ngoại trỏ đến bảng ROLE
+    CONSTRAINT FK_ProjectMember_Role FOREIGN KEY (RoleID) 
+        REFERENCES Role(RoleID),
+
+    -- 4. QUAN TRỌNG: Check giá trị RoleID chỉ được nằm trong khoảng 6-8
+    -- (PROJECT_MEMBER, PROJECT_LEADER, PROJECT_COLEAD)
+    CONSTRAINT CK_ProjectMember_RoleValid CHECK (RoleID >= 6 AND RoleID <= 8)
 );
-GO
-
-
-
-CREATE TABLE TimesheetReview (
-    TimesheetReviewID INT IDENTITY(1,1) PRIMARY KEY,  -- Khóa chính Tự tăng
-    TimesheetID       INT           NOT NULL,         -- Timesheet được đánh giá
-    ReviewedByID      INT           NOT NULL,         -- Người duyệt (Thường là Manager/Admin)
-    Comment           NVARCHAR(MAX)     NULL,         -- Nhận xét về timesheet
-    ReviewedAt        DATETIME2     NOT NULL DEFAULT SYSDATETIME(), -- Thời điểm duyệt
-    CONSTRAINT FK_Review_Timesheet
-        FOREIGN KEY (TimesheetID) REFERENCES Timesheet(TimesheetID) ON DELETE CASCADE,
-    CONSTRAINT FK_Review_Reviewer
-        FOREIGN KEY (ReviewedByID) REFERENCES UserAccount(UserID),
-);
-GO
 
 
 -- 1 vài lưu ý - cho anh tiến anh
@@ -238,6 +207,184 @@ ALTER TABLE ProjectTask
 ADD CONSTRAINT CHK_ProjectTask_Status
 CHECK (Status IN (N'TO_DO', N'IN_PROGRESS', N'SUSPENDED'));
 GO
+
+INSERT INTO ProjectTask (ProjectID, TaskName, Description, Deadline, EstimateHourToDo, Status)
+VALUES
+-- Task 1: Thiết kế Database (Khớp với Thứ 2 của bạn)
+(1, N'Database Design - Timesheet Module', 
+ N'Thiết kế bảng Timesheet, Entry và các ràng buộc liên quan.', 
+ '2025-12-25 23:59:59', 8.00, N'IN_PROGRESS'),
+
+-- Task 2: Phát triển DAO & Entity (Khớp với Thứ 4 của bạn)
+(1, N'Backend Development - CRUD Timesheet', 
+ N'Viết các hàm Mapping, GetByID, Insert cho Timesheet và Entry.', 
+ '2025-12-30 17:00:00', 16.00, N'IN_PROGRESS'),
+
+-- Task 3: Xây dựng Giao diện (Khớp với Thứ 3 của bạn)
+(1, N'Frontend - Timesheet UI', 
+ N'Sử dụng Bootstrap 5 để xây dựng trang danh sách và Modal thêm mới.', 
+ '2025-12-28 12:00:00', 12.50, N'IN_PROGRESS'),
+
+-- Task 4: Chức năng Approval (Dự kiến tiếp theo)
+(1, N'Workflow - Timesheet Review', 
+ N'Xử lý logic Submit, Approved và Reviewed.', 
+ '2026-01-05 17:00:00', 10.00, N'TO_DO'),
+
+-- Task 5: Báo cáo & Xuất file
+(1, N'Reporting - Export Excel', 
+ N'Kết xuất dữ liệu chấm công ra file Excel cho phòng nhân sự.', 
+ '2026-01-15 17:00:00', 20.00, N'TO_DO');
+GO
+
+INSERT INTO ProjectTask (ProjectID, TaskName, Description, Deadline, EstimateHourToDo, Status)
+VALUES
+-- Task 1: Thu thập dữ liệu sơ bộ
+(2, N'Thu thập báo cáo thị trường AI 2024', 
+ N'Tìm kiếm và tổng hợp các báo cáo từ Gartner, IDC về xu hướng AI.', 
+ '2024-10-15 17:00:00', 10.00, N'IN_PROGRESS'),
+
+-- Task 2: Phân tích công nghệ mới
+(2, N'Phân tích các Large Language Models (LLM) mới', 
+ N'Đánh giá hiệu năng của các model mới ra mắt trong quý 4/2024.', 
+ '2024-11-10 17:00:00', 20.00, N'IN_PROGRESS'),
+
+-- Task 3: Nghiên cứu đối thủ
+(2, N'Nghiên cứu ứng dụng AI của đối thủ cạnh tranh', 
+ N'Phân tích các tính năng AI mà đối thủ đã triển khai trên sản phẩm của họ.', 
+ '2024-11-30 17:00:00', 15.50, N'IN_PROGRESS'),
+
+-- Task 4: Khảo sát người dùng
+(2, N'Khảo sát nhu cầu tích hợp AI vào Timesheet', 
+ N'Lấy ý kiến từ bộ phận nhân sự về việc sử dụng AI để gợi ý task.', 
+ '2024-12-15 17:00:00', 12.00, N'IN_PROGRESS'),
+
+-- Task 5: Tổng kết và báo cáo
+(2, N'Lập báo cáo tổng kết xu hướng AI 2025', 
+ N'Hoàn thiện tài liệu dự báo và đề xuất lộ trình phát triển cho năm tới.', 
+ '2024-12-30 23:59:59', 8.00, N'IN_PROGRESS');
+GO
+
+
+/* =========================================================
+   Update 01 (MUST DO IT MANUALLY)
+   ========================================================= */
+USE LABTimesheet;
+GO
+CREATE TABLE TaskAssignee (
+    TaskAssigneeID INT IDENTITY(1,1) PRIMARY KEY,
+    TaskID         INT NOT NULL,
+    UserID         INT NOT NULL,
+    AssignedAt     DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+
+    CONSTRAINT FK_TaskAssignee_Task
+        FOREIGN KEY (TaskID) REFERENCES ProjectTask(TaskID),
+
+    CONSTRAINT FK_TaskAssignee_User
+        FOREIGN KEY (UserID) REFERENCES UserAccount(UserID),
+
+    CONSTRAINT UQ_TaskAssignee_Task_User
+        UNIQUE (TaskID, UserID)  -- tránh gán trùng một member nhiều lần cho 1 task
+);
+GO
+
+
+
+
+-- bigupdate ver4.
+-- Business rule: 
+-- sau khi được review, thì timesheet sẽ ko còn có thể chỉnh sửa?
+-- vì nếu thầy/supervisor đã xem và đánh giá cái timesheetentry đó, thì người tạo ko được sửa nữa.
+
+--design của bảng: 
+CREATE TABLE Timesheet (
+    TimesheetID     INT IDENTITY(1,1) PRIMARY KEY,
+    UserID          INT           NOT NULL,            -- Người dùng sở hữu Timesheet này
+    DayStart        DATE          NOT NULL,            -- Ngày bắt đầu của Timesheet (thường là ngày làm việc)
+    DayEnd          DATE              NULL,            -- Ngày kết thúc (có thể NULL nếu Timesheet chỉ là cho 1 ngày)
+    LastUpdatedAt   DATETIME2     NOT NULL DEFAULT SYSDATETIME(), -- Cập nhật lần cuối (thay thế cho LastChange)
+    -- Trạng thái: 0=Draft, 1=Submitted, 2=Reviewed/Locked
+    Status          NVARCHAR(20)  NOT NULL DEFAULT N'Draft',
+    -- Ràng buộc: Mỗi người dùng chỉ có một Timesheet cho mỗi ngày (nếu DayEnd NULL)
+    CONSTRAINT UQ_Timesheet_User_DayStart UNIQUE (UserID, DayStart),
+    CONSTRAINT FK_Timesheet_User
+        FOREIGN KEY (UserID) REFERENCES UserAccount(UserID),
+    CONSTRAINT CHK_Timesheet_Status
+        CHECK (Status IN (N'Draft', N'Submitted', N'Reviewed'))
+);
+GO
+
+-- 1. Thêm cột Summary vào bảng hiện tại
+ALTER TABLE Timesheet
+ADD Summary NVARCHAR(2000) NULL; 
+GO
+
+
+-- TUẦN HIỆN TẠI (08/12 - 14/12)
+INSERT INTO Timesheet (UserID, DayStart, DayEnd, Status, Summary)
+VALUES 
+(5, '2025-12-08', '2025-12-14', N'Submitted', N'Làm chức năng Login và phân quyền User.'),
+(6, '2025-12-08', '2025-12-14', N'Submitted', N'Thiết kế giao diện Dashboard và Sidebar.'),
+(7, '2025-12-08', '2025-12-14', N'Submitted', N'Viết API lấy dữ liệu báo cáo tuần.');
+
+-- TUẦN TRƯỚC (01/12 - 07/12)
+INSERT INTO Timesheet (UserID, DayStart, DayEnd, Status, Summary)
+VALUES 
+(5, '2025-12-01', '2025-12-07', N'Submitted', N'Phân tích yêu cầu khách hàng và thiết kế ERD.'),
+(6, '2025-12-01', '2025-12-07', N'Submitted', N'Setup môi trường dự án, cài đặt thư viện cần thiết.'),
+(7, '2025-12-01', '2025-12-07', N'Submitted', N'Họp team chốt công nghệ sử dụng.');
+
+-- TUẦN SAU (15/12 - 21/12)
+INSERT INTO Timesheet (UserID, DayStart, DayEnd, Status, Summary)
+VALUES 
+(5, '2025-12-15', '2025-12-21', N'Draft', N'Dự kiến hoàn thành module Timesheet Management.'),
+(6, '2025-12-15', '2025-12-21', N'Draft', N'Tối ưu hóa tốc độ load trang và kiểm thử giao diện.'),
+(7, '2025-12-15', '2025-12-21', N'Draft', N'Xây dựng chức năng xuất báo cáo ra file Excel.');
+GO
+CREATE TABLE TimesheetEntry (
+    EntryID         INT IDENTITY(1,1) PRIMARY KEY,
+    TimesheetID     INT           NOT NULL,          -- Khóa ngoại liên kết với Timesheet (Header)
+    -- Project/Task có thể NULL (cho công việc không gắn với Project/Task)
+    -- Cột thời gian chi tiết
+    WorkDate        DATE          NOT NULL,          -- Ngày làm việc cụ thể
+    StartTime       TIME          NOT NULL,          -- Bắt đầu (Tôi đề nghị NOT NULL để tính toán dễ hơn)
+    EndTime         TIME          NOT NULL,          -- Kết thúc (Tôi đề nghị NOT NULL để tính toán dễ hơn)
+    -- Số phút làm việc (Tính được: EndTime - StartTime - Delay)
+    -- Giữ cột này vì nó lưu giá trị thực tế sau khi tính toán các khoảng nghỉ
+    DelayMinutes    INT           NOT NULL DEFAULT 0, -- Thời gian nghỉ/delay được loại trừ (ví dụ: ăn trưa)
+    Note            NVARCHAR(MAX)     NULL,
+    CreatedAt       DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT FK_TimesheetEntry_Timesheet
+        FOREIGN KEY (TimesheetID) REFERENCES Timesheet(TimesheetID) ON DELETE CASCADE,
+);
+GO
+
+-- Chèn dữ liệu cho Thứ Hai (15/12/2025): Phân tích & Thiết kế Database cho Module
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note)
+VALUES (7, '2025-12-15', '08:00:00', '17:00:00', 60, N'Phân tích các trường dữ liệu và thiết kế bảng cho module Timesheet Management.');
+
+-- Chèn dữ liệu cho Thứ Ba (16/12/2025): Code giao diện (Frontend)
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note)
+VALUES (7, '2025-12-16', '08:30:00', '17:30:00', 60, N'Xây dựng giao diện danh sách và form thêm mới Timesheet bằng Bootstrap.');
+
+-- Chèn dữ liệu cho Thứ Tư (17/12/2025): Code xử lý Logic (Backend)
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note)
+VALUES (7, '2025-12-17', '08:00:00', '18:00:00', 90, N'Viết DAO và Servlet xử lý logic CRUD cho module Timesheet.');
+GO
+
+
+CREATE TABLE TimesheetReview (
+    TimesheetReviewID INT IDENTITY(1,1) PRIMARY KEY,  -- Khóa chính Tự tăng
+    TimesheetID       INT           NOT NULL,         -- Timesheet được đánh giá
+    ReviewedByID      INT           NOT NULL,         -- Người duyệt (Thường là Manager/Admin)
+    Comment           NVARCHAR(MAX)     NULL,         -- Nhận xét về timesheet
+    ReviewedAt        DATETIME2     NOT NULL DEFAULT SYSDATETIME(), -- Thời điểm duyệt
+    CONSTRAINT FK_Review_Timesheet
+        FOREIGN KEY (TimesheetID) REFERENCES Timesheet(TimesheetID) ON DELETE CASCADE,
+    CONSTRAINT FK_Review_Reviewer
+        FOREIGN KEY (ReviewedByID) REFERENCES UserAccount(UserID),
+);
+GO
+
 
 
 -- BR: chỉ thằng được assign cho task mới được làm cái này, giả sử có nhiều thk làm 1 task
@@ -395,28 +542,6 @@ GO
 
 
 
-/* =========================================================
-   Update 01 (MUST DO IT MANUALLY)
-   ========================================================= */
-USE LABTimesheet;
-GO
-CREATE TABLE TaskAssignee (
-    TaskAssigneeID INT IDENTITY(1,1) PRIMARY KEY,
-    TaskID         INT NOT NULL,
-    UserID         INT NOT NULL,
-    AssignedAt     DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
-
-    CONSTRAINT FK_TaskAssignee_Task
-        FOREIGN KEY (TaskID) REFERENCES ProjectTask(TaskID),
-
-    CONSTRAINT FK_TaskAssignee_User
-        FOREIGN KEY (UserID) REFERENCES UserAccount(UserID),
-
-    CONSTRAINT UQ_TaskAssignee_Task_User
-        UNIQUE (TaskID, UserID)  -- tránh gán trùng một member nhiều lần cho 1 task
-);
-GO
-
 
 
 
@@ -539,7 +664,7 @@ CREATE TABLE Invitation (
     RoleID       INT          NOT NULL,       -- role for the invited user could be team member /project mem/ project lead/ project co-leader
     InvitedByID  INT          NOT NULL,       -- who invited team lead or project lead or supervisor
     Token        UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
-    Status       NVARCHAR(20)  NOT NULL DEFAULT N'PENDING',
+    Status       NVARCHAR(20)  NOT NULL DEFAULT N'PENDING',  -- trạng thái có thể là reject,accept, pending,cancelled
     ExpiresAt    DATETIME2     NOT NULL,    -- nhỡ đâu vô thời hạn- thôi ông immedi nghia a, suy nghi linh tinh vl.
     CreatedAt    DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
     AcceptedAt   DATETIME2     NULL,
@@ -551,7 +676,7 @@ CREATE TABLE Invitation (
         FOREIGN KEY (InvitedByID) REFERENCES UserAccount(UserID),
 
     CONSTRAINT CHK_Invitation_Status
-        CHECK (Status IN (N'PENDING', N'ACCEPTED', N'EXPIRED', N'CANCELLED'))
+        CHECK (Status IN (N'PENDING', N'ACCEPTED', N'REJECT', N'CANCELLED'))
 );
 GO
 
@@ -572,6 +697,7 @@ ALTER TABLE Invitation
 ADD CONSTRAINT FK_Invitation_Team
 FOREIGN KEY (TeamID) REFERENCES Team(TeamID);
 GO
+
 
 -- 1) Invite someone to lab only (no project, no team)
 INSERT INTO Invitation (Email, RoleID, InvitedByID, ExpiresAt)
@@ -632,35 +758,3 @@ USE LABTimesheet;
 GO
 
 
--- new table
--- dùng khóa chính tự tăng thay vì cặp khóa chính vì nếu là cặp khóa chính,
--- một khi rời khỏi project sẽ ko thể quay lại 
--- và trong thực tế thì có thể đâu đó xảy ra trường hợp đó. 
--- Projectmember/ project assignee 
-CREATE TABLE ProjectMember (
-    ProjectID INT NOT NULL,
-    UserID    INT NOT NULL,
-    
-    -- Thay đổi: Lưu RoleID thay vì chuỗi
-    RoleID    INT NOT NULL, 
-    
-    JoinedAt  DATETIME DEFAULT GETDATE(),
-
-    -- 1. Khóa chính tổ hợp (Mỗi User chỉ có 1 vai trò trong 1 Project tại 1 thời điểm)
-    CONSTRAINT PK_ProjectMember PRIMARY KEY (ProjectID, UserID),
-
-    -- 2. Các Khóa ngoại cơ bản
-    CONSTRAINT FK_ProjectMember_Project FOREIGN KEY (ProjectID) 
-        REFERENCES Project(ProjectID) ON DELETE CASCADE,
-
-    CONSTRAINT FK_ProjectMember_User FOREIGN KEY (UserID) 
-        REFERENCES UserAccount(UserID) ON DELETE CASCADE,
-
-    -- 3. Khóa ngoại trỏ đến bảng ROLE
-    CONSTRAINT FK_ProjectMember_Role FOREIGN KEY (RoleID) 
-        REFERENCES Role(RoleID),
-
-    -- 4. QUAN TRỌNG: Check giá trị RoleID chỉ được nằm trong khoảng 6-8
-    -- (PROJECT_MEMBER, PROJECT_LEADER, PROJECT_COLEAD)
-    CONSTRAINT CK_ProjectMember_RoleValid CHECK (RoleID >= 6 AND RoleID <= 8)
-);
