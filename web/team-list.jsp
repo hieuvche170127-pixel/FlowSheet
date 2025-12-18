@@ -154,7 +154,10 @@
 
             <!-- Your update: link direct to /FlowSheet/CreateTeam.jsp -->
             <form method="get" action="<%= request.getContextPath()%>/CreateTeam.jsp">
-                <button type="submit" class="btn-primary">Create Team</button>
+                <a class="btn-create-team"
+                   href="${pageContext.request.contextPath}/team/create">
+                    Create Team
+                </a>
             </form>
         </div>
 
