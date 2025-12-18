@@ -5,13 +5,14 @@
 package dal;
 
 import utilities.DateTimeConverter;
-import entity.TimeSheet;
+import entity.TimesheetEntry;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**
@@ -20,93 +21,58 @@ import java.sql.ResultSet;
  */
 public class TimesheetEntryDAO extends DBContext {
 
-    private TimeSheet mapTimesheetFromResultset(ResultSet rs) throws Exception {
-        TimeSheet timesheet = null;
-        try {
-            timesheet = new TimeSheet();
+    /**
+     * Hàm hỗ trợ mapping dữ liệu từ ResultSet sang đối tượng TimesheetEntry.
+     * Giúp tái sử dụng code ở nhiều hàm truy vấn khác nhau.
+     */
+    private TimesheetEntry mapResultSetToEntry(ResultSet rs) throws SQLException {
+        TimesheetEntry entry = new TimesheetEntry();
 
-            // 1. Primary Key
-            timesheet.setEntryId(rs.getInt("entryId"));
+        entry.setEntryId(rs.getInt("EntryID"));
+        entry.setTimesheetId(rs.getInt("TimesheetID"));
+        entry.setWorkDate(rs.getDate("WorkDate"));
+        entry.setStartTime(rs.getTime("StartTime"));
+        entry.setEndTime(rs.getTime("EndTime"));
+        entry.setDelayMinutes(rs.getInt("DelayMinutes"));
+        entry.setNote(rs.getString("Note"));
+        entry.setCreatedAt(rs.getTimestamp("CreatedAt"));
 
-            // 2. Foreign Keys (INT NOT NULL)
-            timesheet.setUserId(rs.getInt("userId"));
-
-            timesheet.setProjectId(rs.getInt("projectId"));
-            if (rs.wasNull()) {
-                timesheet.setProjectId(null); // Nếu giá trị DB là NULL, set Java object là null
-            }
-            timesheet.setTaskId(rs.getInt("taskId"));
-            if (rs.wasNull()) {
-                timesheet.setTaskId(null);
-            }
-            // ở đây thì rs.getDate sẽ trả về java.sql.Date (một subclass của util.date)
-            // mình có viết hàm để convert rồi nên ngon choét 
-//                java.sql.Date date = rs.getDate("workDate");
-//                LocalDate localDate = DateConverter.convertSqlDateToLocalDate(rs.getDate("workDate"));
-            timesheet.setWorkDate(DateTimeConverter.convertSqlDateToLocalDate(rs.getDate("workDate")));
-
-            timesheet.setStartTime(DateTimeConverter.convertSqlTimeToLocalTime(rs.getTime("startTime")));
-            timesheet.setEndTime(DateTimeConverter.convertSqlTimeToLocalTime(rs.getTime("endTime")));
-
-            timesheet.setMinutesWorked(rs.getInt("minutesWorked"));
-            timesheet.setNote(rs.getString("note"));
-
-            // lõi ở đây, fix tiếp thôi kiểu ở đây có cả giờ,phút,giấy và siêu chi tiết ? dù lúc input có mỗi giờ với phút :)))
-            timesheet.setCreatedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("createdAt")));
-            timesheet.setUpdatedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("updatedAt")));
-
-            // 7. Fields added via ALTER TABLE (Status và Approval)
-            timesheet.setStatus(rs.getString("status"));
-
-            // approvedById có thể NULL
-            timesheet.setApprovedById(rs.getInt("approvedById"));
-            if (rs.wasNull()) {
-                timesheet.setApprovedById(null);
-            }
-            // approvedAt có thể NULL
-            timesheet.setApprovedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("approvedAt")));
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return timesheet;
+        return entry;
     }
 
-    public ArrayList<TimeSheet> getAllTimesheet() {
-        ArrayList<TimeSheet> list = new ArrayList<>();
-        try {
-            String sql = "select * from timesheetentry";
-            Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                TimeSheet timesheet = mapTimesheetFromResultset(rs);
-                list.add(timesheet);
+    /**
+     * Lấy danh sách tất cả các công việc chi tiết (entries) thuộc về một
+     * TimesheetID. Kết quả được sắp xếp theo ngày làm việc và giờ bắt đầu để
+     * hiển thị logic hơn.
+     *
+     * * @param timesheetId Mã định danh của Timesheet tổng (Header).
+     * @return Danh sách các TimesheetEntry liên quan.
+     */
+    public ArrayList<TimesheetEntry> getEntriesByTimesheetId(int timesheetId) {
+        ArrayList<TimesheetEntry> list = new ArrayList<>();
+        // Sắp xếp theo WorkDate và StartTime để dữ liệu hiện ra theo đúng trình tự thời gian
+        String sql = "SELECT [EntryID], [TimesheetID], [WorkDate], [StartTime], [EndTime], "
+                + "[DelayMinutes], [Note], [CreatedAt] "
+                + "FROM [TimesheetEntry] "
+                + "WHERE [TimesheetID] = ? "
+                + "ORDER BY [WorkDate] ASC, [StartTime] ASC";
+
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setInt(1, timesheetId);
+
+            try (ResultSet rs = stm.executeQuery()) {
+                while (rs.next()) {
+                    // Gọi hàm mapping để tạo đối tượng
+                    TimesheetEntry entry = mapResultSetToEntry(rs);
+                    list.add(entry);
+                }
             }
-            // Đóng tài nguyên
-            rs.close();
-            st.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Lỗi tại getEntriesByTimesheetId: " + e.getMessage());
+            e.printStackTrace();
         }
+
         return list;
     }
-    
-    public List<TimeSheet> getPendingTimesheetEntries() {
-        List<TimeSheet> list = new ArrayList<>();
-        try {
-            String sql = "select * from timesheetentry where status = 'Submitted' or status = 'Draft' order by createdAt desc";
-            Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                TimeSheet timesheet = mapTimesheetFromResultset(rs);
-                list.add(timesheet);
-            }
-            // Đóng tài nguyên
-            rs.close();
-            st.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return list;
-    }
+
 }

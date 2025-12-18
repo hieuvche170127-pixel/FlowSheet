@@ -17,36 +17,29 @@ import java.util.ArrayList;
  */
 public class ProjectTaskDAO extends DBContext {
 
-    private ProjectTask mapProjectTaskFromResultSet(ResultSet rs) throws Exception {
-        ProjectTask task = null;
-        try {
-            task = new ProjectTask();
-
-            // 1. Primary Key
-            task.setTaskId(rs.getInt("taskId"));
-
-            // 2. Foreign Key
-            task.setProjectId(rs.getInt("projectId"));
-
-            // 3. Basic Information
-            task.setTaskCode(rs.getString("taskCode"));
-            task.setTaskName(rs.getString("taskName"));
-            task.setDescription(rs.getString("description"));
-
-            // 4. Boolean Field
-            task.setIsActive(rs.getBoolean("isActive"));
-
-            // 5. Timestamp Field - convert sang LocalDateTime
-            task.setCreatedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("createdAt")));
-
-            // 6. Status Field
-            task.setStatus(rs.getString("status"));
-
-        } catch (Exception e) {
-            throw e;
-        }
-        return task;
+   private TaskReport mapResultSetToReport(ResultSet rs) throws SQLException {
+    TaskReport report = new TaskReport();
+    
+    report.setReportId(rs.getInt("ReportID"));
+    report.setUserId(rs.getInt("UserID"));
+    report.setTaskId(rs.getInt("TaskID"));
+    report.setReportDescription(rs.getString("ReportDescription"));
+    
+    // Sử dụng getDouble cho DECIMAL
+    report.setEstimateWorkPercentDone(rs.getDouble("EstimateWorkPercentDone"));
+    report.setTotalHourUsed(rs.getDouble("TotalHourUsed"));
+    
+    // Xử lý Integer có thể null cho TimesheetEntryID
+    int entryId = rs.getInt("TimesheetEntryID");
+    if (rs.wasNull()) {
+        report.setTimesheetEntryId(null);
+    } else {
+        report.setTimesheetEntryId(entryId);
     }
+    
+    report.setCreatedAt(rs.getTimestamp("CreatedAt"));
+    return report;
+}
 
     /**
      * Lấy tất cả ProjectTask từ database

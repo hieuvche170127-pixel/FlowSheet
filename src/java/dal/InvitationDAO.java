@@ -16,6 +16,8 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import utilities.DateTimeConverter;
 import java.sql.Types;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  *
@@ -177,47 +179,24 @@ public class InvitationDAO extends DBContext {
             // Lưu ý: Em giả định tên bảng là 'invitation' và tên cột trong DB như bên dưới.
             // Anh nhớ check lại tên cột trong SQL Server/MySQL của anh nhé.
             String sql = "UPDATE invitation "
-                    + "SET email = ?, "
-                    + "    role_id = ?, "
-                    + "    expires_at = ?, "
-                    + "    created_at = ? " // Đây là chỗ update cái biến localCreatedAt anh muốn
+                    + "SET Email = ?, "
+                    + "    RoleID = ?, "
+                    + "    ExpiresAt = ?, "
+                    + "    status = ? " // 
                     + "WHERE invitationid = ?"; // Đây là cái WHERE để chọn thằng cần update
-
             ps = connection.prepareStatement(sql);
-
             // 3. Set giá trị cho các dấu chấm hỏi (?)
             // ? thứ 1: Email
             ps.setString(1, updatedInvitation.getEmail());
-
             // ? thứ 2: Role ID (int)
             ps.setInt(2, updatedInvitation.getRoleId());
-
-            // ? thứ 3: Expires At (chuyển LocalDateTime -> Timestamp)
             ps.setTimestamp(3, Timestamp.valueOf(updatedInvitation.getExpiresAt()));
-
-            // ? thứ 4: Created At (Update thời gian hiện tại như anh yêu cầu)
-            // Nếu trong object anh chưa set, em lấy luôn giờ hiện tại ở đây
-            // Nhưng tốt nhất là anh set vào object trước khi truyền vào hàm này.
-            // Ở đây em lấy từ object ra nhé:
-            if (updatedInvitation.getCreatedAt() != null) {
-                ps.setTimestamp(4, Timestamp.valueOf(updatedInvitation.getCreatedAt()));
-            } else {
-                // Phòng trường hợp null thì lấy giờ hiện tại
-                // okeee cảm ơn em
-                ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-            }
-
-            // ? thứ 5: Invitation ID (Cái điều kiện WHERE)
+            ps.setString(4, updatedInvitation.getStatus());
             ps.setInt(5, updatedInvitation.getInvitationId());
-
-            // 4. Thực thi
             int rowsAffected = ps.executeUpdate();
-
-            // Nếu số dòng bị ảnh hưởng > 0 tức là update thành công
             if (rowsAffected > 0) {
                 result = true;
             }
-
         } catch (SQLException e) {
             Logger.getLogger("đã có lỗi ở inviDAO");
         }
@@ -260,5 +239,129 @@ public class InvitationDAO extends DBContext {
             e.printStackTrace();
         }
         return exists;
+    }
+
+    // muốn lấy invitedBy, expiredAt, status, acceptedAt,teamId
+    // lấy thêm cái team để tìm xem thk mới có trong team hay chưa. 
+    public Invitation getInvitationByInvitationId(int invitationId) {
+        Invitation invitation = null;
+
+        // Em chọn các cột cần thiết như yêu cầu
+        String sql = "SELECT InvitationID, InvitedByID, ExpiresAt, Status, AcceptedAt, TeamID "
+                + "FROM Invitation "
+                + "WHERE InvitationID = ?";
+
+        // Phần try-catch kết nối DB (giả sử anh dùng DBContext hoặc tương tự)
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, invitationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    invitation = new Invitation();
+                    // Map dữ liệu từ DB vào Object
+                    invitation.setInvitationId(rs.getInt("InvitationID"));
+                    invitation.setInvitationId(rs.getInt("InvitedByID"));
+                    invitation.setStatus(rs.getString("Status"));
+                    invitation.setTeamId(rs.getInt("TeamId"));
+                    // Lấy kiểu Timestamp cho DateTime
+                    invitation.setExpiresAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("ExpiresAt")));
+                    invitation.setAcceptedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("AcceptedAt")));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return invitation;
+    }
+
+    /**
+     * Xóa hoàn toàn một bản ghi lời mời (Invitation) khỏi cơ sở dữ liệu.
+     * <p>
+     * Hàm này thực hiện câu lệnh DELETE cứng. Dữ liệu sẽ mất vĩnh viễn.
+     * </p>
+     *
+     * @param invitationId ID của lời mời cần xóa (Primary Key).
+     * @return <code>true</code> nếu xóa thành công (có ít nhất 1 dòng bị ảnh
+     * hưởng), <code>false</code> nếu thất bại hoặc ID không tồn tại.
+     */
+    public boolean deleteInvitation(int invitationId) {
+        int rowAffected = 0;
+        String sql = "DELETE FROM Invitation WHERE InvitationID = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            // Giả sử class này đã kế thừa hoặc có biến 'connection' từ DBContext
+            // Nếu chưa có, bạn cần: Connection conn = new DBContext().getConnection();
+            ps.setInt(1, invitationId);
+            rowAffected = ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Nên dùng Logger để ghi lại lỗi thay vì print
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return rowAffected > 0;
+    }
+
+    /**
+     * Cập nhật trạng thái (Status) của một lời mời cụ thể.
+     * <p>
+     * Các trạng thái hợp lệ thường là: "PENDING", "ACCEPTED", "CANCELLED",
+     * "EXPIRED". Hàm sẽ tự động chuyển status về chữ in hoa để khớp với
+     * Database Constraint.
+     * </p>
+     *
+     * @param invitationId ID của lời mời (Primary Key) cần sửa.
+     * @param newStatus Trạng thái mới muốn cập nhật.
+     * @return {@code true} nếu cập nhật thành công, {@code false} nếu thất bại
+     * hoặc ID không tồn tại.
+     */
+    /**
+     * Cập nhật Status của Invitation với validate chặt chẽ.
+     *
+     * @param invitationId ID của lời mời.
+     * @param newStatus Trạng thái mới (PENDING, ACCEPTED, EXPIRED, CANCELLED).
+     * @return true nếu update thành công, false nếu lỗi SQL/Database.
+     * @throws IllegalArgumentException Nếu status truyền vào không hợp lệ (null
+     * hoặc sai chính tả).
+     */
+    public boolean editStatus(int invitationId, String newStatus) {
+        // 1. Validate Input cơ bản
+        if (newStatus == null || newStatus.isBlank()) {
+            throw new IllegalArgumentException("Status không được null hoặc rỗng.");
+        }
+
+        // 2. Chuẩn hóa về chữ in hoa để so sánh
+        String statusNormalized = newStatus.trim().toUpperCase();
+
+        // 3. Danh sách các Status hợp lệ trong Database
+        List<String> validStatuses = Arrays.asList("PENDING", "ACCEPTED", "REJECT", "CANCELLED");
+
+        // 4. Validate logic: Nếu không nằm trong list trên -> Bắn Exception
+        if (!validStatuses.contains(statusNormalized)) {
+            throw new IllegalArgumentException("Status không hợp lệ: '" + newStatus + "'. "
+                    + "Các giá trị cho phép: " + validStatuses.toString());
+        }
+
+        // 5. Thực thi câu lệnh SQL
+        String sql = "UPDATE Invitation SET Status = ? WHERE InvitationID = ?";
+        int rowAffected = 0;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, statusNormalized);
+            ps.setInt(2, invitationId);
+
+            rowAffected = ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Log lỗi SQL
+            return false;        // Lỗi DB thì trả về false
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return rowAffected > 0;
     }
 }

@@ -38,25 +38,25 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, report.getUserId());
             ps.setInt(2, report.getTaskId());
-            
+
             if (report.getReportDescription() == null || report.getReportDescription().trim().isEmpty()) {
                 ps.setNull(3, java.sql.Types.NVARCHAR);
             } else {
                 ps.setString(3, report.getReportDescription());
             }
-            
+
             if (report.getEstimateWorkPercentDone() == null) {
                 ps.setDouble(4, 0.0);
             } else {
                 ps.setDouble(4, report.getEstimateWorkPercentDone());
             }
-            
+
             if (report.getTotalHourUsed() == null) {
                 ps.setDouble(5, 0.0);
             } else {
                 ps.setDouble(5, report.getTotalHourUsed());
             }
-            
+
             if (report.getTimesheetEntryId() == null) {
                 ps.setNull(6, java.sql.Types.INTEGER);
             } else {
@@ -98,26 +98,26 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
-            
+
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
                 report.setUserId(rs.getInt("UserID"));
                 report.setTaskId(rs.getInt("TaskID"));
                 report.setReportDescription(rs.getString("ReportDescription"));
-                
+
                 Double percentDone = rs.getObject("EstimateWorkPercentDone", Double.class);
                 report.setEstimateWorkPercentDone(percentDone);
-                
+
                 Double totalHours = rs.getObject("TotalHourUsed", Double.class);
                 report.setTotalHourUsed(totalHours);
-                
+
                 Integer timesheetEntryId = rs.getObject("TimesheetEntryID", Integer.class);
                 report.setTimesheetEntryId(timesheetEntryId);
-                
+
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
                 report.setCreatedAt(createdAt);
-                
+
                 list.add(report);
             }
         } catch (SQLException ex) {
@@ -147,26 +147,26 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, taskId);
             ResultSet rs = ps.executeQuery();
-            
+
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
                 report.setUserId(rs.getInt("UserID"));
                 report.setTaskId(rs.getInt("TaskID"));
                 report.setReportDescription(rs.getString("ReportDescription"));
-                
+
                 Double percentDone = rs.getObject("EstimateWorkPercentDone", Double.class);
                 report.setEstimateWorkPercentDone(percentDone);
-                
+
                 Double totalHours = rs.getObject("TotalHourUsed", Double.class);
                 report.setTotalHourUsed(totalHours);
-                
+
                 Integer timesheetEntryId = rs.getObject("TimesheetEntryID", Integer.class);
                 report.setTimesheetEntryId(timesheetEntryId);
-                
+
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
                 report.setCreatedAt(createdAt);
-                
+
                 list.add(report);
             }
         } catch (SQLException ex) {
@@ -174,5 +174,63 @@ public class TaskReportDAO extends DBContext {
         }
         return list;
     }
-}
 
+    private TaskReport mapResultSetToReport(ResultSet rs) throws SQLException {
+        TaskReport report = new TaskReport();
+
+        report.setReportId(rs.getInt("ReportID"));
+        report.setUserId(rs.getInt("UserID"));
+        report.setTaskId(rs.getInt("TaskID"));
+        report.setReportDescription(rs.getString("ReportDescription"));
+
+        // Sử dụng getDouble cho DECIMAL
+        report.setEstimateWorkPercentDone(rs.getDouble("EstimateWorkPercentDone"));
+        report.setTotalHourUsed(rs.getDouble("TotalHourUsed"));
+
+        // Xử lý Integer có thể null cho TimesheetEntryID
+        int entryId = rs.getInt("TimesheetEntryID");
+        if (rs.wasNull()) {
+            report.setTimesheetEntryId(null);
+        } else {
+            report.setTimesheetEntryId(entryId);
+        }
+
+        report.setCreatedAt(rs.getTimestamp("CreatedAt"));
+        return report;
+    }
+
+    /** nghia&gemini
+     * Lấy danh sách tất cả TaskReport liên quan đến một Timesheet cụ thể. Hàm
+     * này thực hiện JOIN giữa TaskReport và TimesheetEntry để lọc dữ liệu.
+     *
+     * * @param timesheetId ID của Timesheet tổng
+     * @return Danh sách các TaskReport tìm thấy
+     */
+    public ArrayList<TaskReport> getTaskReportsByTimesheetId(int timesheetId) {
+        ArrayList<TaskReport> list = new ArrayList<>();
+
+        // Sử dụng JOIN để nối TaskReport với TimesheetEntry
+        String sql = "SELECT tr.* "
+                + "FROM TaskReport tr "
+                + "JOIN TimesheetEntry te ON tr.TimesheetEntryID = te.EntryID "
+                + "WHERE te.TimesheetID = ? "
+                + "ORDER BY tr.CreatedAt DESC";
+
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setInt(1, timesheetId);
+
+            try (ResultSet rs = stm.executeQuery()) {
+                while (rs.next()) {
+                    // Sử dụng hàm mapping để tái sử dụng code
+                    TaskReport report = mapResultSetToReport(rs);
+                    list.add(report);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi tại getTaskReportsByTimesheetId: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+}

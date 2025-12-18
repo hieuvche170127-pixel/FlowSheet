@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package entity;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 /**
@@ -24,6 +25,8 @@ public class TimeSheet {
     
     private Timestamp lastUpdatedAt;
     private String status;
+    
+    private String summary;
 
     // --- Constructor Rỗng ---
     public TimeSheet() {
@@ -31,7 +34,7 @@ public class TimeSheet {
         this.status = STATUS_DRAFT; 
     }
 
-    // --- Constructor Đầy Đủ ---
+    // constructor để lấy cho mytimesheetlist
     public TimeSheet(int timesheetId, int userId, Date dayStart, Date dayEnd, Timestamp lastUpdatedAt, String status) {
         this.timesheetId = timesheetId;
         this.userId = userId;
@@ -41,6 +44,26 @@ public class TimeSheet {
         // Dùng setter để validate status
         setStatus(status);
     }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+    
+    // --- Constructor Đầy Đủ ---cho mytimesheet detail
+    public TimeSheet(int timesheetId, int userId, Date dayStart, Date dayEnd, Timestamp lastUpdatedAt, String status, String summary) {
+        this.timesheetId = timesheetId;
+        this.userId = userId;
+        this.dayStart = dayStart;
+        this.dayEnd = dayEnd;
+        this.lastUpdatedAt = lastUpdatedAt;
+        this.status = status;
+        this.summary = summary;
+    }
+    
 
     // --- Getters & Setters ---
 

@@ -105,11 +105,11 @@ public class UserAccountDAO extends DBContext {
 
             while (rs.next()) {
                 UserAccount u = new UserAccount();
-                u.setUserId(rs.getInt("UserID"));
+                u.setUserID(rs.getInt("UserID"));
                 u.setUsername(rs.getString("Username"));
                 u.setFullName(rs.getString("FullName"));
                 u.setEmail(rs.getString("Email"));
-                u.setRoleId(rs.getInt("RoleID"));
+                u.setRoleID(rs.getInt("RoleID"));
                 
                 list.add(u);
             }

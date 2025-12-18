@@ -170,7 +170,6 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-
     // Update user profile (full name and email)
     public boolean updateUserProfile(UserAccount user) {
         String sql = """
@@ -208,40 +207,62 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // lấy userid bằng email
     /**
-     * Truy vấn ID người dùng (UserID) từ cơ sở dữ liệu dựa trên địa chỉ Email.
-     * <p>
-     * Phương thức sẽ tìm kiếm trong bảng {@code UserAccount}.
-     * </p>
+     * Lấy UserID dựa trên email.
      *
-     * @param email Địa chỉ email cần tìm kiếm (không được null hoặc chỉ chứa
-     * khoảng trắng).
-     * @return Giá trị {@code UserID} nếu tìm thấy. Trả về {@code -1} nếu không
-     * tìm thấy email tương ứng hoặc xảy ra lỗi truy vấn database.
-     * @throws IllegalArgumentException Nếu tham số {@code email} là null hoặc
-     * rỗng.
+     * @param email Email cần tìm.
+     * @return UserID nếu tìm thấy, hoặc -1 nếu không tìm thấy.
      */
     public int getUserIdByEmail(String email) {
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("email String must not null");
+            // throw new IllegalArgumentException("Email must not be null or empty"); 
+            // Hoặc đơn giản là trả về -1 luôn nếu input lỗi, tùy logic
+            return -1;
         }
-        int result = -1;
-        // Câu lệnh SQL (dựa trên bảng UserAccount của bạn)
+
+        int userId = -1; // Mặc định là -1 (không tìm thấy)
         String sql = "SELECT UserID FROM UserAccount WHERE Email = ?";
 
-        // Sử dụng try-with-resources để tự động đóng Connection, PreparedStatement và ResultSet
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    result = rs.getInt("UserID");
+                    userId = rs.getInt("UserID");
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Nên dùng Logger để ghi log thay vì printStackTrace
+            e.printStackTrace(); // Nhớ đổi thành Logger nếu có thể
         }
 
-        return result;
+        return userId;
     }
+    
+    /**
+     * Lấy RoleID của user dựa trên Email.
+     * Dùng để check quyền (ví dụ: Admin, Manager, Member...).
+     * 
+     * @param email Email cần tìm.
+     * @return Trả về RoleID nếu tìm thấy. Trả về -1 nếu email không tồn tại.
+     */
+    public int getRoleIdByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return -1;
+        }
+
+        String sql = "SELECT RoleID FROM UserAccount WHERE Email = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("RoleID");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Không tìm thấy
+    }
+    
+    
+    
 }
