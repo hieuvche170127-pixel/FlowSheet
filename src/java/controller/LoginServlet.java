@@ -39,7 +39,7 @@ public class LoginServlet extends HttpServlet {
 
             // Role-based redirect
             String redirectUrl;
-            if (user.getRoleID() != null && (user.getRoleID() == 2 || user.getRoleID() == 3)) {
+            if ((user.getRoleID() == 2 || user.getRoleID() == 3)) {
                 // Supervisor or Admin -> supervisor dashboard
                 redirectUrl = req.getContextPath() + "/supervisor/dashboard";
             } else {
