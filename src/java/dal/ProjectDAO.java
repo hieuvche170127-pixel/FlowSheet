@@ -598,7 +598,7 @@ public class ProjectDAO extends DBContext {
     }
 
     // phần dưới là nghĩa code nhé :)))
-      /**
+    /**
      * Map dữ liệu từ ResultSet sang Project object
      *
      * @param rs - ResultSet từ query
@@ -660,8 +660,7 @@ public class ProjectDAO extends DBContext {
         List<Project> list = new ArrayList<>();
         String sql = "SELECT * FROM Project";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Project p = new Project();
                 p.setProjectID(rs.getInt("ProjectID"));

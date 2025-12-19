@@ -78,6 +78,9 @@ VALUES
      (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT')),
  (N'nghiakhac2005@gmail.com', N'nghia2432005', N'pham khac nghia',N'nghiakhac2005@gmail.com',1),
  (N'nghiakhac2345@gmail.com', N'nghiangaongo', N'pham quang nghia',N'khac2005@gmail.com',1),
+ (N'minhdo2005', N'minh1234', N'do quang minh',N'minhdo2005@gmail.com',1),
+ (N'nguyenta', N'tienanh123', N'nguyen tien anh',N'tienanh123@gmail.com',1),
+ (N'tranminhvu', N'vu1234', N'tran minh vu',N'anhvu123@gmail.com',1),
  (N'viet2345@gmail.com', N'vietphamnenhehe', N'pham quang viet',N'vietpq2005@gmail.com',1);
 GO
 
@@ -285,6 +288,14 @@ CREATE TABLE TaskAssignee (
     CONSTRAINT UQ_TaskAssignee_Task_User
         UNIQUE (TaskID, UserID)  -- tránh gán trùng một member nhiều lần cho 1 task
 );
+GO
+
+INSERT INTO TaskAssignee (TaskID, UserID, AssignedAt)
+VALUES 
+    (3, 5, SYSDATETIME()), -- Gán User 5 vào Task 3
+    (5, 5, SYSDATETIME()), -- Gán User 5 vào Task 5
+    (7, 5, SYSDATETIME()), -- Gán User 5 vào Task 7
+    (9, 5, SYSDATETIME()); -- Gán User 5 vào Task 9
 GO
 
 
@@ -624,9 +635,7 @@ VALUES
 -- Team Leader
 (1, 4, 5, '2025-01-01 10:00:00'), 
 -- Team Member 1
-(1, 1, 4, '2025-01-05 11:30:00'),
--- Team Member 2
-(1, 2, 4, '2025-01-05 11:35:00'), 
+(1, 3, 4, '2025-01-05 11:30:00'),
 
 -- =================================================================
 -- 2. TeamID = 2: Team Beta (Nghiên cứu & Hạ tầng)
@@ -698,36 +707,16 @@ ADD CONSTRAINT FK_Invitation_Team
 FOREIGN KEY (TeamID) REFERENCES Team(TeamID);
 GO
 
+-- 1. Lời mời còn hạn (Sẽ hiện nút Accept/Reject)
+INSERT INTO Invitation (Email, RoleID, InvitedByID, Status, ExpiresAt, CreatedAt, TeamID)
+VALUES (N'nghiakhac2005@gmail.com', 4, 3, N'PENDING', DATEADD(day, 7, SYSDATETIME()), SYSDATETIME(), 1),
+ (N'nghiakhac2005@gmail.com', 4, 6, N'PENDING', DATEADD(day, 7, SYSDATETIME()), SYSDATETIME(), 3),
+ (N'nghiakhac2005@gmail.com', 4, 6, N'PENDING', DATEADD(day, -7, SYSDATETIME()), DATEADD(day, -14, SYSDATETIME()), 3),
+ (N'nghiakhac2005@gmail.com', 4, 3, N'PENDING', DATEADD(day, -7, SYSDATETIME()), DATEADD(day, -14, SYSDATETIME()), 1);
 
--- 1) Invite someone to lab only (no project, no team)
-INSERT INTO Invitation (Email, RoleID, InvitedByID, ExpiresAt)
-VALUES (
-    N'external1@example.com',
-    (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT'),
-    (SELECT UserID FROM UserAccount WHERE Username = N'sup_hoa'),
-    DATEADD(DAY, 7, SYSDATETIME())
-);
 
--- 2) Invite to AI project only
-INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, ExpiresAt)
-VALUES (
-    N'external2@example.com',
-    (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT'),
-    (SELECT UserID FROM UserAccount WHERE Username = N'sup_hoa'),
-    (SELECT ProjectID FROM Project WHERE ProjectCode = N'PRJ001'),
-    DATEADD(DAY, 7, SYSDATETIME())
-);
 
--- 3) Invite to AI project + specific team
-INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, TeamID, ExpiresAt)
-VALUES (
-    N'external3@example.com',
-    (SELECT RoleID FROM Role WHERE RoleCode = N'STUDENT'),
-    (SELECT UserID FROM UserAccount WHERE Username = N'sup_hoa'),
-    (SELECT ProjectID FROM Project WHERE ProjectCode = N'PRJ001'),
-    (SELECT TOP 1 TeamID FROM Team),  -- ví dụ lấy 1 team bất kỳ
-    DATEADD(DAY, 7, SYSDATETIME())
-);
+
 
 
 

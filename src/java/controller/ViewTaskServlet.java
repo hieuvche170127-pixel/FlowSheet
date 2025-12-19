@@ -2,6 +2,7 @@ package controller;
 
 import dao.TaskDAO;
 import dal.ProjectDAO;
+import dal.TaskReportDAO;
 import entity.Project;
 import entity.ProjectTask;
 import entity.UserAccount;
@@ -14,7 +15,9 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/task/view")
 public class ViewTaskServlet extends HttpServlet {
@@ -36,19 +39,13 @@ public class ViewTaskServlet extends HttpServlet {
         String searchFilter = req.getParameter("search");
         String projectIdParam = req.getParameter("projectId");
 
-        // Project filter: null = all, -1 = lab/unassigned, other = project id
+        // Project filter: null = all, other = project id
         Integer projectIdFilter = null;
-        boolean labSelected = false;
         if (projectIdParam != null && !projectIdParam.isEmpty()) {
-            if ("lab".equalsIgnoreCase(projectIdParam)) {
-                projectIdFilter = -1;
-                labSelected = true;
-            } else {
-                try {
-                    projectIdFilter = Integer.parseInt(projectIdParam);
-                } catch (NumberFormatException ignored) {
-                    // invalid projectId ignored; defaults to all
-                }
+            try {
+                projectIdFilter = Integer.parseInt(projectIdParam);
+            } catch (NumberFormatException ignored) {
+                // invalid projectId ignored; defaults to all
             }
         }
 
@@ -65,11 +62,19 @@ public class ViewTaskServlet extends HttpServlet {
             tasks = new ArrayList<>();
         }
         
+        // Check which tasks have reports (cannot be deleted)
+        TaskReportDAO taskReportDAO = new TaskReportDAO();
+        Map<Integer, Boolean> taskHasReports = new HashMap<>();
+        for (ProjectTask task : tasks) {
+            taskHasReports.put(task.getTaskId(), taskReportDAO.hasTaskReports(task.getTaskId()));
+        }
+        
         // Set attributes for display
         req.setAttribute("tasks", tasks);
+        req.setAttribute("taskHasReports", taskHasReports);
         req.setAttribute("searchFilter", searchFilter != null ? searchFilter : "");
         req.setAttribute("projectIdFilter", projectIdFilter);
-        req.setAttribute("labSelected", labSelected);
+        req.setAttribute("user", user); // Add user to request for role checking
         List<Project> projects = projectDAO.getAllProjectsForTeam();
         req.setAttribute("projects", projects);
         
@@ -97,10 +102,14 @@ public class ViewTaskServlet extends HttpServlet {
                     req.setAttribute("error", "Task ID is required.");
                 } else {
                     int taskId = Integer.parseInt(taskIdStr);
-                    if (taskDAO.deleteTask(taskId)) {
-                        req.setAttribute("success", "Task deleted successfully.");
-                    } else {
-                        req.setAttribute("error", "Failed to delete task. The task may not exist or has already been deleted.");
+                    try {
+                        if (taskDAO.deleteTask(taskId)) {
+                            req.setAttribute("success", "Task deleted successfully.");
+                        } else {
+                            req.setAttribute("error", "Failed to delete task. The task may not exist or has already been deleted.");
+                        }
+                    } catch (IllegalStateException e) {
+                        req.setAttribute("error", e.getMessage());
                     }
                 }
             } catch (NumberFormatException e) {

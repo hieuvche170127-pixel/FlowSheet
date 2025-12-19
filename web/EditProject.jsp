@@ -13,13 +13,32 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
         <style>
-            body { background-color: #f8f9fa; padding-bottom: 80px; }
-            .avatar-circle {
-                width: 35px; height: 35px; background-color: #6c757d; color: white;
-                border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                font-weight: bold; font-size: 14px; margin-right: 10px; flex-shrink: 0;
+            body {
+                background-color: #f8f9fa;
+                padding-bottom: 80px;
             }
-            .member-row td { vertical-align: middle; }
+
+            /* Style cho Avatar */
+            .avatar-circle {
+                width: 35px;
+                height: 35px;
+                background-color: #6c757d; /* Màu xám mặc định */
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 14px;
+                margin-right: 10px;
+                flex-shrink: 0; /* Không bị co méo */
+            }
+
+            /* Style cho bảng */
+            .member-row td {
+                vertical-align: middle;
+            }
+
         </style>
     </head>
     <body>
@@ -87,7 +106,6 @@
                                         </select>
                                     </div>
                                 </div>
-
                                 <div class="mb-3 row">
                                     <label class="col-sm-3 col-form-label">Description</label>
                                     <div class="col-sm-9">

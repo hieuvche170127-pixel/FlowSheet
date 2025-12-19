@@ -58,7 +58,21 @@ public class CreateTaskServlet extends HttpServlet {
         String deadlineStr = req.getParameter("deadline");
         String estimateHourToDoStr = req.getParameter("estimateHourToDo");
 
-        Integer projectId = (projectIdStr != null && !projectIdStr.isEmpty()) ? Integer.parseInt(projectIdStr) : null;
+        // Validate projectId is required
+        if (projectIdStr == null || projectIdStr.trim().isEmpty()) {
+            req.setAttribute("error", "Project is required. Every task must belong to a project.");
+            doGet(req, resp);
+            return;
+        }
+
+        Integer projectId;
+        try {
+            projectId = Integer.parseInt(projectIdStr);
+        } catch (NumberFormatException e) {
+            req.setAttribute("error", "Invalid project ID.");
+            doGet(req, resp);
+            return;
+        }
 
         ProjectTask task = new ProjectTask();
         task.setTaskName(taskName);
@@ -71,12 +85,30 @@ public class CreateTaskServlet extends HttpServlet {
             try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
                 java.util.Date parsedDate = dateFormat.parse(deadlineStr);
+                
+                // Validate deadline is not in the past
+                java.util.Date now = new java.util.Date();
+                if (parsedDate.before(now)) {
+                    req.setAttribute("error", "Deadline cannot be in the past.");
+                    doGet(req, resp);
+                    return;
+                }
+                
                 task.setDeadline(new Timestamp(parsedDate.getTime()));
             } catch (ParseException e) {
                 // Try alternative format
                 try {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     java.util.Date parsedDate = dateFormat.parse(deadlineStr);
+                    
+                    // Validate deadline is not in the past
+                    java.util.Date now = new java.util.Date();
+                    if (parsedDate.before(now)) {
+                        req.setAttribute("error", "Deadline cannot be in the past.");
+                        doGet(req, resp);
+                        return;
+                    }
+                    
                     task.setDeadline(new Timestamp(parsedDate.getTime()));
                 } catch (ParseException ex) {
                     req.setAttribute("error", "Invalid deadline format.");

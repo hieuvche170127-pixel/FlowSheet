@@ -32,9 +32,19 @@ public class InvitationDAO extends DBContext {
     // trả về này:
     // invitationid, roleId, invitedByid, status, expiredAt, CreatedAt AceeptedAt, 
     // ProjectId nếu là Pr33oject,  Teamid nếu là lời mời team.
+    //cái này lấy để accept lời mời.
     public ArrayList<Invitation> getAllInvitationByEmail(String email) {
         ArrayList<Invitation> list = new ArrayList<>();
-        String query = "select * from invitation where email = ? ";
+        String query = "SELECT * FROM Invitation "
+                + "WHERE Email = ? "
+                + "ORDER BY "
+                + "  CASE "
+                + "    WHEN Status = N'PENDING' AND ExpiresAt > SYSDATETIME() THEN 0 " // Ưu tiên 1: Đang chờ & Còn hạn
+                + "    WHEN Status = N'PENDING' AND ExpiresAt <= SYSDATETIME() THEN 1 " // Ưu tiên 2: Đang chờ nhưng đã hết hạn
+                + "    ELSE 2 " // Nhóm cuối: ACCEPTED, REJECT, CANCELLED
+                + "  END, "
+                + "  CreatedAt DESC";
+
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -76,6 +86,7 @@ public class InvitationDAO extends DBContext {
         return list;
     }
 
+    // xem lời mời mà team/project đã tạo  
     // hàm này để lấy các invitation được gửi bởi một team (invitation sent by team)
     // trả về này:
     // invitationid, email, roleId, invitedByid, status, expiredAt, CreatedAt AceeptedAt, 
@@ -117,6 +128,7 @@ public class InvitationDAO extends DBContext {
         return list;
     }
 
+    // gửi lời mời - có thể cho cả project lẫn team 
     public boolean addInvitation(Invitation invitation) {
         String sql = "INSERT INTO Invitation "
                 + "(Email, RoleID, InvitedByID, TeamID, ProjectID, ExpiresAt, CreatedAt) "
@@ -170,6 +182,7 @@ public class InvitationDAO extends DBContext {
         }
     }
 
+    // chỉnh sửa lời mời 
     public boolean editInvitation(Invitation updatedInvitation) {
         boolean result = false;
         PreparedStatement ps = null;
@@ -204,6 +217,7 @@ public class InvitationDAO extends DBContext {
 
     }
 
+    // kiểm  tra trước khi add.
     /**
      * Kiểm tra xem đã có lời mời nào đang CHỜ (Pending) và CÒN HẠN gửi đến
      * email này chưa. Logic: Trùng Team, Trùng người mời, Trùng Email nhận,
@@ -243,6 +257,7 @@ public class InvitationDAO extends DBContext {
 
     // muốn lấy invitedBy, expiredAt, status, acceptedAt,teamId
     // lấy thêm cái team để tìm xem thk mới có trong team hay chưa. 
+    // lấy để cập nhật
     public Invitation getInvitationByInvitationId(int invitationId) {
         Invitation invitation = null;
 
@@ -363,5 +378,35 @@ public class InvitationDAO extends DBContext {
         }
 
         return rowAffected > 0;
+    }
+
+    // hàm này dùng để check xem người dùng hiện tại còn có quyền accept/reject cái invitation hay ko 
+    // bằng cách tìm invitation, email của session - của người dùng
+    // ta sẽ biết được là liệu invitation này có thuộc về người đó hay ko ?
+    // status = pending là để xem nó còn đang chờ xử lý và còn hạn hay ko 
+    // uooifiiii, sang hẳn con người không còn validate ở controller nữa, ôi má ơi.
+    public boolean countSpecificPendingInvitation(int invitationId, String email) {
+        int count = 0;
+        // Query kiểm tra: Đúng ID, Đúng Email người nhận, Trạng thái Pending và Phải còn hạn
+        String sql = "SELECT COUNT(*) FROM Invitation "
+                + "WHERE InvitationID = ? "
+                + "AND Email = ? "
+                + "AND Status = N'PENDING' "
+                + "AND ExpiresAt > SYSDATETIME()";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, invitationId);
+            ps.setString(2, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count>0;
     }
 }
