@@ -1,0 +1,10 @@
+/build/
+/dist/
+
+# Cấu hình IDE (NetBeans)
+# Bỏ qua toàn bộ thư mục private/ (Các file cá nhân)
+/nbproject/private/
+
+# Bỏ qua các file cấu hình tạm thời, tự động tạo
+nbproject/genfiles.properties
+/nbproject
