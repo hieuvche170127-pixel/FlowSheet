@@ -58,7 +58,21 @@ public class CreateTaskServlet extends HttpServlet {
         String deadlineStr = req.getParameter("deadline");
         String estimateHourToDoStr = req.getParameter("estimateHourToDo");
 
-        Integer projectId = (projectIdStr != null && !projectIdStr.isEmpty()) ? Integer.parseInt(projectIdStr) : null;
+        // Validate projectId is required
+        if (projectIdStr == null || projectIdStr.trim().isEmpty()) {
+            req.setAttribute("error", "Project is required. Every task must belong to a project.");
+            doGet(req, resp);
+            return;
+        }
+
+        Integer projectId;
+        try {
+            projectId = Integer.parseInt(projectIdStr);
+        } catch (NumberFormatException e) {
+            req.setAttribute("error", "Invalid project ID.");
+            doGet(req, resp);
+            return;
+        }
 
         ProjectTask task = new ProjectTask();
         task.setTaskName(taskName);
