@@ -45,7 +45,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/teams">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/team">
                             <i class="fas fa-users me-1"></i>Teams
                         </a>
                     </li>
@@ -240,7 +240,7 @@
                                class="btn btn-outline-primary">
                                 <i class="fas fa-project-diagram me-2"></i>View All Projects
                             </a>
-                            <a href="${pageContext.request.contextPath}/teams" 
+                            <a href="${pageContext.request.contextPath}/team" 
                                class="btn btn-outline-primary">
                                 <i class="fas fa-users me-2"></i>Manage Teams
                             </a>
