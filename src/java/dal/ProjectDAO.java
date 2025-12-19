@@ -135,9 +135,9 @@ public class ProjectDAO extends DBContext {
             sql.append("JOIN TeamProject tp ON p.ProjectID = tp.ProjectID ");
             sql.append("JOIN TeamMember tm ON tp.TeamID = tm.TeamID ");
         }
-        
+
         sql.append("WHERE 1=1 ");
-        
+
         // Filter theo Status
         // Nếu status là "Active" (mặc định của Controller), ta lấy các trạng thái không phải COMPLETE/CANCEL
         if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All")) {
@@ -147,41 +147,41 @@ public class ProjectDAO extends DBContext {
                 sql.append("AND p.Status = ? ");
             }
         }
-        
+
         // Filter theo Keyword
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (p.ProjectName LIKE ? OR p.ProjectCode LIKE ?) ");
         }
-        
+
         // Filter theo User Permission (Nếu không phải Admin)
         if (!isAdmin) {
             sql.append("AND tm.UserID = ? ");
         }
-        
+
         sql.append("ORDER BY p.CreatedAt DESC"); // Sắp xếp dự án mới nhất lên đầu
 
         try (
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
-            
+                PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+
             int index = 1;
-            
+
             // Set params cho Status
             if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All") && !status.equalsIgnoreCase("Active")) {
                 ps.setString(index++, status);
             }
-            
+
             // Set params cho Keyword
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String searchPattern = "%" + keyword + "%";
                 ps.setString(index++, searchPattern);
                 ps.setString(index++, searchPattern);
             }
-            
+
             // Set params cho UserID
             if (!isAdmin) {
                 ps.setInt(index++, userId);
             }
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Project project = new Project();
@@ -192,7 +192,7 @@ public class ProjectDAO extends DBContext {
                     project.setStartDate(rs.getDate("StartDate"));
                     project.setDeadline(rs.getDate("Deadline"));
                     project.setStatus(rs.getString("Status"));
-                    
+
                     projectList.add(project);
                 }
             }
@@ -201,7 +201,7 @@ public class ProjectDAO extends DBContext {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        
+
         return projectList;
     }
 
@@ -234,15 +234,15 @@ public class ProjectDAO extends DBContext {
 
     public List<UserAccount> getMembersInProject(int projectId) {
         List<UserAccount> list = new ArrayList<>();
-        String sql = "SELECT u.UserID, u.Username, u.FullName, u.Email, pm.RoleInProject " +
-                     "FROM UserAccount u " +
-                     "JOIN ProjectMember pm ON u.UserID = pm.UserID " +
-                     "WHERE pm.ProjectID = ?";
-                     
+        String sql = "SELECT u.UserID, u.Username, u.FullName, u.Email, pm.RoleInProject "
+                + "FROM UserAccount u "
+                + "JOIN ProjectMember pm ON u.UserID = pm.UserID "
+                + "WHERE pm.ProjectID = ?";
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            
+
             ps.setInt(1, projectId);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UserAccount u = new UserAccount();
@@ -250,8 +250,8 @@ public class ProjectDAO extends DBContext {
                     u.setUsername(rs.getString("Username"));
                     u.setFullName(rs.getString("FullName"));
                     u.setEmail(rs.getString("Email"));
-                    u.setRoleInProject(rs.getString("RoleInProject")); 
-                    
+                    u.setRoleInProject(rs.getString("RoleInProject"));
+
                     list.add(u);
                 }
             }
@@ -263,16 +263,16 @@ public class ProjectDAO extends DBContext {
 
     public void updateProjectInfo(Project p) {
         String sql = "UPDATE Project SET ProjectName = ?, StartDate = ?, Deadline = ?, "
-                   + "Status = ?, Description = ? WHERE ProjectID = ?";
+                + "Status = ?, Description = ? WHERE ProjectID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            
+
             ps.setString(1, p.getProjectName());
-            ps.setDate(2, p.getStartDate()); 
-            ps.setDate(3, p.getDeadline());           
+            ps.setDate(2, p.getStartDate());
+            ps.setDate(3, p.getDeadline());
             ps.setString(4, p.getStatus());
             ps.setString(5, p.getDescription());
             ps.setInt(6, p.getProjectID());
-            
+
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -297,11 +297,11 @@ public class ProjectDAO extends DBContext {
     public void updateMemberRole(int projectId, int uid, String newRole) {
         String sql = "UPDATE ProjectMember SET RoleInProject = ? WHERE ProjectID = ? AND UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            
+
             ps.setString(1, newRole);
             ps.setInt(2, projectId);
             ps.setInt(3, uid);
-            
+
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -311,10 +311,10 @@ public class ProjectDAO extends DBContext {
     public void removeMemberFromProject(int projectId, int uid) {
         String sql = "DELETE FROM ProjectMember WHERE ProjectID = ? AND UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            
+
             ps.setInt(1, projectId);
             ps.setInt(2, uid);
-            
+
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -596,7 +596,7 @@ public class ProjectDAO extends DBContext {
     }
 
     // phần dưới là nghĩa code nhé :)))
-      /**
+    /**
      * Map dữ liệu từ ResultSet sang Project object
      *
      * @param rs - ResultSet từ query
@@ -658,8 +658,7 @@ public class ProjectDAO extends DBContext {
         List<Project> list = new ArrayList<>();
         String sql = "SELECT * FROM Project";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Project p = new Project();
                 p.setProjectID(rs.getInt("ProjectID"));

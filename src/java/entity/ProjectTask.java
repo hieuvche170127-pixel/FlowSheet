@@ -26,9 +26,9 @@ public class ProjectTask {
     private Timestamp deadline;
     private Double estimateHourToDo;
     private Timestamp createdAt;
-
     // Vẫn dùng String như bình thường
     private String status;
+    
     // Optional display-only field from joins
     private String projectName;
 

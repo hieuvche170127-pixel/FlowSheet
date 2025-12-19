@@ -2,11 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package controller.nghia.timesheet;
+package controller.nghia.invitation;
 
-import dal.TaskReportDAO;
-import dal.TimesheetDAO;
-import dal.TimesheetEntryDAO;
+import dal.InvitationDAO;
+import dao.RoleDAO;
+import entity.Invitation;
+import entity.Role;
 import entity.UserAccount;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,12 +17,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author Admin
  */
-public class UpdateTimesheet extends HttpServlet {
+public class ReplyInvitation extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -40,10 +44,10 @@ public class UpdateTimesheet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet UpdateTimesheet</title>");
+            out.println("<title>Servlet ReplyInvitation</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet UpdateTimesheet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ReplyInvitation at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -67,59 +71,51 @@ public class UpdateTimesheet extends HttpServlet {
 
         HttpSession session = request.getSession(true);
         UserAccount user = (UserAccount) session.getAttribute("user");
-
-        TimesheetDAO timesheetDao = new TimesheetDAO();
-        TimesheetEntryDAO timesheetEntryDao = new TimesheetEntryDAO();
-        TaskReportDAO taskreportDao = new TaskReportDAO();
-
+        InvitationDAO invitationDao = new InvitationDAO();
+        RoleDAO roleDao = new RoleDAO();
         if (user == null) {
+            response.sendRedirect("login.jsp");
+            // tuy không cần return (hoặc là có) nhưng mà để đây để đánh dấu kết thúc luồng 
+            return;
+        }
+
+        // check null trước để ko NPE 
+        if (user.getRoleID() == null) {
+            session.invalidate();
             response.sendRedirect("login.jsp");
             return;
         }
-        ArrayList<String> errorList = new ArrayList<>();
+        
         try {
             if (user.getRoleID() == 1) {
-                // nếu ko tìm thấy/ nhận được xuống exception -> ném về view all timesheet
-                String timesheetIdString = request.getParameter("timesheetId");
-                String rawSummary = request.getParameter("summary").trim();
-                String cleanSummary = "";
-                if (rawSummary != null) {
-                    // 1. trim() để bỏ 2 đầu
-                    // 2. replaceAll("\\s+", " ") để biến mọi cụm khoảng trắng (2, 3, 4 dấu cách) thành 1 dấu duy nhất
-                    cleanSummary = rawSummary.trim().replaceAll("\\s+", " ");
-                }
-                int timesheetIdInt = Integer.parseInt(timesheetIdString);
-                // validate người dùng là chủ sở hữu timesheet
-                // timesheet chưa được review && là của tuần này - cái gì ở qk thì thôi, đừng cập nhật nữa. 
-                // count timesheet where timesheet id = And status!= reviewed timesheet. start là thứ 2 tuần này - hay tùy. 
-                // sumarry <2000 kí tự. -sau trim.
-                if (cleanSummary.length() > 2000) {
-                    errorList.add("sumaary String quá dài, ko thể update");
-                }
-                boolean isAbleToUpdate = timesheetDao.isAbleToUpdateTimesheet(timesheetIdInt, user.getUserID());
-                if (!isAbleToUpdate) {
-                    errorList.add("this timesheet is reviewed or expired or you are not the create one");
-                }
+                String action = request.getParameter("action"); // accept hoặc reject
+                String invitationidString = request.getParameter("id");
 
-                if (errorList.isEmpty()) {
-                    boolean updateResult = timesheetDao.updateTimesheetSummary(timesheetIdInt, cleanSummary);
-                    // nếu update được thì gửi về là update thành công
-                    // không fthif gửi về thất bại
-                    // đều gửi về cái servlet detail hết. xong để thk jsp lấy session rồi teminate cái ses atribute đi.
-                    if (updateResult) {
-                        session.setAttribute("info", "cập nhật nội dung timesheet thành công!");
-                    } else {
-                        session.setAttribute("info", "cập nhật nội dung timesheet thất bại!");
+                int invitationId = Integer.parseInt(invitationidString);
+                boolean isAbleToReply = invitationDao.countSpecificPendingInvitation(invitationId, user.getEmail());
+
+                // nếu có thể update - tức là đúng người, đúng thời điểm, chưa bị cancell
+                if (isAbleToReply) {
+                    if (action.equalsIgnoreCase("ACCEPTED")
+                            || action.equalsIgnoreCase("reject")) {
+                        boolean replyStatus = invitationDao.editStatus(invitationId, action);
+                        session.setAttribute("replyStatus", replyStatus);
+                        // nếu chấp thuận thì phải làm gì với team mem và project mem
+                        // check xem cái nào có Teamid/ProjectId
+                        // search thử xem team/project còn tồn tại ko? (có) add vào team/project mem : (ko)gửi error mesage:
+                        // team hoặc project ko còn tồn tại. 
+                     
+                        if(action.equalsIgnoreCase("ACCEPTED")){
+                            
+                        }
                     }
-                    // chỉnh url theo cái timesheetdetail servlet
-                    response.sendRedirect("ViewDetailTimesheet?timesheetId=" + timesheetIdInt);
-                    return;
                 } else {
-                    session.setAttribute("errorList", errorList);
+                    String errorMsg = "người dùng ko có quyền update hoặc là lời mời đã bị hủy, hết hạn, hoặc đã được trả lời.";
+                    session.setAttribute("sessionError", errorMsg);
                 }
-                response.sendRedirect("ViewDetailTimesheet?timesheetId=" + timesheetIdInt);
+                // vẫn gửi về bên viewall để lấy data
+                response.sendRedirect(request.getContextPath()+"/ViewAllInvitationSentToMe");
                 return;
-
             } else {
                 //redirect về homepage tương ứng với 2 và 3, còn lại thì session.invalidate rồi tống về login
                 if (user.getRoleID() == 2 || user.getRoleID() == 3) {
@@ -132,14 +128,12 @@ public class UpdateTimesheet extends HttpServlet {
                     return;
                 }
             }
-        } catch (NumberFormatException numberFormatException) {
-            errorList.add("ko lấy được id của timesheet");
-            session.setAttribute("errorList", errorList);
-            request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
         } catch (Exception e) {
-            errorList.add("Đã có exception xảy ra");
-            session.setAttribute("errorList", errorList);
-            request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
+            e.printStackTrace(); // In lỗi ra console để debug
+            String errorMsg = "Đã có exception xảy ra: " + e.getMessage();
+            session.setAttribute("sessionError", errorMsg);
+            request.getRequestDispatcher("/nghiapages/errorPage.jsp").forward(request, response);
+            return;
         }
     }
 
