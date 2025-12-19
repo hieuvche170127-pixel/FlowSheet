@@ -153,7 +153,7 @@
             <!-- Your update: link direct to /FlowSheet/CreateTeam.jsp -->
             <form method="get" action="<%= request.getContextPath()%>/CreateTeam.jsp">
                 <a class="btn-create-team"
-                   href="${pageContext.request.contextPath}/team/create">
+                   href="${pageContext.request.contextPath}/CreateTeam.jsp">
                     Create Team
                 </a>
             </form>
