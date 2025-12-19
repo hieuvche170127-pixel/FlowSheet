@@ -119,19 +119,29 @@
                         </div>
 
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="projectId" name="projectId">
-                                <option value="">None (Lab Default)</option>
-                                <% List<Project> projects = (List<Project>) request.getAttribute("projects");
-                                    if (projects != null) {
-                                        for (Project p : projects) { %>
-                                <option value="<%= p.getProjectID() %>"
-                                        <%= (task.getProjectId() != null && task.getProjectId().equals(p.getProjectID())) ? "selected" : "" %>>
-                                    <%= p.getProjectName() %>
-                                </option>
-                                <%      }
-                                } %>
-                            </select>
-                            <label for="projectId"><i class="fas fa-project-diagram me-2"></i>Assign to Project (Optional)</label>
+                            <%
+                                String projectDisplayName = task.getProjectName();
+                                if (projectDisplayName == null || projectDisplayName.isEmpty()) {
+                                    // Try to find project name from list
+                                    List<Project> projects = (List<Project>) request.getAttribute("projects");
+                                    if (projects != null && task.getProjectId() != null) {
+                                        for (Project p : projects) {
+                                            if (p.getProjectID() == task.getProjectId()) {
+                                                projectDisplayName = p.getProjectName();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (projectDisplayName == null || projectDisplayName.isEmpty()) {
+                                        projectDisplayName = "N/A";
+                                    }
+                                }
+                            %>
+                            <input type="text" class="form-control" id="projectName" 
+                                   value="<%= projectDisplayName %>" 
+                                   readonly disabled style="background-color: #e9ecef; cursor: not-allowed;">
+                            <input type="hidden" name="projectId" value="<%= task.getProjectId() != null ? task.getProjectId() : "" %>">
+                            <label for="projectName"><i class="fas fa-project-diagram me-2"></i>Project (Cannot be changed)</label>
                         </div>
 
                         <div class="form-floating mb-3">

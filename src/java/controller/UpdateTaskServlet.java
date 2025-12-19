@@ -58,7 +58,6 @@ public class UpdateTaskServlet extends HttpServlet {
         String taskIdStr = req.getParameter("taskId");
         String taskName = req.getParameter("taskName");
         String description = req.getParameter("description");
-        String projectIdStr = req.getParameter("projectId");
         String status = req.getParameter("status");
         String deadlineStr = req.getParameter("deadline");
         String estimateHourToDoStr = req.getParameter("estimateHourToDo");
@@ -71,12 +70,19 @@ public class UpdateTaskServlet extends HttpServlet {
 
         try {
             int taskId = Integer.parseInt(taskIdStr);
-            Integer projectId = (projectIdStr != null && !projectIdStr.isEmpty()) 
-                    ? Integer.parseInt(projectIdStr) : null;
-
-            // ProjectID is NOT NULL in database
+            
+            // Get existing task to preserve projectId - project cannot be changed
+            ProjectTask existingTask = taskDAO.getTaskById(taskId);
+            if (existingTask == null) {
+                req.setAttribute("error", "Task not found.");
+                doGet(req, resp);
+                return;
+            }
+            
+            // Use existing projectId - do not allow changing project
+            Integer projectId = existingTask.getProjectId();
             if (projectId == null) {
-                req.setAttribute("error", "Project is required.");
+                req.setAttribute("error", "Task must belong to a project.");
                 doGet(req, resp);
                 return;
             }
@@ -85,7 +91,7 @@ public class UpdateTaskServlet extends HttpServlet {
             task.setTaskId(taskId);
             task.setTaskName(taskName);
             task.setDescription(description);
-            task.setProjectId(projectId);
+            task.setProjectId(projectId); // Keep original projectId
             task.setStatus(status != null ? status : ProjectTask.STATUS_TODO);
             
             // Parse deadline

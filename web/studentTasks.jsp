@@ -46,7 +46,7 @@
                                                 ${task.projectName}
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="text-muted">Lab / Unassigned</span>
+                                                <span class="text-muted">N/A</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>

@@ -286,6 +286,57 @@ public class TaskReportDAO extends DBContext {
         }
         return false;
     }
+
+    /**
+     * Check if a task has any task reports
+     * @param taskId The task ID to check
+     * @return true if the task has at least one report, false otherwise
+     */
+    public boolean hasTaskReports(int taskId) {
+        if (connection == null) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
+            return false;
+        }
+
+        String sql = "SELECT COUNT(*) as reportCount FROM TaskReport WHERE TaskID = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int count = rs.getInt("reportCount");
+                return count > 0;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Error checking task reports", ex);
+        }
+        return false;
+    }
+
+    /**
+     * Get the count of task reports for a specific task
+     * @param taskId The task ID
+     * @return The number of reports for this task
+     */
+    public int countTaskReports(int taskId) {
+        if (connection == null) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
+            return 0;
+        }
+
+        String sql = "SELECT COUNT(*) as reportCount FROM TaskReport WHERE TaskID = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("reportCount");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Error counting task reports", ex);
+        }
+        return 0;
+    }
 }
 
 
