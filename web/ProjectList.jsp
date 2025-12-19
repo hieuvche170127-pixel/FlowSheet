@@ -182,10 +182,16 @@
                                     </td>
                                     
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/project/details?id=${p.projectID}" 
-                                           class="btn btn-outline-secondary btn-sm">
-                                            View Details
-                                        </a>
+                                        <div class="d-flex gap-2">
+                                            <a href="${pageContext.request.contextPath}/project/details?id=${p.projectID}" 
+                                               class="btn btn-outline-secondary btn-sm">
+                                                <i class="fas fa-info-circle me-1"></i>Details
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/task/view?projectId=${p.projectID}" 
+                                               class="btn btn-green btn-sm">
+                                                <i class="fas fa-tasks me-1"></i>Tasks
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>

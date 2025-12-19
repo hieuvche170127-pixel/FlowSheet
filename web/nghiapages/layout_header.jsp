@@ -250,13 +250,13 @@
                         <a href="#" class="nav-link"><i class="far fa-bell"></i> <span class="badge">2</span></a>
                     </li>
                     <li class="nav-item user-menu">
-                        <a href="#" class="nav-link" style="padding: 0 10px;">
+                        <a href="${pageContext.request.contextPath}/profile" class="nav-link" style="padding: 0 10px;">
                             <i class="far fa-user-circle user-icon"></i> 
                             <span><span>${sessionScope.user.fullName}</span></span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link" title="Sign out"><i class="fas fa-power-off"></i></a>
+                        <a href="${pageContext.request.contextPath}/logout" class="nav-link" title="Sign out"><i class="fas fa-power-off"></i></a>
                     </li>
                 </ul>
             </nav>
@@ -267,6 +267,8 @@
                 <ul>   
                     <li><a href="${pageContext.request.contextPath}/nghiapages/my_project_list.jsp"><i class="fas fa-graduation-cap"></i>My Project</a></li>
                     <li><a href="${pageContext.request.contextPath}/MyTeamList"><i class="fas fa-users"></i>My Teams</a></li>
+                    <li><a href="${pageContext.request.contextPath}/student/tasks"><i class="fas fa-shield-alt"></i> My tasks</a></li>
+                    <li><a href="${pageContext.request.contextPath}/nghiapages/my_timesheet.jsp"><i class="fas fa-list-ol"></i> My Timesheet</a></li>
                     <li><a href="${pageContext.request.contextPath}/nghiapages/my_all_task.jsp"><i class="fas fa-shield-alt"></i> My tasks</a></li>
                       <li><a href="${pageContext.request.contextPath}/ViewAndSearchTimesheet"><i class="fas fa-list-ol"></i> My Timesheet</a></li>
 

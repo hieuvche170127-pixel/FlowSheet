@@ -113,8 +113,11 @@
                         </div>
 
                         <div class="form-floating mb-3">
-                            <input type="datetime-local" class="form-control" id="deadline" name="deadline">
+                            <input type="datetime-local" class="form-control" id="deadline" name="deadline" min="">
                             <label for="deadline"><i class="fas fa-calendar-times me-2"></i>Deadline (Optional)</label>
+                            <div class="invalid-feedback" id="deadline-error" style="display: none;">
+                                Deadline cannot be in the past.
+                            </div>
                         </div>
 
                         <div class="form-floating mb-4">
@@ -140,5 +143,54 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Set minimum date to today
+    document.addEventListener('DOMContentLoaded', function() {
+        const deadlineInput = document.getElementById('deadline');
+        const now = new Date();
+        // Format: YYYY-MM-DDTHH:mm
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        deadlineInput.setAttribute('min', minDateTime);
+        
+        // Validate on change
+        deadlineInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const currentDate = new Date();
+            
+            if (selectedDate < currentDate) {
+                this.setCustomValidity('Deadline cannot be in the past.');
+                this.classList.add('is-invalid');
+                document.getElementById('deadline-error').style.display = 'block';
+            } else {
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
+                document.getElementById('deadline-error').style.display = 'none';
+            }
+        });
+        
+        // Validate on form submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const deadlineInput = document.getElementById('deadline');
+            if (deadlineInput.value) {
+                const selectedDate = new Date(deadlineInput.value);
+                const currentDate = new Date();
+                
+                if (selectedDate < currentDate) {
+                    e.preventDefault();
+                    deadlineInput.classList.add('is-invalid');
+                    document.getElementById('deadline-error').style.display = 'block';
+                    deadlineInput.focus();
+                    return false;
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>

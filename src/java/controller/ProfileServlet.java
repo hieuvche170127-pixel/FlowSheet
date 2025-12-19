@@ -46,34 +46,58 @@ public class ProfileServlet extends HttpServlet {
         String action = req.getParameter("action");
 
         if ("updateProfile".equals(action)) {
+            String username = req.getParameter("username");
             String fullName = req.getParameter("fullName");
             String email = req.getParameter("email");
 
-            user.setFullName(fullName);
-            user.setEmail(email);
-
-            if (userDAO.updateUserProfile(user)) {
-                req.setAttribute("success", "Profile updated successfully.");
+            // Validate input
+            if (username == null || username.trim().isEmpty()) {
+                req.setAttribute("error", "Username is required.");
+            } else if (fullName == null || fullName.trim().isEmpty()) {
+                req.setAttribute("error", "Full name is required.");
+            } else if (email == null || email.trim().isEmpty()) {
+                req.setAttribute("error", "Email is required.");
             } else {
-                req.setAttribute("error", "Failed to update profile. Please try again.");
+                // Check if username is changed and if it already exists for another user
+                if (!username.equals(user.getUsername()) && userDAO.isUsernameExistsForOtherUser(username, user.getUserID())) {
+                    req.setAttribute("error", "Username already exists. Please choose another username.");
+                } else {
+                    user.setUsername(username.trim());
+                    user.setFullName(fullName.trim());
+                    user.setEmail(email.trim());
+
+                    if (userDAO.updateUserProfile(user)) {
+                        // Update session with new username
+                        session.setAttribute("user", user);
+                        req.setAttribute("success", "Profile updated successfully.");
+                    } else {
+                        req.setAttribute("error", "Failed to update profile. Please try again.");
+                    }
+                }
             }
         } else if ("changePassword".equals(action)) {
             String currentPassword = req.getParameter("currentPassword");
             String newPassword = req.getParameter("newPassword");
             String confirmPassword = req.getParameter("confirmPassword");
 
-            // Verify current password (plain-text comparison)
-            if (!currentPassword.equals(user.getPassword())) {
-                req.setAttribute("error", "Current password is incorrect.");
+            // Validate input
+            if (currentPassword == null || currentPassword.trim().isEmpty()) {
+                req.setAttribute("error", "Current password is required.");
+            } else if (newPassword == null || newPassword.trim().isEmpty()) {
+                req.setAttribute("error", "New password is required.");
+            } else if (newPassword.length() < 4) {
+                req.setAttribute("error", "New password must be at least 4 characters.");
             } else if (!newPassword.equals(confirmPassword)) {
                 req.setAttribute("error", "New passwords do not match.");
-            } else {
+            } else if (userDAO.verifyPassword(user.getUserID(), currentPassword)) {
+                // Current password is correct, update to new password
                 if (userDAO.changePassword(user.getUserID(), newPassword)) {
-                    user.setPassword(newPassword); // Update session
                     req.setAttribute("success", "Password changed successfully.");
                 } else {
                     req.setAttribute("error", "Failed to change password. Please try again.");
                 }
+            } else {
+                req.setAttribute("error", "Current password is incorrect.");
             }
         }
 

@@ -217,19 +217,58 @@ public class UserDAO extends DBContext {
     }
 
     //----------------------  UPDATE  ----------------------------------------------------//
-    // Update user profile (full name and email)
+    // Check if username exists for another user (excluding current user)
+    public boolean isUsernameExistsForOtherUser(String username, int currentUserId) {
+        String sql = "SELECT COUNT(*) FROM UserAccount WHERE Username = ? AND UserID != ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setInt(2, currentUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    // Update user profile (username, full name and email)
     public boolean updateUserProfile(UserAccount user) {
         String sql = """
             UPDATE UserAccount 
-            SET FullName = ?, Email = ?
+            SET Username = ?, FullName = ?, Email = ?
             WHERE UserID = ?
             """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, user.getFullName());
-            ps.setString(2, user.getEmail());
-            ps.setInt(3, user.getUserID());
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getFullName());
+            ps.setString(3, user.getEmail());
+            ps.setInt(4, user.getUserID());
             return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    // Verify current password (plain-text for lab consistency)
+    public boolean verifyPassword(int userId, String password) {
+        String sql = """
+            SELECT COUNT(*) FROM UserAccount 
+            WHERE UserID = ? AND PasswordHash = ?
+            """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
         } catch (SQLException ex) {
             Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
