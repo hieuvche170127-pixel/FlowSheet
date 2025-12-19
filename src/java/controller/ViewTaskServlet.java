@@ -74,6 +74,7 @@ public class ViewTaskServlet extends HttpServlet {
         req.setAttribute("taskHasReports", taskHasReports);
         req.setAttribute("searchFilter", searchFilter != null ? searchFilter : "");
         req.setAttribute("projectIdFilter", projectIdFilter);
+        req.setAttribute("user", user); // Add user to request for role checking
         List<Project> projects = projectDAO.getAllProjectsForTeam();
         req.setAttribute("projects", projects);
         

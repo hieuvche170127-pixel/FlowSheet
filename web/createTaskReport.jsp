@@ -178,7 +178,7 @@
                                     <c:if test="${empty tasks}">disabled</c:if>>
                                 <i class="fas fa-save me-2"></i>Create Report
                             </button>
-                            <a href="${pageContext.request.contextPath}/task/view" 
+                            <a href="${pageContext.request.contextPath}/task-report/list" 
                                class="btn btn-secondary" 
                                style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
                                 <i class="fas fa-times me-2"></i>Cancel
