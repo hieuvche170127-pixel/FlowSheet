@@ -106,6 +106,7 @@ public class ViewDetailTimesheet extends HttpServlet {
 
                 TimeSheet foundById = timesheetDao.getTimesheetByTimesheetId(timesheetIdInt);
                 if (foundById == null) {
+                    // chưa chỉnh lại url af ko the dung roi.
                     errorList.add("ko tìm thấy timesheet");
                     request.setAttribute("errorList", errorList);
                     request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
@@ -113,9 +114,10 @@ public class ViewDetailTimesheet extends HttpServlet {
                 }
 
                 if (foundById.getUserId() != user.getUserID()) {
+                    // chưa chỉnh lại url af ko the dung roi.
                     errorList.add("timesheet này ko phải của cậuuuuuu");
                     request.setAttribute("errorList", errorList);
-                    request.getRequestDispatcher("/").forward(request, response);
+                    request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
                     return;
                 }
 
@@ -132,13 +134,17 @@ public class ViewDetailTimesheet extends HttpServlet {
                 return;
 
             } catch (NumberFormatException numberFormatException) {
+                // gửi về mytimesheet - à ừ đúng r
                 errorList.add("ko lấy được id của timesheet");
                 request.setAttribute("errorList", errorList);
                 request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
+                return;
             } catch (Exception e) {
+                // gửi về mytimesheet - à ừ đúng r
                 errorList.add("Đã có exception xảy ra");
                 request.setAttribute("errorList", errorList);
                 request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
+                return;
             }
         }
     }

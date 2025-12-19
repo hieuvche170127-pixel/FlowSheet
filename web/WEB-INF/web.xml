@@ -44,6 +44,14 @@
         <servlet-name>ViewDetailTimesheet</servlet-name>
         <servlet-class>controller.nghia.timesheet.ViewDetailTimesheet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ViewAllInvitationSentToMe</servlet-name>
+        <servlet-class>controller.nghia.invitation.ViewAllInvitationSentToMe</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ReplyInvitation</servlet-name>
+        <servlet-class>controller.nghia.invitation.ReplyInvitation</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TimesheetManagement</servlet-name>
         <url-pattern>/TimesheetManagement</url-pattern>
@@ -87,6 +95,14 @@
     <servlet-mapping>
         <servlet-name>ViewDetailTimesheet</servlet-name>
         <url-pattern>/ViewDetailTimesheet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewAllInvitationSentToMe</servlet-name>
+        <url-pattern>/ViewAllInvitationSentToMe</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ReplyInvitation</servlet-name>
+        <url-pattern>/ReplyInvitation</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>

@@ -6,7 +6,7 @@ package entity;
 
 import java.time.LocalDateTime;
 import java.util.UUID; // Dùng cho UNIQUEIDENTIFIER
-
+import java.util.Date; // <--- NHỚ IMPORT CÁI NÀY
 /**
  *
  * @author Admin
@@ -134,6 +134,22 @@ public class Invitation {
 
     public void setAcceptedAt(LocalDateTime acceptedAt) {
         this.acceptedAt = acceptedAt;
+    }
+    
+    // các hàm cho jstl
+      // 1. Hàm này sửa lỗi dòng 75
+    public Date getCreatedAtAsDate() {
+        return (createdAt == null) ? null : java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    // 2. Hàm này sửa lỗi dòng tương tự tiếp theo
+    public Date getExpiresAtAsDate() {
+        return (expiresAt == null) ? null : java.sql.Timestamp.valueOf(expiresAt);
+    }
+    
+    // 3. Hàm này dự phòng
+    public Date getAcceptedAtAsDate() {
+        return (acceptedAt == null) ? null : java.sql.Timestamp.valueOf(acceptedAt);
     }
     
     

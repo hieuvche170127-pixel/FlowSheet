@@ -273,7 +273,8 @@
                     <li style="margin-top: 15px;"><a href="#"><i class="fas fa-home"></i>HomePage</a></li>
                     <li><a href="#"><i class="fas fa-clock"></i> Nhà của tôi</a></li>
                     <li><a href="#"><i class="fas fa-calendar-alt"></i> Lịch</a></li>
-                    <li><a href="#"><i class="fas fa-file-alt"></i> Private files</a></li>
+                    <li><a href="${pageContext.request.contextPath}/ViewAllInvitationSentToMe"><i class="fas fa-file-alt"></i>My invitation</a></li>
+
                 </ul>
             </div>
         </aside>

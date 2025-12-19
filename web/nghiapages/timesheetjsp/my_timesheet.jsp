@@ -14,7 +14,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>My Timesheet</title>
         <!-- Ưu tiên dùng Bootstrap từ layout, dòng này chỉ để fallback nếu layout thiếu -->
-        
+
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> 
     </head>
 
@@ -22,6 +22,28 @@
     <%@ include file="/nghiapages/layout_header.jsp" %>
 
     <div class="container mt-4">
+
+        <c:if test="${not empty sessionScope.sessionMessage}">
+            <div class="alert alert-${sessionScope.messageType} alert-dismissible fade show" role="alert">
+                ${sessionScope.sessionMessage}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <%-- Hiển thị xong thì xóa ngay cho sạch session --%>
+            <c:remove var="sessionMessage" scope="session" />
+            <c:remove var="messageType" scope="session" />
+        </c:if>
+
+        <%-- Hiển thị thông báo LỖI (sessionError) --%>
+        <c:if test="${not empty sessionScope.sessionError}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Lỗi:</strong> ${sessionScope.sessionError}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <%-- Hiển thị xong thì xóa ngay để tránh lặp lại khi F5 --%>
+            <c:remove var="sessionError" scope="session" />
+        </c:if>
+
+
         <h1>Timesheet của tôi: </h1>
 
         <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#timesheetModal">
@@ -78,7 +100,7 @@
                     <h5 class="modal-title" id="timesheetModalLabel">Add New Timesheet</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="addTimesheet" method="POST">
+                <form action="${pageContext.request.contextPath}/AddTimesheet" method="Get">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="startDate" class="form-label">Start Date (Monday)</label>
