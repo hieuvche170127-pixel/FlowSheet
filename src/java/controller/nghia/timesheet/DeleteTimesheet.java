@@ -95,11 +95,14 @@ public class DeleteTimesheet extends HttpServlet {
                     } else {
                         session.setAttribute("info", "Lỗi hệ thống, không thể xóa!");
                     }
+                    
+                    // neu thanh cong hoac that bai thi vao all timesheet chu nhi, tai day la xoa timesheet ma
+                    response.sendRedirect("ViewDetailTimesheet?timesheetId=" + timesheetIdInt);
+                    return;
                 } else {
                     session.setAttribute("errorList", errorList);
                 }
-                response.sendRedirect("ViewDetailTimesheet?timesheetId=" + timesheetIdInt);
-                return;
+
             } else {
                 //redirect về homepage tương ứng với 2 và 3, còn lại thì session.invalidate rồi tống về login
                 if (user.getRoleID() == 2 || user.getRoleID() == 3) {
