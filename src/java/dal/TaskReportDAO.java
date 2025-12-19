@@ -38,25 +38,25 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, report.getUserId());
             ps.setInt(2, report.getTaskId());
-            
+
             if (report.getReportDescription() == null || report.getReportDescription().trim().isEmpty()) {
                 ps.setNull(3, java.sql.Types.NVARCHAR);
             } else {
                 ps.setString(3, report.getReportDescription());
             }
-            
+
             if (report.getEstimateWorkPercentDone() == null) {
                 ps.setDouble(4, 0.0);
             } else {
                 ps.setDouble(4, report.getEstimateWorkPercentDone());
             }
-            
+
             if (report.getTotalHourUsed() == null) {
                 ps.setDouble(5, 0.0);
             } else {
                 ps.setDouble(5, report.getTotalHourUsed());
             }
-            
+
             if (report.getTimesheetEntryId() == null) {
                 ps.setNull(6, java.sql.Types.INTEGER);
             } else {
@@ -98,26 +98,26 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
-            
+
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
                 report.setUserId(rs.getInt("UserID"));
                 report.setTaskId(rs.getInt("TaskID"));
                 report.setReportDescription(rs.getString("ReportDescription"));
-                
+
                 Double percentDone = rs.getObject("EstimateWorkPercentDone", Double.class);
                 report.setEstimateWorkPercentDone(percentDone);
-                
+
                 Double totalHours = rs.getObject("TotalHourUsed", Double.class);
                 report.setTotalHourUsed(totalHours);
-                
+
                 Integer timesheetEntryId = rs.getObject("TimesheetEntryID", Integer.class);
                 report.setTimesheetEntryId(timesheetEntryId);
-                
+
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
                 report.setCreatedAt(createdAt);
-                
+
                 list.add(report);
             }
         } catch (SQLException ex) {
@@ -147,26 +147,26 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, taskId);
             ResultSet rs = ps.executeQuery();
-            
+
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
                 report.setUserId(rs.getInt("UserID"));
                 report.setTaskId(rs.getInt("TaskID"));
                 report.setReportDescription(rs.getString("ReportDescription"));
-                
+
                 Double percentDone = rs.getObject("EstimateWorkPercentDone", Double.class);
                 report.setEstimateWorkPercentDone(percentDone);
-                
+
                 Double totalHours = rs.getObject("TotalHourUsed", Double.class);
                 report.setTotalHourUsed(totalHours);
-                
+
                 Integer timesheetEntryId = rs.getObject("TimesheetEntryID", Integer.class);
                 report.setTimesheetEntryId(timesheetEntryId);
-                
+
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
                 report.setCreatedAt(createdAt);
-                
+
                 list.add(report);
             }
         } catch (SQLException ex) {
@@ -345,8 +345,11 @@ public class TaskReportDAO extends DBContext {
         }
 
         return list;
+    }
+
     /**
      * Check if a task has any task reports
+     *
      * @param taskId The task ID to check
      * @return true if the task has at least one report, false otherwise
      */
@@ -373,6 +376,7 @@ public class TaskReportDAO extends DBContext {
 
     /**
      * Get the count of task reports for a specific task
+     *
      * @param taskId The task ID
      * @return The number of reports for this task
      */
@@ -396,5 +400,3 @@ public class TaskReportDAO extends DBContext {
         return 0;
     }
 }
-
-

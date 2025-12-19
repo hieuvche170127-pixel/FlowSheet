@@ -27,7 +27,6 @@ public class UserAccount {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private String roleInProject;
 
     // Constructors (Bạn có thể thêm các Constructor cần thiết)
     public UserAccount() {
