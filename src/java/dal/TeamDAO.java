@@ -167,6 +167,39 @@ public class TeamDAO extends DBContext {
         return list;
     }
 
+    public List<Team> searchByTeamOrMemberForUser(int userId, String keyword) throws SQLException {
+        List<Team> list = new ArrayList<>();
+        String sql
+                = "SELECT DISTINCT t.* "
+                + "FROM Team t "
+                + "JOIN TeamMember tmMe ON t.TeamID = tmMe.TeamID AND tmMe.UserID = ? "
+                + // restrict
+                "LEFT JOIN TeamMember tm ON t.TeamID = tm.TeamID "
+                + "LEFT JOIN UserAccount ua ON tm.UserID = ua.UserID "
+                + "WHERE t.TeamName LIKE ? OR ua.Username LIKE ? OR ua.FullName LIKE ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            String pattern = "%" + keyword + "%";
+            ps.setInt(1, userId);
+            ps.setString(2, pattern);
+            ps.setString(3, pattern);
+            ps.setString(4, pattern);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Team t = new Team();
+                    t.setTeamID(rs.getInt("TeamID"));
+                    t.setTeamName(rs.getString("TeamName"));
+                    t.setDescription(rs.getString("Description"));
+                    t.setCreatedBy(rs.getInt("CreatedBy"));
+                    t.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    list.add(t);
+                }
+            }
+        }
+        return list;
+    }
+
     private Team mapTeamFromResultSet(ResultSet rs) throws SQLException {
         Team t = null;
         t = new Team();
@@ -224,7 +257,7 @@ public class TeamDAO extends DBContext {
 
         return teamList;
     }
-    
+
     public void deleteTeam(int teamId) throws SQLException {
         String sql = "DELETE FROM Team WHERE TeamID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -242,7 +275,5 @@ public class TeamDAO extends DBContext {
             return ps.executeUpdate() > 0;
         }
     }
-    
-    
-    
+
 }

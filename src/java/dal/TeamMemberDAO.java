@@ -208,4 +208,45 @@ public class TeamMemberDAO extends DBContext {
             }
         }
     }
+
+    public Integer getLeaderUserId(int teamId) throws SQLException {
+        String sql = "SELECT UserID FROM TeamMember WHERE TeamID = ? AND RoleID = 5";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, teamId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("UserID") : null;
+            }
+        }
+    }
+
+// Promote a user to leader and ensure only 1 leader exists (transaction)
+    public boolean makeLeaderExclusive(int teamId, int newLeaderUserId) throws SQLException {
+        String demoteOld = "UPDATE TeamMember SET RoleID = 4 WHERE TeamID = ? AND RoleID = 5";
+        String promoteNew = "UPDATE TeamMember SET RoleID = 5 WHERE TeamID = ? AND UserID = ?";
+
+        try {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement ps1 = connection.prepareStatement(demoteOld)) {
+                ps1.setInt(1, teamId);
+                ps1.executeUpdate();
+            }
+
+            int promoted;
+            try (PreparedStatement ps2 = connection.prepareStatement(promoteNew)) {
+                ps2.setInt(1, teamId);
+                ps2.setInt(2, newLeaderUserId);
+                promoted = ps2.executeUpdate();
+            }
+
+            connection.commit();
+            return promoted > 0;
+
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
+    }
 }

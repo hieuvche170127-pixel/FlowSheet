@@ -38,25 +38,25 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, report.getUserId());
             ps.setInt(2, report.getTaskId());
-
+            
             if (report.getReportDescription() == null || report.getReportDescription().trim().isEmpty()) {
                 ps.setNull(3, java.sql.Types.NVARCHAR);
             } else {
                 ps.setString(3, report.getReportDescription());
             }
-
+            
             if (report.getEstimateWorkPercentDone() == null) {
                 ps.setDouble(4, 0.0);
             } else {
                 ps.setDouble(4, report.getEstimateWorkPercentDone());
             }
-
+            
             if (report.getTotalHourUsed() == null) {
                 ps.setDouble(5, 0.0);
             } else {
                 ps.setDouble(5, report.getTotalHourUsed());
             }
-
+            
             if (report.getTimesheetEntryId() == null) {
                 ps.setNull(6, java.sql.Types.INTEGER);
             } else {
@@ -98,26 +98,26 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
-
+            
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
                 report.setUserId(rs.getInt("UserID"));
                 report.setTaskId(rs.getInt("TaskID"));
                 report.setReportDescription(rs.getString("ReportDescription"));
-
+                
                 Double percentDone = rs.getObject("EstimateWorkPercentDone", Double.class);
                 report.setEstimateWorkPercentDone(percentDone);
-
+                
                 Double totalHours = rs.getObject("TotalHourUsed", Double.class);
                 report.setTotalHourUsed(totalHours);
-
+                
                 Integer timesheetEntryId = rs.getObject("TimesheetEntryID", Integer.class);
                 report.setTimesheetEntryId(timesheetEntryId);
-
+                
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
                 report.setCreatedAt(createdAt);
-
+                
                 list.add(report);
             }
         } catch (SQLException ex) {
@@ -147,32 +147,144 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, taskId);
             ResultSet rs = ps.executeQuery();
-
+            
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
                 report.setUserId(rs.getInt("UserID"));
                 report.setTaskId(rs.getInt("TaskID"));
                 report.setReportDescription(rs.getString("ReportDescription"));
-
+                
                 Double percentDone = rs.getObject("EstimateWorkPercentDone", Double.class);
                 report.setEstimateWorkPercentDone(percentDone);
-
+                
                 Double totalHours = rs.getObject("TotalHourUsed", Double.class);
                 report.setTotalHourUsed(totalHours);
-
+                
                 Integer timesheetEntryId = rs.getObject("TimesheetEntryID", Integer.class);
                 report.setTimesheetEntryId(timesheetEntryId);
-
+                
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
                 report.setCreatedAt(createdAt);
-
+                
                 list.add(report);
             }
         } catch (SQLException ex) {
             Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Error retrieving task reports", ex);
         }
         return list;
+    }
+
+    /**
+     * Get a single task report that belongs to the given user.
+     */
+    public TaskReport getTaskReportByIdAndUser(int reportId, int userId) {
+        if (connection == null) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
+            return null;
+        }
+
+        String sql = """
+            SELECT ReportID, UserID, TaskID, ReportDescription,
+                   EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID, CreatedAt
+            FROM TaskReport
+            WHERE ReportID = ? AND UserID = ?
+            """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, reportId);
+            ps.setInt(2, userId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                TaskReport report = new TaskReport();
+                report.setReportId(rs.getInt("ReportID"));
+                report.setUserId(rs.getInt("UserID"));
+                report.setTaskId(rs.getInt("TaskID"));
+                report.setReportDescription(rs.getString("ReportDescription"));
+                report.setEstimateWorkPercentDone(rs.getObject("EstimateWorkPercentDone", Double.class));
+                report.setTotalHourUsed(rs.getObject("TotalHourUsed", Double.class));
+                report.setTimesheetEntryId(rs.getObject("TimesheetEntryID", Integer.class));
+                report.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                return report;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Error retrieving task report by id", ex);
+        }
+        return null;
+    }
+
+    /**
+     * Update an existing task report (ownership enforced by userId).
+     */
+    public boolean updateTaskReport(TaskReport report) {
+        if (connection == null) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
+            return false;
+        }
+
+        String sql = """
+            UPDATE TaskReport
+            SET TaskID = ?, ReportDescription = ?, EstimateWorkPercentDone = ?, TotalHourUsed = ?, TimesheetEntryID = ?
+            WHERE ReportID = ? AND UserID = ?
+            """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, report.getTaskId());
+
+            if (report.getReportDescription() == null || report.getReportDescription().trim().isEmpty()) {
+                ps.setNull(2, java.sql.Types.NVARCHAR);
+            } else {
+                ps.setString(2, report.getReportDescription());
+            }
+
+            if (report.getEstimateWorkPercentDone() == null) {
+                ps.setNull(3, java.sql.Types.DOUBLE);
+            } else {
+                ps.setDouble(3, report.getEstimateWorkPercentDone());
+            }
+
+            if (report.getTotalHourUsed() == null) {
+                ps.setNull(4, java.sql.Types.DOUBLE);
+            } else {
+                ps.setDouble(4, report.getTotalHourUsed());
+            }
+
+            if (report.getTimesheetEntryId() == null) {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(5, report.getTimesheetEntryId());
+            }
+
+            ps.setInt(6, report.getReportId());
+            ps.setInt(7, report.getUserId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Error updating task report", ex);
+        }
+        return false;
+    }
+
+    /**
+     * Delete a task report owned by the specified user.
+     */
+    public boolean deleteTaskReport(int reportId, int userId) {
+        if (connection == null) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
+            return false;
+        }
+
+        String sql = "DELETE FROM TaskReport WHERE ReportID = ? AND UserID = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, reportId);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(TaskReportDAO.class.getName()).log(Level.SEVERE, "Error deleting task report", ex);
+        }
+        return false;
     }
 
     private TaskReport mapResultSetToReport(ResultSet rs) throws SQLException {
@@ -234,6 +346,6 @@ public class TaskReportDAO extends DBContext {
 
         return list;
     }
-
-
 }
+
+

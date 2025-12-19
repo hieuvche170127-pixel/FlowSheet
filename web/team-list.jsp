@@ -17,8 +17,6 @@
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 %>
 
-
-
 <style>
     /* IMPORTANT: do NOT style body/html here, layout_header already controls the page */
     .page-wrapper {
@@ -264,7 +262,19 @@
             </table>
         </div>
 
-        <a class="back-link" href="<%= request.getContextPath()%>/nghiapages/my_all_task.jsp">Back to main</a>
+        <%
+            UserAccount current = (UserAccount) session.getAttribute("user");
+
+            // adjust these role IDs to match your DB:
+            // from your earlier codebase, Supervisor/Admin often = 2/3
+            boolean isSupervisor = (current != null && current.getRoleID() == 2);
+
+            String backUrl = isSupervisor
+                    ? (request.getContextPath() + "/supervisor/dashboard")
+                    : (request.getContextPath() + "/studentHomePage.jsp"); // change if your student homepage route differs
+        %>
+
+        <a class="back-link" href="<%= backUrl%>">Back to main</a>
     </div>
 </div>
 <jsp:include page="/nghiapages/layout_footer.jsp" />

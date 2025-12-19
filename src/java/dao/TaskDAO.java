@@ -16,6 +16,11 @@ public class TaskDAO extends DBContext{
     public List<ProjectTask> getAllTasksByUserId(int userId) {
         List<ProjectTask> list = new ArrayList<>();
         
+        if (connection == null) {
+            Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
+            return list;
+        }
+        
         String sql = """
             SELECT T.TaskID, T.TaskName, T.Status, T.Deadline, T.EstimateHourToDo,
                    P.ProjectName, P.ProjectID

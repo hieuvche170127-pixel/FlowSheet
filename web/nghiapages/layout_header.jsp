@@ -268,10 +268,10 @@
                     <li><a href="${pageContext.request.contextPath}/nghiapages/my_project_list.jsp"><i class="fas fa-graduation-cap"></i>My Project</a></li>
                     <li><a href="${pageContext.request.contextPath}/MyTeamList"><i class="fas fa-users"></i>My Teams</a></li>
                     <li><a href="${pageContext.request.contextPath}/nghiapages/my_all_task.jsp"><i class="fas fa-shield-alt"></i> My tasks</a></li>
-                    <li><a href="${pageContext.request.contextPath}/ViewAndSearchTimesheet"><i class="fas fa-list-ol"></i> My Timesheet</a></li>
+                      <li><a href="${pageContext.request.contextPath}/ViewAndSearchTimesheet"><i class="fas fa-list-ol"></i> My Timesheet</a></li>
 
                     <li style="margin-top: 15px;"><a href="#"><i class="fas fa-home"></i>HomePage</a></li>
-                    <li><a href="#"><i class="fas fa-clock"></i> Nhà của tôi</a></li>
+                    <li><a href="${pageContext.request.contextPath}/team"><i class="fas fa-users"></i> All Teams</a></li>
                     <li><a href="#"><i class="fas fa-calendar-alt"></i> Lịch</a></li>
                     <li><a href="${pageContext.request.contextPath}/ViewAllInvitationSentToMe"><i class="fas fa-file-alt"></i>My invitation</a></li>
 

@@ -68,6 +68,12 @@ public class TeamsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        UserAccount current = (UserAccount) request.getSession().getAttribute("user");
+        if (current == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
         TeamDAO teamDAO = new TeamDAO();
         ProjectDAO projectDAO = new ProjectDAO();
         UserDAO userAccountDAO = new UserDAO();
@@ -76,21 +82,27 @@ public class TeamsServlet extends HttpServlet {
         List<Team> teams;
         // Get data from DB
         try {
+
+            boolean isSupervisorOrAdmin = (current.getRoleID() == 2 || current.getRoleID() == 3);
+
             if (q != null && !q.trim().isEmpty()) {
-                teams = teamDAO.searchByTeamOrMember(q.trim());
+                if (isSupervisorOrAdmin) {
+                    teams = teamDAO.searchByTeamOrMember(q.trim());
+                } else {
+                    // NEW: restricted search (only teams the student belongs to)
+                    teams = teamDAO.searchByTeamOrMemberForUser(current.getUserID(), q.trim());
+                }
+                request.setAttribute("q", q.trim());
             } else {
-                teams = teamDAO.findAll();   // your existing method
+                if (isSupervisorOrAdmin) {
+                    teams = teamDAO.findAll();
+                } else {
+                    teams = teamDAO.getAllTeamByUserId(current.getUserID());
+                }
             }
 
             Map<Integer, List<String>> projectCodesByTeam = new HashMap<>();
             Map<Integer, List<UserAccount>> membersByTeam = new HashMap<>();
-
-            for (Team t : teams) {
-                int teamId = t.getTeamID();
-
-                projectCodesByTeam.put(teamId, projectDAO.findProjectCodesByTeam(teamId));
-                membersByTeam.put(teamId, userAccountDAO.findMembersByTeam(teamId));
-            }
 
             for (Team t : teams) {
                 int teamId = t.getTeamID();
@@ -102,6 +114,7 @@ public class TeamsServlet extends HttpServlet {
             request.setAttribute("teams", teams);
             request.setAttribute("projectCodesByTeam", projectCodesByTeam);
             request.setAttribute("membersByTeam", membersByTeam);
+            
             request.setAttribute("q", q);
 
             // Forward to JSP for display

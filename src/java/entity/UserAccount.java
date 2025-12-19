@@ -21,6 +21,8 @@ public class UserAccount {
     private Integer roleID;
     private boolean isActive;
 
+    private String roleInProject;
+
     // Thay thế Timestamp bằng LocalDateTime
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -126,7 +128,7 @@ public class UserAccount {
         this.updatedAt = updatedAt;
     }
 
-    public String getRoleInProject() {
+        public String getRoleInProject() {
         return roleInProject;
     }
 

@@ -4,12 +4,13 @@
  */
 package dal;
 
-import utilities.DateTimeConverter;
 import entity.ProjectTask;
-import java.sql.Statement;
-import java.sql.ResultSet;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,80 +18,91 @@ import java.util.ArrayList;
  */
 public class ProjectTaskDAO extends DBContext {
 
-    private ProjectTask mapProjectTaskFromResultSet(ResultSet rs) throws Exception {
-        ProjectTask task = null;
-        try {
-            task = new ProjectTask();
-
-            // 1. Primary Key
-            task.setTaskId(rs.getInt("taskId"));
-
-            // 2. Foreign Key (Sử dụng getObject để xử lý trường hợp projectId bị NULL trong DB)
-            task.setProjectId((Integer) rs.getObject("projectId"));
-
-            // 3. Thông tin cơ bản
-            task.setTaskName(rs.getString("taskName"));
-            task.setDescription(rs.getString("description"));
-
-            // 4. Các trường thời gian (Dùng trực tiếp Timestamp theo Entity của bạn)
-            task.setDeadline(rs.getTimestamp("deadline"));
-            task.setCreatedAt(rs.getTimestamp("createdAt"));
-
-            // 5. Trường số thực (Sử dụng getObject để tránh lỗi nếu estimateHourToDo là NULL)
-            task.setEstimateHourToDo((Double) rs.getObject("estimateHourToDo"));
-
-            // 6. Trạng thái (Sử dụng setter để trigger logic kiểm tra tính hợp lệ trong Entity)
-            task.setStatus(rs.getString("status"));
-
-            // 7. (Tùy chọn) Nếu trong câu SQL có Join với bảng Project để lấy tên
-            // task.setProjectName(rs.getString("projectName"));
-        } catch (Exception e) {
-            // Log lỗi hoặc ném tiếp để tầng DAO xử lý
-            throw e;
-        }
+    /**
+     * Map dữ liệu từ ResultSet sang đối tượng ProjectTask
+     * 
+     * @param rs ResultSet từ query
+     * @return ProjectTask object đã được map đầy đủ dữ liệu
+     * @throws SQLException
+     */
+    private ProjectTask mapProjectTaskFromResultSet(ResultSet rs) throws SQLException {
+        ProjectTask task = new ProjectTask();
+        
+        task.setTaskId(rs.getInt("TaskID"));
+        
+        // ProjectID có thể NULL
+        Integer projectId = rs.getObject("ProjectID", Integer.class);
+        task.setProjectId(projectId);
+        
+        task.setTaskName(rs.getString("TaskName"));
+        task.setDescription(rs.getString("Description"));
+        
+        // Deadline có thể NULL
+        task.setDeadline(rs.getTimestamp("Deadline"));
+        
+        // EstimateHourToDo có thể NULL (DECIMAL trong DB)
+        Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+        task.setEstimateHourToDo(estimateHours);
+        
+        task.setCreatedAt(rs.getTimestamp("CreatedAt"));
+        task.setStatus(rs.getString("Status"));
+        
         return task;
     }
 
     /**
      * Lấy tất cả ProjectTask từ database
+     * 
+     * @return Danh sách tất cả ProjectTask
      */
     public ArrayList<ProjectTask> getAllProjectTask() {
         ArrayList<ProjectTask> list = new ArrayList<>();
-        try {
-            String sql = "SELECT * FROM ProjectTask";
-            Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(sql);
-
+        String sql = "SELECT [TaskID], [ProjectID], [TaskName], [Description], [Deadline], "
+                + "[EstimateHourToDo], [CreatedAt], [Status] "
+                + "FROM [ProjectTask] "
+                + "ORDER BY [TaskID] DESC";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
             while (rs.next()) {
                 ProjectTask task = mapProjectTaskFromResultSet(rs);
                 list.add(task);
             }
-
-            rs.close();
-            st.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectTaskDAO.class.getName()).log(Level.SEVERE, "Error retrieving all project tasks", ex);
         }
+        
         return list;
     }
 
+    /**
+     * Lấy tất cả ProjectTask theo ProjectID
+     * 
+     * @param projectId ID của project
+     * @return Danh sách ProjectTask thuộc project đó
+     */
     public ArrayList<ProjectTask> getAllTaskByProjectId(int projectId) {
         ArrayList<ProjectTask> list = new ArrayList<>();
-        try {
-            String sql = "SELECT * FROM ProjectTask WHERE projectId = " + projectId;
-            Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(sql);
-
-            while (rs.next()) {
-                ProjectTask task = mapProjectTaskFromResultSet(rs);
-                list.add(task);
+        String sql = "SELECT [TaskID], [ProjectID], [TaskName], [Description], [Deadline], "
+                + "[EstimateHourToDo], [CreatedAt], [Status] "
+                + "FROM [ProjectTask] "
+                + "WHERE [ProjectID] = ? "
+                + "ORDER BY [TaskID] DESC";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, projectId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProjectTask task = mapProjectTaskFromResultSet(rs);
+                    list.add(task);
+                }
             }
-            rs.close();
-            st.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectTaskDAO.class.getName()).log(Level.SEVERE, "Error retrieving tasks by project ID", ex);
         }
+        
         return list;
     }
-
 }
