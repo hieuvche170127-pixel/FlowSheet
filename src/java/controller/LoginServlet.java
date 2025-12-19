@@ -38,15 +38,14 @@ public class LoginServlet extends HttpServlet {
             session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
             // Role-based redirect
-            String redirectUrl;
             if ((user.getRoleID() == 2 || user.getRoleID() == 3)) {
                 // Supervisor or Admin -> supervisor dashboard
-                redirectUrl = req.getContextPath() + "/supervisor/dashboard";
+                resp.sendRedirect(req.getContextPath() + "/supervisor/dashboard");
             } else {
-                // Default: student homepage
-                redirectUrl = req.getContextPath() + "/" + JSPUrll.STUDENTHOMEPAGE;
+                // Default: student homepage - forward directly to JSP
+                req.setAttribute("user", user);
+                req.getRequestDispatcher("/studentHomePage.jsp").forward(req, resp);
             }
-            resp.sendRedirect(redirectUrl);
         } else {
             req.setAttribute("error", "Invalid username or password");
             req.getRequestDispatcher("/login.jsp").forward(req, resp);
