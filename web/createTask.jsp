@@ -100,8 +100,8 @@
                         </div>
 
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="projectId" name="projectId">
-                                <option value="">None (Lab Default)</option>
+                            <select class="form-select" id="projectId" name="projectId" required>
+                                <option value="">-- Select Project --</option>
                                 <% List<Project> projects = (List<Project>) request.getAttribute("projects");
                                     if (projects != null) {
                                         for (Project p : projects) { %>
@@ -109,7 +109,7 @@
                                 <%      }
                                 } %>
                             </select>
-                            <label for="projectId"><i class="fas fa-project-diagram me-2"></i>Assign to Project (Optional)</label>
+                            <label for="projectId"><i class="fas fa-project-diagram me-2"></i>Assign to Project *</label>
                         </div>
 
                         <div class="form-floating mb-3">

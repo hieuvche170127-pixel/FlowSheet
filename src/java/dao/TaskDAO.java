@@ -1,6 +1,7 @@
 package dao;
 
 import dal.DBContext;
+import dal.TaskReportDAO;
 import entity.ProjectTask;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -78,12 +79,8 @@ public class TaskDAO extends DBContext{
             List<Object> parameters = new ArrayList<>();
 
             if (projectIdFilter != null) {
-                if (projectIdFilter == -1) {
-                    conditions.add("pt.ProjectID IS NULL");
-                } else {
-                    conditions.add("pt.ProjectID = ?");
-                    parameters.add(projectIdFilter);
-                }
+                conditions.add("pt.ProjectID = ?");
+                parameters.add(projectIdFilter);
             }
             
             if (search != null && !search.trim().isEmpty()) {
@@ -129,10 +126,22 @@ public class TaskDAO extends DBContext{
             return list;
         }
 
-    public boolean deleteTask(int taskId) {
+    /**
+     * Delete a task. This method will fail if the task has any task reports.
+     * @param taskId The task ID to delete
+     * @return true if deleted successfully, false otherwise
+     * @throws IllegalStateException if the task has task reports
+     */
+    public boolean deleteTask(int taskId) throws IllegalStateException {
         if (connection == null) {
             Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Database connection is null");
             return false;
+        }
+        
+        // Check if task has any reports - if yes, cannot delete
+        TaskReportDAO taskReportDAO = new TaskReportDAO();
+        if (taskReportDAO.hasTaskReports(taskId)) {
+            throw new IllegalStateException("Cannot delete task: Task has task reports. Please delete all task reports first.");
         }
         
         try {
@@ -146,14 +155,8 @@ public class TaskDAO extends DBContext{
                 ps.executeUpdate();
             }
 
-            // Also clear TaskReport entries to avoid FK issues on DBs without cascade
-            String deleteTaskReportSql = "DELETE FROM TaskReport WHERE TaskID = ?";
-            try (PreparedStatement ps = connection.prepareStatement(deleteTaskReportSql)) {
-                ps.setInt(1, taskId);
-                ps.executeUpdate();
-            }
-
             // Finally, delete the task from ProjectTask table
+            // Note: TaskReport entries are not deleted here because we prevent deletion if reports exist
             String deleteTaskSql = "DELETE FROM ProjectTask WHERE TaskID = ?";
             try (PreparedStatement ps = connection.prepareStatement(deleteTaskSql)) {
                 ps.setInt(1, taskId);
@@ -212,7 +215,7 @@ public class TaskDAO extends DBContext{
                 t.setEstimateHourToDo(estimateHours);
                 t.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 t.setStatus(rs.getString("Status"));
-                // Note: ProjectName is not a field in ProjectTask entity - it's only used in SQL joins for display
+                t.setProjectName(rs.getString("ProjectName")); // Set project name for display
                 return t;
             }
         } catch (SQLException ex) {
@@ -237,11 +240,12 @@ public class TaskDAO extends DBContext{
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             int paramIndex = 1;
             
+            // ProjectId is required - every task must belong to a project
             if (task.getProjectId() == null) {
-                ps.setNull(paramIndex++, java.sql.Types.INTEGER);
-            } else {
-                ps.setInt(paramIndex++, task.getProjectId());
+                Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Cannot update task: ProjectId is required");
+                return false;
             }
+            ps.setInt(paramIndex++, task.getProjectId());
             ps.setString(paramIndex++, task.getTaskName());
             ps.setString(paramIndex++, task.getDescription());
             
@@ -278,11 +282,12 @@ public class TaskDAO extends DBContext{
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int paramIndex = 1;
             
+            // ProjectId is required - every task must belong to a project
             if (task.getProjectId() == null) {
-                ps.setNull(paramIndex++, java.sql.Types.INTEGER);
-            } else {
-                ps.setInt(paramIndex++, task.getProjectId());
+                Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Cannot create task: ProjectId is required");
+                return false;
             }
+            ps.setInt(paramIndex++, task.getProjectId());
             ps.setString(paramIndex++, task.getTaskName());
             ps.setString(paramIndex++, task.getDescription());
             
@@ -314,8 +319,13 @@ public class TaskDAO extends DBContext{
         return false;
     }
 
-    // Updated: Reassign task (only to project or unassign)
+    // Reassign task to a project (projectId is required)
     public boolean reassignTask(int taskId, Integer projectId) {
+        if (projectId == null) {
+            Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Cannot reassign task: ProjectId is required");
+            return false;
+        }
+        
         String sql = """
             UPDATE ProjectTask 
             SET ProjectID = ?
@@ -323,7 +333,7 @@ public class TaskDAO extends DBContext{
             """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setObject(1, projectId);
+            ps.setInt(1, projectId);
             ps.setInt(2, taskId);
             return ps.executeUpdate() > 0;
         } catch (SQLException ex) {

@@ -148,7 +148,6 @@
                                 <div class="form-floating">
                                     <select class="form-select" id="projectId" name="projectId">
                                         <option value="" ${empty projectIdFilter ? 'selected' : ''}>All Projects</option>
-                                        <option value="lab" ${labSelected ? 'selected' : ''}>Lab (Unassigned)</option>
                                         <c:forEach var="p" items="${projects}">
                                             <option value="${p.projectID}" ${projectIdFilter == p.projectID ? 'selected' : ''}>
                                                 ${p.projectName}
@@ -199,7 +198,7 @@
                                             <td>${task.taskId}</td>
                                             <td>${task.taskName}</td>
                                             <td>${task.description}</td>
-                                            <td>${not empty task.projectName ? task.projectName : 'Lab (Unassigned)'}</td>
+                                            <td>${not empty task.projectName ? task.projectName : 'N/A'}</td>
                                             <td>
                                                 <span class="badge bg-${task.status == 'TO_DO' ? 'secondary' : task.status == 'IN_PROGRESS' ? 'primary' : task.status == 'SUSPENDED' ? 'warning' : 'success'}">
                                                     ${task.status}
@@ -212,14 +211,26 @@
                                                 <a href="update?taskId=${task.taskId}" class="btn btn-primary btn-edit btn-sm">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
-                                                <form action="view" method="post" class="mb-0">
-                                                    <input type="hidden" name="action" value="delete">
-                                                    <input type="hidden" name="taskId" value="${task.taskId}">
-                                                    <button type="submit" class="btn btn-danger btn-delete btn-sm"
-                                                            onclick="return confirm('Are you sure you want to delete this task?');">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </form>
+                                                <c:set var="hasReports" value="${taskHasReports[task.taskId]}" />
+                                                <c:choose>
+                                                    <c:when test="${hasReports}">
+                                                        <button type="button" class="btn btn-danger btn-delete btn-sm" 
+                                                                disabled
+                                                                title="Cannot delete task: Task has task reports. Please delete all task reports first.">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <form action="view" method="post" class="mb-0">
+                                                            <input type="hidden" name="action" value="delete">
+                                                            <input type="hidden" name="taskId" value="${task.taskId}">
+                                                            <button type="submit" class="btn btn-danger btn-delete btn-sm"
+                                                                    onclick="return confirm('Are you sure you want to delete this task?');">
+                                                                <i class="fas fa-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </td>
                                         </tr>
                                     </c:forEach>
