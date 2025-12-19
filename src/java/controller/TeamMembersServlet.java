@@ -52,7 +52,9 @@ public class TeamMembersServlet extends HttpServlet {
         }
 
         String tab = request.getParameter("tab");
-        if (tab == null || tab.isEmpty()) tab = "members";
+        if (tab == null || tab.isEmpty()) {
+            tab = "members";
+        }
 
         String memberKeyword = request.getParameter("q");
 
@@ -88,7 +90,9 @@ public class TeamMembersServlet extends HttpServlet {
             boolean canManageTeam = canManageTeam(current, teamId);
 
             String message = request.getParameter("msg");
-            if (message != null) request.setAttribute("msg", message);
+            if (message != null) {
+                request.setAttribute("msg", message);
+            }
 
             request.setAttribute("team", team);
             request.setAttribute("userAccounts", members);
@@ -134,11 +138,11 @@ public class TeamMembersServlet extends HttpServlet {
             return;
         }
 
-        boolean isManageAction =
-                "kick".equals(action) ||
-                "changeRole".equals(action) ||
-                "deleteTeam".equals(action) ||
-                "updateTeam".equals(action);
+        boolean isManageAction
+                = "kick".equals(action)
+                || "changeRole".equals(action)
+                || "deleteTeam".equals(action)
+                || "updateTeam".equals(action);
 
         try {
             // If it's a management action: enforce permission
@@ -190,24 +194,58 @@ public class TeamMembersServlet extends HttpServlet {
 
             } else if ("kick".equals(action)) {
                 int userId = Integer.parseInt(request.getParameter("userId"));
+                
+                String reason = request.getParameter("reason");
+                if (reason == null || reason.trim().isEmpty()) {
+                    response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=Reason+is+required");
+                    return;
+                }
+
+                // Optional: limit reason length
+                if (reason.length() > 500) {
+                    response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=Reason+too+long");
+                    return;
+                }
+
+                // OPTIONAL (recommended): log the kick reason before deleting
+                // teamMemberDAO.logKick(teamId, userId, current.getUserID(), reason.trim());
                 boolean ok = teamMemberDAO.kickMember(teamId, userId);
                 response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=" + (ok ? "Kicked+successfully" : "Kick+failed"));
                 return;
-
             } else if ("changeRole".equals(action)) {
                 int userId = Integer.parseInt(request.getParameter("userId"));
                 int newRoleId = Integer.parseInt(request.getParameter("roleId"));
 
-                // optional: enforce only 4/5
                 if (newRoleId != 4 && newRoleId != 5) {
                     response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=Invalid+role");
                     return;
                 }
 
-                boolean ok = teamMemberDAO.changeRole(teamId, userId, newRoleId);
+                Integer currentLeaderId = teamMemberDAO.getLeaderUserId(teamId);
+
+                // If supervisor/admin tries to demote the leader => block (must always have a leader)
+                if ((isSupervisor(current) || isAdmin(current))
+                        && newRoleId == 4
+                        && currentLeaderId != null
+                        && currentLeaderId == userId) {
+
+                    response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=Must+have+a+Team+Leader");
+                    return;
+                }
+
+                boolean ok;
+
+                // If promoting someone to leader => auto-demote old leader (works for both student leader & supervisor)
+                if (newRoleId == 5) {
+                    ok = teamMemberDAO.makeLeaderExclusive(teamId, userId);
+                    response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=" + (ok ? "Leader+updated" : "Leader+update+failed"));
+                    return;
+                }
+
+                // Otherwise normal update to member
+                ok = teamMemberDAO.changeRole(teamId, userId, 4);
                 response.sendRedirect("teamMember?teamId=" + teamId + "&tab=members&msg=" + (ok ? "Role+updated" : "Role+update+failed"));
                 return;
-
             } else if ("updateTeam".equals(action)) {
                 String teamName = request.getParameter("teamName");
                 String description = request.getParameter("description");
@@ -234,7 +272,9 @@ public class TeamMembersServlet extends HttpServlet {
     }
 
     private boolean isStudentLeader(UserAccount u, int teamId) throws SQLException {
-        if (u.getRoleID() != 1) return false;
+        if (u.getRoleID() != 1) {
+            return false;
+        }
         Integer myTeamRole = teamMemberDAO.getTeamRoleId(teamId, u.getUserID());
         return myTeamRole != null && myTeamRole == 5;
     }
