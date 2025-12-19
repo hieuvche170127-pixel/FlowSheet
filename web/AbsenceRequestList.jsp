@@ -59,13 +59,13 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3><i class="fas fa-calendar-minus text-primary"></i> Absence Requests</h3>
 
-                <c:if test="${sessionScope.user.roleId == 1}">
+                <c:if test="${sessionScope.user.roleID == 1}">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRequestModal">
                         <i class="fas fa-plus"></i> Create New Request
                     </button>
                 </c:if>
 
-                <c:if test="${sessionScope.user.roleId == 2}">
+                <c:if test="${sessionScope.user.roleID == 2}">
                     <form action="${pageContext.request.contextPath}/request" method="get" class="d-flex align-items-center">
                         <label class="me-2 fw-bold">Filter:</label>
                         <select name="statusFilter" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -80,7 +80,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>No.</th>
-                            <c:if test="${sessionScope.user.roleId == 2}">
+                            <c:if test="${sessionScope.user.roleID == 2}">
                             <th>Requester</th>
                             </c:if>
                         <th>From Date</th>
@@ -103,7 +103,7 @@
                                 <tr>
                                     <td>${loop.index + 1}</td>
 
-                                    <c:if test="${sessionScope.user.roleId == 2}">
+                                    <c:if test="${sessionScope.user.roleID == 2}">
                                         <td><strong>${req.requesterName}</strong></td>
                                     </c:if>
 
@@ -119,7 +119,7 @@
                                     </td>
 
                                     <td>
-                                        <c:if test="${sessionScope.user.roleId == 1 && req.status == 'PENDING'}">
+                                        <c:if test="${sessionScope.user.roleID == 1 && req.status == 'PENDING'}">
                                             <a href="${pageContext.request.contextPath}/request/action?action=delete&id=${req.leaveId}" 
                                                class="btn btn-sm btn-outline-danger"
                                                onclick="return confirm('Withdraw this request?');">
@@ -127,7 +127,7 @@
                                             </a>
                                         </c:if>
 
-                                        <c:if test="${sessionScope.user.roleId == 2 && req.status == 'PENDING'}">
+                                        <c:if test="${sessionScope.user.roleID == 2 && req.status == 'PENDING'}">
                                             <div class="btn-group btn-group-sm">
                                                 <a href="${pageContext.request.contextPath}/request/action?action=approve&id=${req.leaveId}" 
                                                    class="btn btn-success" title="Approve">

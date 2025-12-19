@@ -31,7 +31,7 @@
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-primary fw-bold"><i class="fas fa-users-cog"></i> Quản Lý Người Dùng</h2>
-                <a href="admin/dashboard" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Quay lại Dashboard</a>
+                <a href="${pageContext.request.contextPath}/supervisor/dashboard" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Quay lại Dashboard</a>
             </div>
 
             <div class="card shadow-sm mb-4">
@@ -93,8 +93,8 @@
                                     <td>${u.phone}</td>
                                     <td>
                                         <c:choose>
-                                            <c:when test="${u.roleId == 1}"><span class="badge bg-info text-dark">Student</span></c:when>
-                                            <c:when test="${u.roleId == 2}"><span class="badge bg-warning text-dark">Supervisor</span></c:when>
+                                            <c:when test="${u.roleID == 1}"><span class="badge bg-info text-dark">Student</span></c:when>
+                                            <c:when test="${u.roleID == 2}"><span class="badge bg-warning text-dark">Supervisor</span></c:when>
                                         </c:choose>
                                     </td>
                                     <td>
@@ -112,14 +112,14 @@
                                         <c:choose>
                                             <c:when test="${u.isActive}">
                                                 <button class="btn btn-sm btn-outline-warning table-action-btn" 
-                                                        onclick="submitAction('deactivate', ${u.userId}, '${u.fullName}')" 
+                                                        onclick="submitAction('deactivate', ${u.userID}, '${u.fullName}')" 
                                                         title="Khóa tài khoản">
                                                     <i class="fas fa-user-lock"></i>
                                                 </button>
                                             </c:when>
                                             <c:otherwise>
                                                 <button class="btn btn-sm btn-outline-success table-action-btn" 
-                                                        onclick="submitAction('activate', ${u.userId}, '${u.fullName}')" 
+                                                        onclick="submitAction('activate', ${u.userID}, '${u.fullName}')" 
                                                         title="Mở khóa tài khoản">
                                                     <i class="fas fa-user-check"></i>
                                                 </button>
@@ -127,7 +127,7 @@
                                         </c:choose>
 
                                         <button class="btn btn-sm btn-outline-danger table-action-btn" 
-                                                onclick="submitAction('delete', ${u.userId}, '${u.fullName}')"
+                                                onclick="submitAction('delete', ${u.userID}, '${u.fullName}')"
                                                 ${empty u.email ? 'disabled' : ''} 
                                                 title="Xóa Email">
                                             <i class="fas fa-trash-alt"></i>
@@ -174,7 +174,7 @@
         </div>
 
         <script>
-            function submitAction(actionType, userId, userName) {
+            function submitAction(actionType, userID, userName) {
                 let msg = "";
                 let confirmBtnColor = "";
 
