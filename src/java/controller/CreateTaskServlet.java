@@ -85,12 +85,30 @@ public class CreateTaskServlet extends HttpServlet {
             try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
                 java.util.Date parsedDate = dateFormat.parse(deadlineStr);
+                
+                // Validate deadline is not in the past
+                java.util.Date now = new java.util.Date();
+                if (parsedDate.before(now)) {
+                    req.setAttribute("error", "Deadline cannot be in the past.");
+                    doGet(req, resp);
+                    return;
+                }
+                
                 task.setDeadline(new Timestamp(parsedDate.getTime()));
             } catch (ParseException e) {
                 // Try alternative format
                 try {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     java.util.Date parsedDate = dateFormat.parse(deadlineStr);
+                    
+                    // Validate deadline is not in the past
+                    java.util.Date now = new java.util.Date();
+                    if (parsedDate.before(now)) {
+                        req.setAttribute("error", "Deadline cannot be in the past.");
+                        doGet(req, resp);
+                        return;
+                    }
+                    
                     task.setDeadline(new Timestamp(parsedDate.getTime()));
                 } catch (ParseException ex) {
                     req.setAttribute("error", "Invalid deadline format.");

@@ -50,7 +50,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/profile.jsp">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/profile">
                             <i class="fas fa-user me-1"></i>Profile
                         </a>
                     </li>
