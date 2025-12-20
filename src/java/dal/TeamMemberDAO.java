@@ -23,10 +23,10 @@ public class TeamMemberDAO extends DBContext {
             ps = connection.prepareStatement(sql); // use inherited 'connection'
             rs = ps.executeQuery();
             while (rs.next()) {
-                TeamMember tm = new TeamMember();
+                TeamMember tm = new TeamMember(0, uid, roleInTeam);
                 tm.setTeamId(rs.getInt("TeamID"));
                 tm.setUserId(rs.getInt("UserID"));
-                tm.setRole(rs.getString("RoleInTeam"));
+                tm.setRoleId(rs.getInt("RoleInTeam"));
 
                 java.sql.Timestamp ts = rs.getTimestamp("JoinedAt");
                 tm.setJoinedAt(ts); // ts will be null safely if DB value is null
@@ -46,7 +46,7 @@ public class TeamMemberDAO extends DBContext {
     }
 
     private TeamMember mapTeamMemberFromResultSet(ResultSet rs) throws SQLException {
-        TeamMember teamMem = new TeamMember();
+        TeamMember teamMem = new TeamMember(0, uid, roleId);
         teamMem.setTeamId(rs.getInt("teamId"));
         teamMem.setUserId(rs.getInt("userId"));
         teamMem.setRole(rs.getString("role"));
@@ -142,7 +142,7 @@ public class TeamMemberDAO extends DBContext {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    teammem = new TeamMember();
+                    teammem = new TeamMember(0, uid, roleId);
 
                     // 1. Map ID cơ bản
                     teammem.setTeamId(rs.getInt("TeamID"));

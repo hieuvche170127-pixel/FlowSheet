@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class TeamDAO extends DBContext {
 
     public boolean createTeamTransaction(Team team, List<TeamMember> members, List<TeamProject> projects) {
-        String sqlTeam = "INSERT INTO Team (TeamName, Description, CreatedBy, CreatedAt, IsActive) VALUES (?, ?, ?, GETDATE(), 1)";
+        String sqlTeam = "INSERT INTO Team (TeamName, Description, CreatedBy, CreatedAt) VALUES (?, ?, ?, GETDATE())";
         String sqlMember = "INSERT INTO TeamMember (TeamID, UserID, RoleID, JoinedAt) VALUES (?, ?, ?, GETDATE())";
         String sqlProject = "INSERT INTO TeamProject (TeamID, ProjectID, AssignedAt) VALUES (?, ?, GETDATE())";
 
@@ -64,7 +64,7 @@ public class TeamDAO extends DBContext {
             // Nếu có lỗi -> Rollback
             try {
                 if (connection != null) {
-                    connection.rollback();
+                    connection.rollback();                  
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, ex);

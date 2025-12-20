@@ -179,7 +179,7 @@ public class CreateTeamController extends HttpServlet {
             boolean isSuccess = teamDAO.createTeamTransaction(newTeam, members, projects);
 
             if (isSuccess) {
-                response.sendRedirect(request.getContextPath() + "/team/list?msg=CreateSuccess");
+                response.sendRedirect(request.getContextPath() + "/team?msg=CreateSuccess");
             } else {
                 handleError(request, response, "Lỗi hệ thống: Không thể tạo nhóm. Vui lòng thử lại.");
             }
