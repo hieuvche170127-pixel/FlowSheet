@@ -54,24 +54,12 @@ public class ProjectListController extends HttpServlet {
     throws ServletException, IOException {
         
         HttpSession session = request.getSession();
-        UserAccount currentUser = (UserAccount) session.getAttribute("LOGIN_USER");
-        
-        if (currentUser == null) {
-        
-        currentUser = new UserAccount();
-        currentUser.setUserID(3); 
-        currentUser.setUsername("stu_anh");
-        currentUser.setFullName("Nguyen Hoang Anh (Test)");
-        currentUser.setRoleID(1);
+        UserAccount currentUser = (UserAccount) session.getAttribute("user");
 
-        session.setAttribute("user", currentUser);
-        System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
-    }
-        
-//        if (currentUser == null) {
-//            response.sendRedirect("login.jsp");
-//            return;
-//        }
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
         
         request.setCharacterEncoding("UTF-8");
         String searchKeyword = request.getParameter("search");

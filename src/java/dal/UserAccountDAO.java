@@ -122,6 +122,95 @@ public class UserAccountDAO extends DBContext {
     public int getUserIdByUsername(String username) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+
+    public int countUsers(String search, String roleFilter) {
+        String sql = "SELECT COUNT(*) FROM UserAccount u WHERE (u.FullName LIKE ? OR u.Email LIKE ?) ";
+        if (roleFilter != null && !roleFilter.isEmpty()) {
+            sql += "AND u.RoleID = ? ";
+        }
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setNString(1, "%" + search + "%");
+            ps.setNString(2, "%" + search + "%");
+            if (roleFilter != null && !roleFilter.isEmpty()) {
+                ps.setInt(3, Integer.parseInt(roleFilter));
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<UserAccount> getUsers(String search, String roleFilter, int pageIndex, int pageSize) {
+        List<UserAccount> list = new ArrayList<>();
+        String sql = "SELECT u.UserID, u.Username, u.FullName, u.Email, u.Phone, u.RoleID, u.IsActive, r.RoleName " +
+                     "FROM UserAccount u " +
+                     "JOIN Role r ON u.RoleID = r.RoleID " +
+                     "WHERE (u.FullName LIKE ? OR u.Email LIKE ?) " +
+                     "AND u.RoleID <> 3 ";
+        if (roleFilter != null && !roleFilter.isEmpty()) {
+            sql += "AND u.RoleID = ? ";
+        }
+
+        sql += "ORDER BY u.UserID DESC " +
+               "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            
+            ps.setNString(1, "%" + search + "%");
+            ps.setNString(2, "%" + search + "%");
+
+            int paramIndex = 3;
+            if (roleFilter != null && !roleFilter.isEmpty()) {
+                ps.setInt(paramIndex++, Integer.parseInt(roleFilter));
+            }
+
+            ps.setInt(paramIndex++, (pageIndex - 1) * pageSize);
+            ps.setInt(paramIndex, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserAccount user = new UserAccount();
+                user.setUserID(rs.getInt("UserID"));
+                user.setUsername(rs.getString("Username"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhone(rs.getString("Phone"));
+                user.setRoleID(rs.getInt("RoleID"));
+                user.setIsActive(rs.getBoolean("IsActive"));
+                user.setRoleName(rs.getString("RoleName"));
+
+                list.add(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public void updateUserStatus(int userId, boolean status) {
+        String sql = "UPDATE UserAccount SET IsActive = ? WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setBoolean(1, status);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteUserEmail(int userId, boolean status) {
+        String sql = "UPDATE UserAccount SET Email = NULL AND IsActive = ? WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setBoolean(1, status);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     
 

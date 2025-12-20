@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,31 +67,19 @@ public class CreateTeamController extends HttpServlet {
         UserAccount currentUser = (UserAccount) session.getAttribute("user");
 
         if (currentUser == null) {
-        // Tạo ra một user giả
-        currentUser = new UserAccount();
-        currentUser.setUserID(2); // QUAN TRỌNG: ID này phải tồn tại trong bảng UserAccount
-        currentUser.setUsername("sup_hoa");
-        currentUser.setFullName("Nguyen Thi Hoa (Test)");
-        currentUser.setRoleID(2); // Role Supervisor
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
 
-        session.setAttribute("user", currentUser);
-        System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
-    }
-//        if (currentUser == null) {
-//            response.sendRedirect(request.getContextPath() + "/login?msg=LoginRequired");
-//            return;
-//        }
+        ProjectDAO dao = new ProjectDAO();
 
-        UserAccountDAO userDAO = new UserAccountDAO();
-        ProjectDAO projectDAO = new ProjectDAO();
+        List<Team> teams = dao.getAllTeamsForProject();
+        List<UserAccount> users = dao.getAllActiveMembers();
 
-        List<UserAccount> userList = userDAO.getAllUsersForTeam();
-        List<Project> projectList = projectDAO.getAllProjectsForTeam();
+        request.setAttribute("teamList", teams);
+        request.setAttribute("userList", users);
 
-        request.setAttribute("userList", userList);
-        request.setAttribute("projectList", projectList);
-
-        request.getRequestDispatcher("/CreateTeam.jsp").forward(request, response);
+        request.getRequestDispatcher("/CreateProject.jsp").forward(request, response);
     }
 
     /**
@@ -107,89 +96,79 @@ public class CreateTeamController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         try {
-            String teamName = request.getParameter("teamName");
-            String description = request.getParameter("description");
+            String name = request.getParameter("projectName");
+            String code = request.getParameter("projectCode");
+            String startStr = request.getParameter("startDate");
+            String endStr = request.getParameter("deadline");
+            String desc = request.getParameter("description");
 
-            String[] memberIdsRaw = request.getParameterValues("memberIds");
-            String[] roles = request.getParameterValues("roles");
-            String[] projectIdsRaw = request.getParameterValues("projectIds");
+            Date startDate = (startStr != null && !startStr.isEmpty()) ? Date.valueOf(startStr) : null;
+            Date deadline = (endStr != null && !endStr.isEmpty()) ? Date.valueOf(endStr) : null;
 
-            String errorMsg = null;
+            Project p = new Project();
+            p.setProjectName(name);
+            p.setProjectCode(code);
+            p.setStartDate(startDate);
+            p.setDeadline(deadline);
+            p.setDescription(desc);
+            p.setStatus("OPEN");
 
-            if (teamName == null || teamName.trim().isEmpty()) {
-                errorMsg = "Tên nhóm không được để trống!";
-            }
-
-            if (memberIdsRaw == null || memberIdsRaw.length == 0) {
-                errorMsg = "Nhóm phải có ít nhất 1 thành viên!";
-            }
-
-            int leaderCount = 0;
-            if (roles != null) {
-                for (String role : roles) {
-                    if ("Leader".equals(role)) {
-                        leaderCount++;
-                    }
-                }
-            }
-            if (leaderCount > 1) {
-                errorMsg = "Nhóm chỉ được phép có tối đa 1 Team Leader!";
-            }
-
-            Set<String> memberCheck = new HashSet<>();
-            if (memberIdsRaw != null) {
-                for (String uid : memberIdsRaw) {
-                    if (!memberCheck.add(uid)) {
-                        errorMsg = "Phát hiện thành viên bị trùng lặp!";
-                        break;
-                    }
-                }
-            }
-
-            if (errorMsg != null) {
-                handleError(request, response, errorMsg);
+            ProjectDAO dao = new ProjectDAO();
+            int newProjectId = dao.createProject(p);
+            
+            if (startDate != null && deadline != null && startDate.after(deadline)) {
+                request.setAttribute("error", "Start Date cannot be later than Deadline!");
+                request.setAttribute("p", p);
+                doGet(request, response);
                 return;
             }
+            
+            if (newProjectId > 0) {
+                String assignType = request.getParameter("assignType");
 
-            HttpSession session = request.getSession();
-            UserAccount creator = (UserAccount) session.getAttribute("user");
+                if ("team".equals(assignType)) {
+                    String teamIdStr = request.getParameter("teamId");
+                    if (teamIdStr != null && !teamIdStr.isEmpty()) {
+                        try {
+                            int teamId = Integer.parseInt(teamIdStr);
+                            dao.addTeamToProject(newProjectId, teamId);
+                            dao.importMembersFromTeam(newProjectId, teamId);
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
-            Team newTeam = new Team();
-            newTeam.setTeamName(teamName);
-            newTeam.setDescription(description);
-            newTeam.setCreatedBy(creator.getUserID());
+                } else if ("member".equals(assignType)) {
+                    String[] memberIdsRaw = request.getParameterValues("memberIds");
+                    String[] memberRoles = request.getParameterValues("memberRoles");
 
-            List<TeamMember> members = new ArrayList<>();
-            for (int i = 0; i < memberIdsRaw.length; i++) {
-                int uid = Integer.parseInt(memberIdsRaw[i]);
-                String role = roles[i];
-                members.add(new TeamMember(0, uid, role));
-            }
-
-            List<TeamProject> projects = new ArrayList<>();
-            if (projectIdsRaw != null) {
-                for (String pidStr : projectIdsRaw) {
-                    if (pidStr != null && !pidStr.isEmpty()) {
-                        int pid = Integer.parseInt(pidStr);
-                        projects.add(new TeamProject(0, pid)); // TeamID tạm để 0
+                    if (memberIdsRaw != null) {
+                        for (int i = 0; i < memberIdsRaw.length; i++) {
+                            String uidStr = memberIdsRaw[i];
+                            if (uidStr != null && !uidStr.isEmpty()) {
+                                try {
+                                    int uid = Integer.parseInt(uidStr);
+                                    String role = "Member";
+                                    if (memberRoles != null && i < memberRoles.length) {
+                                        role = memberRoles[i];
+                                    }
+                                    dao.addMemberToProject(newProjectId, uid, role);
+                                } catch (NumberFormatException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
                     }
                 }
-            }
-
-            TeamDAO teamDAO = new TeamDAO();
-            boolean isSuccess = teamDAO.createTeamTransaction(newTeam, members, projects);
-
-            if (isSuccess) {
-                // Thành công -> Chuyển về danh sách
-                response.sendRedirect(request.getContextPath() + "/team/list?msg=CreateSuccess");
+                response.sendRedirect(request.getContextPath() + "/projects");
             } else {
-                // Thất bại (Lỗi SQL...)
-                handleError(request, response, "Lỗi hệ thống: Không thể tạo nhóm. Vui lòng thử lại.");
+                request.setAttribute("error", "Create project failed! Project Code existed.");
+                request.setAttribute("p", p);
+                doGet(request, response);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-            handleError(request, response, "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/views/error.jsp");
         }
     }
 

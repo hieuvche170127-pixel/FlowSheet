@@ -26,7 +26,8 @@ public class UserAccount {
     // Thay thế Timestamp bằng LocalDateTime
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    
+    private String roleName;
 
     // Constructors (Bạn có thể thêm các Constructor cần thiết)
     public UserAccount() {
@@ -136,4 +137,12 @@ public class UserAccount {
     }
 
     // Bạn có thể thêm phương thức toString() để dễ debug
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
 }

@@ -86,7 +86,7 @@
         </style>
     </head>
     <body>
-
+        <jsp:include page="nghiapages/layout_header.jsp" />
         <div class="container mt-4">
             <a href="${pageContext.request.contextPath}/projects" class="back-link">
                 <i class="bi bi-arrow-left me-2"></i> Back to all projects
@@ -109,7 +109,7 @@
                                             <c:when test="${not empty project.deadline}">
                                                 <fmt:formatDate value="${project.deadline}" pattern="dd/MM/yyyy"/>
                                             </c:when>
-                                            <c:otherwise>15/01/2025 (TBD)</c:otherwise>
+                                            <c:otherwise>none</c:otherwise>
                                         </c:choose>
                                     </span>
                                 </div>
@@ -117,14 +117,29 @@
                         </div>
 
                         <div>
-                            <c:if test="${project.isActive}">
-                                <a href="${pageContext.request.contextPath}/project/details?id=${project.projectID}&action=deactive"
-                                   class="btn btn-secondary text-white btn-sm me-1" 
-                                   onclick="return confirm('Bạn có chắc chắn muốn ngưng hoạt động dự án này không?');">
-                                    <i class="bi bi-x-circle"></i> Deactive
+                            <%-- KIỂM TRA QUYỀN: Chỉ hiện nút nếu KHÔNG PHẢI là Sinh viên (RoleID != 1) --%>
+                            <c:if test="${sessionScope.LOGIN_USER.roleID != 1}">
+                                
+                                <%-- Nút Deactive --%>
+                                <c:if test="${project.isActive}">
+                                    <a href="${pageContext.request.contextPath}/project/details?id=${project.projectID}&action=deactive"
+                                       class="btn btn-secondary text-white btn-sm me-1" 
+                                       onclick="return confirm('Bạn có chắc chắn muốn ngưng hoạt động dự án này không?');">
+                                        <i class="bi bi-x-circle"></i> Deactive
+                                    </a>
+                                </c:if>
+                                
+                                <%-- Nút Edit --%>
+                                <a href="${pageContext.request.contextPath}/project/edit?id=${project.projectID}" class="btn btn-outline-secondary btn-sm me-1">
+                                    <i class="bi bi-pencil"></i> Edit
                                 </a>
+                                
                             </c:if>
-                            <a href="${pageContext.request.contextPath}/project/edit?id=${project.projectID}" class="btn btn-outline-secondary btn-sm me-1"><i class="bi bi-pencil"></i> Edit</a>
+                            
+                            <%-- (Tùy chọn) Nếu là sinh viên thì hiện nút View hoặc không hiện gì --%>
+                            <c:if test="${sessionScope.LOGIN_USER.roleId == 1}">
+                                <span class="badge bg-light text-dark border p-2">Read-only View</span>
+                            </c:if>
                         </div>
                     </div>
 
@@ -254,7 +269,6 @@
                                         <th>Member</th>
                                         <th>Email</th>
                                         <th>Role</th>
-                                        <th>Joined Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -279,7 +293,6 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
-                                            <td>01/01/2025</td>
                                         </tr>
                                     </c:forEach>
                                 </tbody>

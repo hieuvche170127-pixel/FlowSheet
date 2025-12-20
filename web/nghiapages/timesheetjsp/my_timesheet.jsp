@@ -14,7 +14,6 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>My Timesheet</title>
         <!-- Ưu tiên dùng Bootstrap từ layout, dòng này chỉ để fallback nếu layout thiếu -->
-
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> 
     </head>
 

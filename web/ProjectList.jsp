@@ -10,7 +10,7 @@
         
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+        
         <style>
             body {
                 background-color: #f8f9fa;
@@ -22,7 +22,7 @@
                 border-radius: 8px;
             }
             .btn-green {
-                background-color: #00bfa5;
+                background-color: #0d47a1;
                 color: white;
                 border: none;
             }
@@ -31,7 +31,7 @@
                 color: white;
             }
             .nav-pills .nav-link.active {
-                background-color: #00bfa5 !important;
+                background-color: #0d47a1 !important;
             }
             .nav-pills .nav-link {
                 color: #6c757d;
@@ -66,7 +66,7 @@
         </style>
     </head>
     <body>
-        
+        <jsp:include page="nghiapages/layout_header.jsp" />
         <div class="container-fluid">
             <div class="card p-4">
                 
@@ -97,20 +97,12 @@
                         </div>
                     </form>
 
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-
-                <form action="projects" method="get" class="d-flex align-items-center flex-grow-1">
-
-                    <div class="nav nav-pills me-4">
-                        <button type="submit" name="status" value="Active" 
-                                class="nav-link ${empty param.status || param.status == 'Active' ? 'active' : ''}">
-                            Active
-                        </button>
-                        <button type="submit" name="status" value="Archived" 
-                                class="nav-link ${param.status == 'Archived' ? 'active' : ''}">
-                            Archived
-                        </button>
+                    <div>
+                        <a href="${pageContext.request.contextPath}/project/create" class="btn btn-green">
+                            <i class="fas fa-plus"></i> Create Project
+                        </a>
                     </div>
+                </div>
 
                 <div class="table-responsive">
                     <table class="table align-middle table-hover">
@@ -163,7 +155,7 @@
                                             <c:when test="${not empty p.deadline}">
                                                 <fmt:formatDate value="${p.deadline}" pattern="dd/MM/yyyy"/>
                                             </c:when>
-                                            <c:otherwise><span class="text-muted">--/--/----</span></c:otherwise>
+                                            <c:otherwise><span class="text-muted">None</span></c:otherwise>
                                         </c:choose>
                                     </td>
                                     
@@ -182,16 +174,10 @@
                                     </td>
                                     
                                     <td>
-                                        <div class="d-flex gap-2">
-                                            <a href="${pageContext.request.contextPath}/project/details?id=${p.projectID}" 
-                                               class="btn btn-outline-secondary btn-sm">
-                                                <i class="fas fa-info-circle me-1"></i>Details
-                                            </a>
-                                            <a href="${pageContext.request.contextPath}/task/view?projectId=${p.projectID}" 
-                                               class="btn btn-green btn-sm">
-                                                <i class="fas fa-tasks me-1"></i>Tasks
-                                            </a>
-                                        </div>
+                                        <a href="${pageContext.request.contextPath}/project/details?id=${p.projectID}" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            View Details
+                                        </a>
                                     </td>
                                 </tr>
                             </c:forEach>

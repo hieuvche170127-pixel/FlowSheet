@@ -31,7 +31,8 @@ public class LeaveRequest {
 
     // System/Audit Field
     private LocalDateTime appliedAt;   // DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-
+    private String requesterName;
+    
     public LeaveRequest() {
     }
 
@@ -155,4 +156,13 @@ public class LeaveRequest {
         this.appliedAt = appliedAt;
     }
 
+    public String getRequesterName() {
+        return requesterName;
+    }
+
+    public void setRequesterName(String requesterName) {
+        this.requesterName = requesterName;
+    }
+
+    
 }

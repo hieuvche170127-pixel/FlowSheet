@@ -11,9 +11,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.Date;
 import java.util.List;
-
 
 @WebServlet(name = "EditProjectController", urlPatterns = {"/project/edit"})
 public class EditProjectController extends HttpServlet {
@@ -35,7 +35,7 @@ public class EditProjectController extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet EditProjectController</title>");            
+            out.println("<title>Servlet EditProjectController</title>");
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet EditProjectController at " + request.getContextPath() + "</h1>");
@@ -56,9 +56,15 @@ public class EditProjectController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String idStr = request.getParameter("id");
+        HttpSession session = request.getSession();
+        UserAccount user = (UserAccount) session.getAttribute("user"); 
         
-        // Nếu không có ID, quay về danh sách
+//        if (user == null || user.getRoleID() == 1) {
+//            response.sendRedirect("projects?error=access_denied");
+//            return;
+//        }
+        String idStr = request.getParameter("id");
+
         if (idStr == null || idStr.isEmpty()) {
             response.sendRedirect("projects");
             return;
@@ -74,16 +80,15 @@ public class EditProjectController extends HttpServlet {
                 response.sendRedirect("projects");
                 return;
             }
-            
-            List<UserAccount> currentMembers = projectDAO.getMembersInProject(projectId);
-            
-            List<UserAccount> allUsers = userDAO.getAllUsersForTeam();
 
+            List<UserAccount> currentMembers = projectDAO.getMembersInProject(projectId);
+
+            List<UserAccount> allUsers = userDAO.getAllUsersForTeam();
 
             request.setAttribute("project", project);
             request.setAttribute("currentMembers", currentMembers);
             request.setAttribute("allUsers", allUsers);
-            
+
             request.getRequestDispatcher("/EditProject.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -105,20 +110,28 @@ public class EditProjectController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
+        HttpSession session = request.getSession();
+        UserAccount user = (UserAccount) session.getAttribute("user");
+
+        if (user == null || user.getRoleID() == 1) {
+            response.sendRedirect("projects?error=access_denied");
+            return;
+        }
+
         try {
             ProjectDAO projectDAO = new ProjectDAO();
             UserAccountDAO userDAO = new UserAccountDAO();
-            
+
             int projectId = Integer.parseInt(request.getParameter("id"));
             String name = request.getParameter("name");
             String status = request.getParameter("status");
             String description = request.getParameter("description");
-            
+
             String startStr = request.getParameter("startDate");
             String endStr = request.getParameter("deadline");
             Date startDate = (startStr != null && !startStr.isEmpty()) ? Date.valueOf(startStr) : null;
             Date deadline = (endStr != null && !endStr.isEmpty()) ? Date.valueOf(endStr) : null;
-            
+
             Project p = new Project();
             p.setProjectID(projectId);
             p.setProjectName(name);
@@ -126,12 +139,24 @@ public class EditProjectController extends HttpServlet {
             p.setDescription(description);
             p.setStartDate(startDate);
             p.setDeadline(deadline);
-            
+
+            if (startDate != null && deadline != null && deadline.before(startDate)) {
+                request.setAttribute("errorMessage", "Invalid Date: Deadline cannot be before Start Date.");
+                request.setAttribute("project", p);
+
+                List<UserAccount> currentMembers = projectDAO.getMembersInProject(projectId);
+                List<UserAccount> allUsers = userDAO.getAllUsersForTeam();
+                request.setAttribute("currentMembers", currentMembers);
+                request.setAttribute("allUsers", allUsers);
+                request.getRequestDispatcher("/EditProject.jsp").forward(request, response);
+                return;
+            }
+
             projectDAO.updateProjectInfo(p);
-            
+
             String[] newMembers = request.getParameterValues("new_members[]");
             String[] newRoles = request.getParameterValues("new_roles[]");
-            
+
             if (newMembers != null) {
                 for (int i = 0; i < newMembers.length; i++) {
                     String username = newMembers[i];
@@ -144,17 +169,17 @@ public class EditProjectController extends HttpServlet {
             }
             String[] memberIds = request.getParameterValues("exist_member_ids[]");
             String[] memberRoles = request.getParameterValues("exist_member_roles[]");
-            
+
             if (memberIds != null) {
                 for (int i = 0; i < memberIds.length; i++) {
                     int uid = Integer.parseInt(memberIds[i]);
                     String newRole = memberRoles[i];
-                    
+
                     // Gọi hàm Update Role
                     projectDAO.updateMemberRole(projectId, uid, newRole);
                 }
             }
-            String deletedIdsStr = request.getParameter("deleted_members"); 
+            String deletedIdsStr = request.getParameter("deleted_members");
             if (deletedIdsStr != null && !deletedIdsStr.trim().isEmpty()) {
                 String[] ids = deletedIdsStr.split(",");
                 for (String id : ids) {
@@ -167,7 +192,7 @@ public class EditProjectController extends HttpServlet {
             }
 
             response.sendRedirect(request.getContextPath() + "/project/details?id=" + projectId);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error updating project: " + e.getMessage());
