@@ -33,11 +33,16 @@ public class TaskDAO extends DBContext {
         List<ProjectTask> list = new ArrayList<>();
         
         String sql = "SELECT pt.TaskID, pt.TaskName, pt.Status, pt.Deadline, pt.Description, "
-                + "pt.EstimateHourToDo, pt.CreatedAt, pt.ProjectID "
-                + "FROM ProjectTask pt "
-                + "WHERE pt.ProjectID = ? "
-                + "ORDER BY pt.TaskID DESC "
-                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                   + "pt.EstimateHourToDo, pt.CreatedAt, pt.ProjectID, "
+                   + "STRING_AGG(u.FullName, ', ') WITHIN GROUP (ORDER BY u.FullName) AS AssigneeNames "
+                   + "FROM ProjectTask pt "
+                   + "LEFT JOIN TaskAssignee ta ON pt.TaskID = ta.TaskID "
+                   + "LEFT JOIN UserAccount u ON ta.UserID = u.UserID "
+                   + "WHERE pt.ProjectID = ? "
+                   + "GROUP BY pt.TaskID, pt.TaskName, pt.Status, pt.Deadline, pt.Description, "
+                   + "pt.EstimateHourToDo, pt.CreatedAt, pt.ProjectID "
+                   + "ORDER BY pt.CreatedAt DESC "
+                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             int offset = (pageIndex - 1) * pageSize;
@@ -50,22 +55,14 @@ public class TaskDAO extends DBContext {
                 while (rs.next()) {
                     ProjectTask task = new ProjectTask();
                     task.setTaskId(rs.getInt("TaskID"));
+                    task.setProjectId(rs.getInt("ProjectID"));
                     task.setTaskName(rs.getString("TaskName"));
                     task.setStatus(rs.getString("Status"));
-                    
-                    java.sql.Timestamp deadline = rs.getTimestamp("Deadline");
-                    task.setDeadline(deadline);
-                    
+                    task.setDeadline(rs.getTimestamp("Deadline"));
                     task.setDescription(rs.getString("Description"));
-                    
-                    Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
-                    task.setEstimateHourToDo(estimateHours);
-                    
-                    java.sql.Timestamp createdAt = rs.getTimestamp("CreatedAt");
-                    task.setCreatedAt(createdAt);
-                    
-                    Integer projectIdFromDb = rs.getObject("ProjectID", Integer.class);
-                    task.setProjectId(projectIdFromDb);
+                    task.setEstimateHourToDo(rs.getObject("EstimateHourToDo", Double.class));
+                    task.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    task.setAssigneeNames(rs.getString("AssigneeNames")); 
                     
                     list.add(task);
                 }

@@ -97,11 +97,10 @@ public class UserAccountDAO extends DBContext {
     public List<UserAccount> getAllUsersForTeam() {
         List<UserAccount> list = new ArrayList<>();
         
-        String sql = "SELECT * FROM UserAccount WHERE RoleID = 1 AND IsActive = 1"; 
+        String sql = "SELECT UserID, Username, FullName, Email, RoleID FROM UserAccount WHERE RoleID = 1 AND IsActive = 1";
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 UserAccount u = new UserAccount();
@@ -113,14 +112,27 @@ public class UserAccountDAO extends DBContext {
                 
                 list.add(u);
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(UserAccountDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return list;    
     }
 
     public int getUserIdByUsername(String username) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String sql = "SELECT UserID FROM UserAccount WHERE Username = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            
+            ps.setString(1, username);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1; 
     }
 
     public int countUsers(String search, String roleFilter) {

@@ -79,7 +79,7 @@ public class ProjectDetailsController extends HttpServlet {
             Project project = dao.getProjectById(projectId);
             if (project == null) {
                 request.setAttribute("error", "Project not found!");
-                request.getRequestDispatcher("/views/error.jsp").forward(request, response);
+                request.getRequestDispatcher("/nghiapages/errorPage.jsp").forward(request, response);
                 return;
             }
 
@@ -95,10 +95,10 @@ public class ProjectDetailsController extends HttpServlet {
                 indexPage = "1";
             }
             int index = Integer.parseInt(indexPage);
-
-            int totalTasks = taskDAO.countTasksByProject(projectId);
-
+            
             int tasksPerPage = 5;
+            
+            int totalTasks = taskDAO.countTasksByProject(projectId);
 
             int endPage = totalTasks / tasksPerPage;
             if (totalTasks % tasksPerPage != 0) {
@@ -117,6 +117,16 @@ public class ProjectDetailsController extends HttpServlet {
 
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/projects");
+        }catch (Exception e) {
+            // --- QUAN TRỌNG: BẮT MỌI LỖI KHÁC ĐỂ XEM NGUYÊN NHÂN ---
+            System.out.println("========== LỖI CRASH TRANG DETAILS ==========");
+            e.printStackTrace(); // In lỗi ra cửa sổ Output
+            System.out.println("=============================================");
+            
+            // Gửi thông báo lỗi ra trang Error để không bị trắng trang
+            request.setAttribute("error", "Hệ thống gặp lỗi: " + e.getMessage());
+            // Nếu bạn chưa có file error.jsp thì comment dòng dưới lại
+            // request.getRequestDispatcher("/views/error.jsp").forward(request, response);
         }
     }
 
