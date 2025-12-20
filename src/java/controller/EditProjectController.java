@@ -114,7 +114,7 @@ public class EditProjectController extends HttpServlet {
         UserAccount user = (UserAccount) session.getAttribute("user");
 
         if (user == null || user.getRoleID() == 1) {
-            response.sendRedirect("projects?error=access_denied");
+            response.sendRedirect("projects");
             return;
         }
 

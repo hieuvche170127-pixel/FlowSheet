@@ -107,4 +107,13 @@
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
+    <servlet>
+        <servlet-name>TaskReviewController</servlet-name>
+        <servlet-class>controller.TaskReview.TaskReviewController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>TaskReviewController</servlet-name>
+        <url-pattern>/task-review</url-pattern>
+    </servlet-mapping>
 </web-app>
