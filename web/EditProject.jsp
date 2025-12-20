@@ -145,7 +145,7 @@
                                         </c:if>
 
                                         <c:forEach var="m" items="${currentMembers}">
-                                            <tr class="member-row" id="row_${m.userId}">
+                                            <tr class="member-row" id="row_${m.userID}">
                                                 <td style="padding-left: 15px;">
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar-circle">
@@ -154,7 +154,7 @@
                                                         <div style="line-height: 1.2;">
                                                             <div class="fw-bold text-dark">${m.username}</div>
                                                             <small class="text-muted" style="font-size: 11px;">${m.fullName}</small>
-                                                            <input type="hidden" name="exist_member_ids[]" value="${m.userId}">
+                                                            <input type="hidden" name="exist_member_ids[]" value="${m.userID}">
                                                         </div>
                                                     </div>
                                                 </td>
@@ -165,7 +165,7 @@
                                                     </select>
                                                 </td>
                                                 <td style="width: 30px;" class="text-end pe-3">
-                                                    <button type="button" class="btn btn-link text-danger p-0" onclick="removeExistingMember(this, ${m.userId})">
+                                                    <button type="button" class="btn btn-link text-danger p-0" onclick="removeExistingMember(this, ${m.userID})">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </td>

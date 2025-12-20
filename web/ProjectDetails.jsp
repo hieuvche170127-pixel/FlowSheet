@@ -86,7 +86,7 @@
         </style>
     </head>
     <body>
-
+        <jsp:include page="nghiapages/layout_header.jsp" />
         <div class="container mt-4">
             <a href="${pageContext.request.contextPath}/projects" class="back-link">
                 <i class="bi bi-arrow-left me-2"></i> Back to all projects
@@ -118,7 +118,7 @@
 
                         <div>
                             <%-- KIỂM TRA QUYỀN: Chỉ hiện nút nếu KHÔNG PHẢI là Sinh viên (RoleID != 1) --%>
-                            <c:if test="${sessionScope.LOGIN_USER.roleId != 1}">
+                            <c:if test="${sessionScope.LOGIN_USER.roleID != 1}">
                                 
                                 <%-- Nút Deactive --%>
                                 <c:if test="${project.isActive}">

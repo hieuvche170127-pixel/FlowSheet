@@ -22,7 +22,7 @@
                 border-radius: 8px;
             }
             .btn-green {
-                background-color: #00bfa5;
+                background-color: #0d47a1;
                 color: white;
                 border: none;
             }
@@ -31,7 +31,7 @@
                 color: white;
             }
             .nav-pills .nav-link.active {
-                background-color: #00bfa5 !important;
+                background-color: #0d47a1 !important;
             }
             .nav-pills .nav-link {
                 color: #6c757d;
@@ -66,7 +66,7 @@
         </style>
     </head>
     <body>
-        
+        <jsp:include page="nghiapages/layout_header.jsp" />
         <div class="container-fluid">
             <div class="card p-4">
                 

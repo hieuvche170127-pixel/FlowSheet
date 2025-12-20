@@ -57,12 +57,12 @@ public class EditProjectController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        UserAccount user = (UserAccount) session.getAttribute("LOGIN_USER"); 
+        UserAccount user = (UserAccount) session.getAttribute("user"); 
         
-        if (user == null || user.getRoleID() == 1) {
-            response.sendRedirect("projects?error=access_denied");
-            return;
-        }
+//        if (user == null || user.getRoleID() == 1) {
+//            response.sendRedirect("projects?error=access_denied");
+//            return;
+//        }
         String idStr = request.getParameter("id");
 
         if (idStr == null || idStr.isEmpty()) {
@@ -111,7 +111,7 @@ public class EditProjectController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         
         HttpSession session = request.getSession();
-        UserAccount user = (UserAccount) session.getAttribute("LOGIN_USER");
+        UserAccount user = (UserAccount) session.getAttribute("user");
 
         if (user == null || user.getRoleID() == 1) {
             response.sendRedirect("projects?error=access_denied");
@@ -126,10 +126,12 @@ public class EditProjectController extends HttpServlet {
             String name = request.getParameter("name");
             String status = request.getParameter("status");
             String description = request.getParameter("description");
+
             String startStr = request.getParameter("startDate");
             String endStr = request.getParameter("deadline");
             Date startDate = (startStr != null && !startStr.isEmpty()) ? Date.valueOf(startStr) : null;
             Date deadline = (endStr != null && !endStr.isEmpty()) ? Date.valueOf(endStr) : null;
+
             Project p = new Project();
             p.setProjectID(projectId);
             p.setProjectName(name);
@@ -167,10 +169,12 @@ public class EditProjectController extends HttpServlet {
             }
             String[] memberIds = request.getParameterValues("exist_member_ids[]");
             String[] memberRoles = request.getParameterValues("exist_member_roles[]");
+
             if (memberIds != null) {
                 for (int i = 0; i < memberIds.length; i++) {
                     int uid = Integer.parseInt(memberIds[i]);
                     String newRole = memberRoles[i];
+
                     // Gọi hàm Update Role
                     projectDAO.updateMemberRole(projectId, uid, newRole);
                 }
@@ -188,6 +192,7 @@ public class EditProjectController extends HttpServlet {
             }
 
             response.sendRedirect(request.getContextPath() + "/project/details?id=" + projectId);
+
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error updating project: " + e.getMessage());

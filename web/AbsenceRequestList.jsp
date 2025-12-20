@@ -28,7 +28,7 @@
         </style>
     </head>
     <body class="bg-light">
-
+        <jsp:include page="nghiapages/layout_header.jsp" />
         <div class="container bg-white p-4 shadow rounded">
             <c:if test="${not empty param.error}">
                 <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
