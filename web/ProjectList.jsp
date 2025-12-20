@@ -63,6 +63,18 @@
             .table > :not(caption) > * > * {
                 padding: 1rem 0.5rem;
             }
+            .table .badge {
+        position: static !important;      /* Hủy bỏ absolute (nguyên nhân chính làm bay màu) */
+        top: auto !important;             /* Reset vị trí */
+        right: auto !important;           /* Reset vị trí */
+        
+        display: inline-block !important; /* Hiển thị dạng khối nội dòng chuẩn Bootstrap */
+        width: auto !important;           /* Bỏ chiều rộng cố định */
+        min-width: 0 !important;          /* Bỏ min-width của header */
+        border-radius: 4px !important;    /* Bo góc vuông nhẹ thay vì tròn vo 50% */
+        padding: 0.35em 0.65em !important;/* Padding chuẩn của badge */
+        text-align: center !important;
+        line-height: 1 !important;
         </style>
     </head>
     <body>
