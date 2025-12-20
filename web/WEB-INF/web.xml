@@ -52,6 +52,10 @@
         <servlet-name>ReplyInvitation</servlet-name>
         <servlet-class>controller.nghia.invitation.ReplyInvitation</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>TaskReviewController</servlet-name>
+        <servlet-class>controller.TaskReview.TaskReviewController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TimesheetManagement</servlet-name>
         <url-pattern>/TimesheetManagement</url-pattern>
@@ -107,4 +111,8 @@
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
+    <servlet-mapping>
+        <servlet-name>TaskReviewController</servlet-name>
+        <url-pattern>/task-review</url-pattern>
+    </servlet-mapping>
 </web-app>
