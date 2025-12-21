@@ -377,6 +377,29 @@ public class ProjectDAO extends DBContext {
         return list;
     }
 
+    /**
+     * Check if a user is a leader of a specific project
+     * @param projectId The project ID
+     * @param userId The user ID
+     * @return true if the user is a project leader (RoleID = 7), false otherwise
+     */
+    public boolean isProjectLeader(int projectId, int userId) {
+        String sql = "SELECT RoleID FROM ProjectMember WHERE ProjectID = ? AND UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, projectId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int roleId = rs.getInt("RoleID");
+                    return roleId == ROLE_LEADER || roleId == 8; // 7 is ROLE_LEADER, 8 is co-leader
+                }
+            }
+        } catch (SQLException e) {
+            Logger.getLogger(ProjectDAO.class.getName()).log(Level.SEVERE, "Error checking project leader", e);
+        }
+        return false;
+    }
+
     public int countProjects(Integer userId, Integer roleId, String keyword, String status) {
         int count = 0;
     StringBuilder sql = new StringBuilder();

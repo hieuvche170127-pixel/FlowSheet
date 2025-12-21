@@ -2,6 +2,7 @@ package controller;
 
 import dal.ProjectDAO;
 import dal.TaskDAO;
+import dal.TaskReportDAO;
 import entity.Project;
 import entity.ProjectTask;
 import entity.UserAccount;
@@ -13,7 +14,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "ProjectDetailsController", urlPatterns = {"/project/details"})
 public class ProjectDetailsController extends HttpServlet {
@@ -107,9 +110,21 @@ public class ProjectDetailsController extends HttpServlet {
 
             List<ProjectTask> tasks = taskDAO.getTasksInProject(projectId, index, tasksPerPage);
 
+            // Check which tasks have reports (cannot be deleted)
+            TaskReportDAO taskReportDAO = new TaskReportDAO();
+            Map<Integer, Boolean> taskHasReports = new HashMap<>();
+            for (ProjectTask task : tasks) {
+                taskHasReports.put(task.getTaskId(), taskReportDAO.hasTaskReports(task.getTaskId()));
+            }
+
+            // Check if current user is a project leader (for students to create tasks)
+            boolean isCurrentUserLeader = dao.isProjectLeader(projectId, currentUser.getUserID());
+
             request.setAttribute("project", project);
             request.setAttribute("members", members);
             request.setAttribute("tasks", tasks);
+            request.setAttribute("taskHasReports", taskHasReports);
+            request.setAttribute("isCurrentUserLeader", isCurrentUserLeader);
             request.setAttribute("currentPage", index);
             request.setAttribute("endPage", endPage);
 

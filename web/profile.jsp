@@ -1,12 +1,11 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - LAB Timesheet</title>
+    <title>User Profile - LAB Timesheet</title>
 
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -21,225 +20,408 @@
           crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1055;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast-notification {
-            min-width: 300px;
-            max-width: 400px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            overflow: hidden;
-            animation: slideInRight 0.4s ease-out forwards;
-            opacity: 0;
-            transform: translateX(100%);
-        }
-
-        .toast-notification.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .toast-header-custom {
-            background: #d9534f;               /* đỏ Bootstrap danger */
-            color: white;
-            padding: 12px 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toast-header-custom i {
-            font-size: 1.2rem;
-        }
-
-        .toast-body-custom {
-            padding: 16px;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .toast-notification.success .toast-header-custom {
-            background: #5cb85c;               /* xanh success */
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes slideOutRight {
-            from { opacity: 1; transform: translateX(0); }
-            to   { opacity: 0; transform: translateX(100%); }
-        }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-            padding: 20px 0;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            background: white;
+            border-radius: 15px 15px 0 0;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             display: flex;
             align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
-        .login-card {
-            border: none;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-        }
-        .card-header {
-            background: rgba(255,255,255,0.95);
-            border-bottom: none;
-            padding: 2.5rem 1rem 2rem;
-        }
-        .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 50px;
-            padding: 12px;
+
+        .profile-name {
+            font-size: 28px;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+
+        .profile-role {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
         }
-        .form-floating > label {
-            color: #555;
+
+        .role-student {
+            background-color: #e3f2fd;
+            color: #1976d2;
         }
+
+        .role-supervisor {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .role-admin {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            font-weight: 600;
+            font-size: 18px;
+            border: none;
+        }
+
+        .card-header i {
+            margin-right: 10px;
+        }
+
+        .card-body {
+            padding: 30px;
+            background: white;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
         .form-control:focus {
             border-color: #667eea;
-            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            color: #6c757d;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            padding: 10px 25px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e9ecef, transparent);
+            margin: 30px 0;
         }
     </style>
 </head>
-<body class="d-flex align-items-center">
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-4 col-md-6 col-sm-8">
-            <div class="card login-card">
-                <div class="card-header text-center bg-transparent">
-                    <i class="fas fa-clock fa-4x text-primary mb-3"></i>
-                    <h3 class="mb-1 fw-bold text-dark">LAB Timesheet</h3>
-                    <p class="text-muted mb-0">Sign in to continue</p>
-                </div>
-                <div class="card-body p-4 p-xl-5">
+<body>
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="profile-name">${user.fullName}</div>
+        <c:choose>
+            <c:when test="${user.roleID == 1}">
+                    <span class="profile-role role-student">
+                        <i class="fas fa-graduation-cap me-1"></i>Student
+                    </span>
+            </c:when>
+            <c:when test="${user.roleID == 2}">
+                    <span class="profile-role role-supervisor">
+                        <i class="fas fa-user-tie me-1"></i>Supervisor
+                    </span>
+            </c:when>
+            <c:when test="${user.roleID == 3}">
+                    <span class="profile-role role-admin">
+                        <i class="fas fa-user-shield me-1"></i>Admin
+                    </span>
+            </c:when>
+            <c:otherwise>
+                <span class="profile-role">Unknown</span>
+            </c:otherwise>
+        </c:choose>
+    </div>
 
-                    <form action="login" method="post">
-                        <div class="form-floating mb-3">
-                            <input type="text"
-                                   class="form-control"
-                                   id="username"
-                                   name="username"
-                                   placeholder="Username"
-                                   required
-                                   autofocus>
-                            <label for="username"><i class="fas fa-user me-2"></i>Username</label>
-                        </div>
+    <!-- Alert Messages -->
+    <% if (request.getAttribute("error") != null) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <%= request.getAttribute("error") %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
+    <% if (request.getAttribute("success") != null) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <%= request.getAttribute("success") %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
 
-                        <div class="form-floating mb-4">
-                            <input type="password"
-                                   class="form-control"
-                                   id="password"
-                                   name="password"
-                                   placeholder="Password"
-                                   required>
-                            <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
-                        </div>
+    <!-- Personal Information Card -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-user-edit"></i>Personal Information
+        </div>
+        <div class="card-body">
+            <form action="profile" method="post">
+                <input type="hidden" name="action" value="updateProfile">
 
-                        <button type="submit" class="btn btn-primary btn-login w-100">
-                            <i class="fas fa-sign-in-alt me-2"></i>Login
-                        </button>
-                    </form>
-
-                    <div class="text-center mt-4">
-                        <p class="mb-0 text-muted">
-                            Don't have an account?
-                            <a href="/FlowSheet/register.jsp" class="text-decoration-none fw-semibold">Register here</a>
-                        </p>
+                <div class="mb-4">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user me-2"></i>Username
+                    </label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-at"></i>
+                            </span>
+                        <input type="text"
+                               class="form-control"
+                               id="username"
+                               name="username"
+                               value="${user.username}"
+                               required>
                     </div>
                 </div>
-            </div>
+
+                <div class="mb-4">
+                    <label for="fullName" class="form-label">
+                        <i class="fas fa-id-card me-2"></i>Full Name
+                    </label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-signature"></i>
+                            </span>
+                        <input type="text"
+                               class="form-control"
+                               id="fullName"
+                               name="fullName"
+                               value="${user.fullName}"
+                               required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-at"></i>
+                            </span>
+                        <input type="email"
+                               class="form-control"
+                               id="email"
+                               name="email"
+                               value="${user.email}"
+                               required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Update Profile
+                </button>
+            </form>
         </div>
     </div>
+
+    <!-- Change Password Card -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-lock"></i>Change Password
+        </div>
+        <div class="card-body">
+            <form action="profile" method="post">
+                <input type="hidden" name="action" value="changePassword">
+
+                <div class="mb-4">
+                    <label for="currentPassword" class="form-label">
+                        <i class="fas fa-key me-2"></i>Current Password
+                    </label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        <input type="password"
+                               class="form-control"
+                               id="currentPassword"
+                               name="currentPassword"
+                               required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="newPassword" class="form-label">
+                        <i class="fas fa-key me-2"></i>New Password
+                    </label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock-open"></i>
+                            </span>
+                        <input type="password"
+                               class="form-control"
+                               id="newPassword"
+                               name="newPassword"
+                               required
+                               minlength="4"
+                               placeholder="Minimum 4 characters">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirmPassword" class="form-label">
+                        <i class="fas fa-key me-2"></i>Confirm New Password
+                    </label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                        <input type="password"
+                               class="form-control"
+                               id="confirmPassword"
+                               name="confirmPassword"
+                               required
+                               minlength="4">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-shield-alt me-2"></i>Change Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="back-link">
+        <c:choose>
+            <c:when test="${user.roleID == 1}">
+                <a href="${pageContext.request.contextPath}/studentHomePage.jsp">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </c:when>
+            <c:when test="${user.roleID == 2}">
+                <a href="${pageContext.request.contextPath}/supervisor/dashboard">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </c:when>
+            <c:when test="${user.roleID == 3}">
+                <a href="${pageContext.request.contextPath}/supervisor/dashboard">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </c:when>
+            <c:otherwise>
+                <a href="${pageContext.request.contextPath}/login.jsp">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Login
+                </a>
+            </c:otherwise>
+        </c:choose>
+    </div>
 </div>
-<!-- Toast Container -->
-<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-<script>
-    // Function to display toast with safe message escaping
-    function showToast(message, type = 'error', duration = 5000) {
-        if (!message || message.trim() === '') return; // Skip if no message
-
-        const container = document.getElementById('toast-container');
-
-        const toast = document.createElement('div');
-        toast.className = `toast-notification ${type}`;
-
-        // Escape the message for safe HTML insertion and prevent JS breakage
-        const escapedMessage = message
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#x27;')  // Escape single quotes
-            .replace(/\n/g, '<br>')   // Handle newlines gracefully
-            .replace(/\\/g, '\\\\');  // Escape backslashes
-
-        toast.innerHTML = `
-        <div class="toast-header-custom">
-            <i class="fas ${type == 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
-            <strong>${type == 'success' ? 'Thành công' : 'Lỗi'}</strong>
-            <button type="button" class="btn-close btn-close-white ms-auto"
-                    onclick="this.closest('.toast-notification').remove()"></button>
-        </div>
-        <div class="toast-body-custom">
-            ${escapedMessage}
-        </div>
-    `;
-
-        container.appendChild(toast);
-
-        // Trigger show animation
-        setTimeout(() => toast.classList.add('show'), 100);
-
-        // Auto-hide after duration
-        setTimeout(() => {
-            toast.style.animation = 'slideOutRight 0.4s ease-out forwards';
-            toast.addEventListener('animationend', () => toast.remove());
-        }, duration);
-    }
-
-    // Display error if present, with server-side pre-escaping for single quotes
-    <c:if test="${not empty error}">
-    <c:set var="escapedError" value="${fn:replace(error, \"'\", \"\\\\'\")}" />  <!-- JSTL escape for single quotes -->
-    showToast('${escapedError}', 'error', 6000);
-    <c:remove var="error" scope="request"/>
-    </c:if>
-</script>
-
-<div id="server-error" data-error="${not empty error ? error : ''}" style="display:none"></div>
-
-<script>
-    // Đọc lỗi từ data attribute – 100% an toàn, không bao giờ bị cắt chuỗi
-    const errorElement = document.getElementById('server-error');
-    const serverError = errorElement.getAttribute('data-error').trim();
-
-    if (serverError) {
-        showToast(serverError, 'error', 7000);
-    }
-</script>
-
-<!-- Bootstrap JS (for interactive components) -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
