@@ -129,20 +129,20 @@
 <div class="page-wrapper">
 
     <div class="page-header">
-        <h1>Task Reviews</h1>
+        <h1 style="color: blue;">Task Reviews</h1>
 
         <%-- Only show Create button if user can manage --%>
         <% if (canManage) { %>
-            <a class="btn-primary"
-               href="${pageContext.request.contextPath}/task-review?action=create&taskId=${taskId}">
-                Create Review
-            </a>
+        <a class="btn-primary"
+           href="${pageContext.request.contextPath}/task-review?action=create&taskId=${taskId}">
+            Create Review
+        </a>
         <% } %>
     </div>
 
     <%-- Inform students / view-only users --%>
     <% if (!canManage) { %>
-        <div class="msg info">You have <b>view-only</b> access to Task Reviews.</div>
+    <div class="msg info">You have <b>view-only</b> access to Task Reviews.</div>
     <% } %>
 
     <c:if test="${not empty error}">
@@ -185,7 +185,8 @@
                     <th>progress (%)</th>
                     <th>comment</th>
                     <th>created at</th>
-                    <th>action</th>
+                    <th>reviewer</th>
+                    <th>action</th>                
                 </tr>
             </thead>
             <tbody>
@@ -234,26 +235,37 @@
                                     </c:choose>
                                 </td>
 
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${not empty reviewerNameMap && reviewerNameMap[r.reviewedBy] != null}">
+                                            ${reviewerNameMap[r.reviewedBy]}
+                                        </c:when>
+                                        <c:otherwise>
+                                            User #${r.reviewedBy}
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+
                                 <td style="display:flex; gap:8px; flex-wrap:wrap;">
                                     <%-- View-only users see no edit/delete --%>
                                     <% if (canManage) { %>
-                                        <a class="btn-outline"
-                                           href="${pageContext.request.contextPath}/task-review?action=edit&reviewId=${r.reviewId}&taskId=${taskId}">
-                                            Edit
-                                        </a>
+                                    <a class="btn-outline"
+                                       href="${pageContext.request.contextPath}/task-review?action=edit&reviewId=${r.reviewId}&taskId=${r.taskId}">
+                                        Edit
+                                    </a>
 
-                                        <form method="post"
-                                              action="${pageContext.request.contextPath}/task-review"
-                                              style="margin:0;"
-                                              onsubmit="return confirm('Delete this review?');">
-                                            <input type="hidden" name="action" value="delete"/>
-                                            <input type="hidden" name="taskId" value="${taskId}"/>
-                                            <input type="hidden" name="reviewId" value="${r.reviewId}"/>
-                                            <button class="btn-outline btn-danger" type="submit">Delete</button>
-                                        </form>
+                                    <form method="post"
+                                          action="${pageContext.request.contextPath}/task-review"
+                                          style="margin:0;"
+                                          onsubmit="return confirm('Delete this review?');">
+                                        <input type="hidden" name="action" value="delete"/>
+                                        <input type="hidden" name="taskId" value="${r.taskId}"/>
+                                        <input type="hidden" name="reviewId" value="${r.reviewId}"/>
+                                        <button class="btn-outline btn-danger" type="submit">Delete</button>
+                                    </form>
                                     <% } else { %>
-                                        <span class="muted">—</span>
-                                    <% } %>
+                                    <span class="muted">—</span>
+                                    <% }%>
                                 </td>
 
                             </tr>
