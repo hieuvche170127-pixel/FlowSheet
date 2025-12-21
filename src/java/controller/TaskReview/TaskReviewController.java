@@ -167,13 +167,21 @@ public class TaskReviewController extends HttpServlet {
 
                 int reviewId = parseIntOrMinus1(request.getParameter("reviewId"));
                 if (reviewId <= 0) {
-                    /* handle error */ }
-
+                    response.sendRedirect(request.getContextPath()
+                            + "/task-review?action=list&error=Invalid reviewId.");
+                    return;
+                }
                 TaskReview review = dao.getByIdAndReviewer(reviewId, user.getUserID());
                 if (review == null) {
-                    /* handle not found/unauthorized */ }
+                    // Either doesn't exist OR current supervisor isn't the owner
+                    response.sendRedirect(request.getContextPath()
+                            + "/task-review?action=list&error=Review not found or you are not allowed to edit it.");
+                    return;
+                }
 
                 request.setAttribute("review", review);
+                // IMPORTANT: keep dropdown selection correct in update form
+                request.setAttribute("taskId", review.getTaskId());
 
                 loadAllTasks(request); // or loadReviewedTasks(request, user.getUserID());
 
