@@ -143,6 +143,21 @@
         font-size: 11px;
         color: #555;
     }
+
+    .btn-primary, .btn-outline {
+        padding: 8px 14px;
+        border-radius: 16px;
+        border: 1px solid #333;
+        background: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary:hover, .btn-outline:hover {
+        background: #f3f3f3;
+    }
 </style>
 <div class="container-fluid">
     <div class="page-wrapper">
@@ -152,8 +167,7 @@
 
             <!-- Your update: link direct to /FlowSheet/CreateTeam.jsp -->
             <form method="get" action="<%= request.getContextPath()%>/CreateTeam.jsp">
-                <a class="btn-create-team"
-                   href="${pageContext.request.contextPath}/team/create">
+                <a class="btn-primary" href="${pageContext.request.contextPath}/team/create">
                     Create Team
                 </a>
             </form>
@@ -245,7 +259,27 @@
                             </div>
                         </td>
 
-                        <td><%= t.getCreatedAt()%></td>
+                        <td>
+                            <%
+                                Object ca = t.getCreatedAt();
+                                String createdText = "N/A";
+
+                                if (ca != null) {
+                                    if (ca instanceof java.sql.Timestamp) {
+                                        java.sql.Timestamp ts = (java.sql.Timestamp) ca;
+                                        createdText = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(ts);
+                                    } else if (ca instanceof java.time.LocalDateTime) {
+                                        createdText = ((java.time.LocalDateTime) ca).format(
+                                                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                                        );
+                                    } else {
+                                        // fallback
+                                        createdText = String.valueOf(ca);
+                                    }
+                                }
+                            %>
+                            <%= createdText%>
+                        </td>
 
                         <td>
                             <a class="action-btn"
@@ -272,9 +306,9 @@
             String backUrl = isSupervisor
                     ? (request.getContextPath() + "/supervisor/dashboard")
                     : (request.getContextPath() + "/studentHomePage.jsp"); // change if your student homepage route differs
-        %>
+%>
 
-        <a class="back-link" href="<%= backUrl%>">Back to main</a>
+        <a class="btn-outline" href="<%= backUrl%>">Back to main</a>
     </div>
 </div>
 <jsp:include page="/nghiapages/layout_footer.jsp" />
