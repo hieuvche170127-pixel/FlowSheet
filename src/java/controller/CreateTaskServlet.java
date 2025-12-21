@@ -37,6 +37,17 @@ public class CreateTaskServlet extends HttpServlet {
 
         List<Project> projects = projectDAO.getAllProjects();
 
+        // Get projectId from URL parameter if exists
+        String projectIdParam = req.getParameter("projectId");
+        if (projectIdParam != null && !projectIdParam.trim().isEmpty()) {
+            try {
+                Integer projectId = Integer.parseInt(projectIdParam);
+                req.setAttribute("selectedProjectId", projectId);
+            } catch (NumberFormatException e) {
+                // Invalid projectId, ignore
+            }
+        }
+
         req.setAttribute("projects", projects);
         req.getRequestDispatcher("/createTask.jsp").forward(req, resp);
     }

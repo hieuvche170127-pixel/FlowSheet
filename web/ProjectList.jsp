@@ -186,10 +186,27 @@
                                     </td>
                                     
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/project/details?id=${p.projectID}" 
-                                           class="btn btn-outline-secondary btn-sm">
-                                            View Details
-                                        </a>
+                                            <c:choose>
+
+                                            <c:when test="${p.projectID != null && p.projectID > 0}">
+
+                                                <a href="${pageContext.request.contextPath}/project/details?id=${p.projectID}" 
+
+                                                   class="btn btn-outline-secondary btn-sm">
+
+                                                    View Details
+
+                                                </a>
+
+                                            </c:when>
+
+                                            <c:otherwise>
+
+                                                <span class="text-muted small">N/A</span>
+
+                                            </c:otherwise>
+
+                                        </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>

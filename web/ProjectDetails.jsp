@@ -237,7 +237,7 @@
 
                                 <div class="d-flex justify-content-between align-items-center">
 
-                                    <a href="task/create?projectId=${project.projectID}" class="text-decoration-none text-success fw-bold">
+                                    <a href="${pageContext.request.contextPath}/task/create?projectId=${project.projectID}" class="text-decoration-none text-success fw-bold">
                                         <i class="bi bi-plus-lg"></i> Create New Task
                                     </a>
 
