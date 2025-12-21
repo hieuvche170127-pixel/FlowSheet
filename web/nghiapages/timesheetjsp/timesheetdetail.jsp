@@ -167,7 +167,7 @@
 
     <div class="d-flex justify-content-between">
         <h3>Thông tin Timesheet</h3>
-        <a href="${pageContext.request.contextPath}/DeleteTimesheet?tid=${timesheet.timesheetId}" 
+        <a href="${pageContext.request.contextPath}/DeleteTimesheet?timesheetId=${timesheet.timesheetId}" 
            class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center"
            style="width: 35px; height: 35px; padding: 0;"
            onclick="return confirm('Anh có chắc chắn muốn xóa Timesheet trống này không?')">
