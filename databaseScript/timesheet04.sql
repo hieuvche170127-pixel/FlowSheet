@@ -175,6 +175,39 @@ CREATE TABLE ProjectMember (
     CONSTRAINT CK_ProjectMember_RoleValid CHECK (RoleID >= 6 AND RoleID <= 8)
 );
 
+INSERT INTO ProjectMember (ProjectID, UserID, RoleID, JoinedAt) VALUES
+-- Project 1
+(1, 3, 7, '2023-10-01 09:00:00'), -- Leader
+(1, 4, 8, '2023-10-01 10:30:00'), -- Co-lead
+(1, 5, 6, '2023-10-02 14:00:00'), -- Member
+(1, 6, 6, '2023-10-02 15:00:00'), -- Member
+
+-- Project 2
+(2, 7, 7, '2023-10-05 08:00:00'), -- Leader
+(2, 8, 8, '2023-10-05 08:30:00'), -- Co-lead
+(2, 9, 6, '2023-10-06 09:00:00'), -- Member
+(2, 3, 6, '2023-10-06 10:00:00'), -- Member
+
+-- Project 3
+(3, 4, 7, '2023-11-01 11:00:00'), -- Leader
+(3, 5, 8, '2023-11-01 11:30:00'), -- Co-lead
+(3, 6, 6, '2023-11-02 13:00:00'), -- Member
+(3, 7, 6, '2023-11-02 14:00:00'), -- Member
+
+-- Project 4
+(4, 8, 7, '2023-11-10 09:15:00'), -- Leader
+(4, 9, 8, '2023-11-10 10:00:00'), -- Co-lead
+(4, 3, 6, '2023-11-11 15:45:00'), -- Member
+(4, 4, 6, '2023-11-12 16:20:00'), -- Member
+
+-- Project 5
+(5, 5, 7, '2023-12-01 08:00:00'), -- Leader
+(5, 6, 8, '2023-12-01 09:00:00'), -- Co-lead
+(5, 7, 6, '2023-12-02 10:00:00'), -- Member
+(5, 8, 6, '2023-12-02 11:00:00'); -- Member
+
+
+
 
 -- 1 vài lưu ý - cho anh tiến anh
 -- check xem deadline có sau ngày hôm nay không (mỗi khi add/update)
@@ -267,6 +300,78 @@ VALUES
  '2024-12-30 23:59:59', 8.00, N'IN_PROGRESS');
 GO
 
+INSERT INTO ProjectTask (ProjectID, TaskName, Description, Deadline, EstimateHourToDo, Status)
+VALUES
+-- =========================================================================
+-- PROJECT 3: Bảo trì và nâng cấp website công ty (01/03/2025 - 30/04/2025)
+-- =========================================================================
+(3, N'Cập nhật Framework và Library', 
+ N'Nâng cấp React và các thư viện liên quan lên phiên bản mới nhất để đảm bảo hiệu năng.', 
+ '2025-03-15 17:00:00', 16.00, N'IN_PROGRESS'),
+
+(3, N'Kiểm tra và vá lỗi bảo mật SQL Injection', 
+ N'Rà soát toàn bộ các câu truy vấn và thực hiện biện pháp ngăn chặn tấn công bảo mật.', 
+ '2025-03-25 17:00:00', 12.50, N'IN_PROGRESS'),
+
+(3, N'Tối ưu hóa tốc độ tải trang chủ', 
+ N'Nén ảnh, minify CSS/JS và cấu hình cache để tăng điểm Lighthouse.', 
+ '2025-04-10 17:00:00', 20.00, N'IN_PROGRESS'),
+
+(3, N'Sửa lỗi hiển thị trên trình duyệt Safari', 
+ N'Khắc phục các lỗi layout bị vỡ khi người dùng sử dụng iPhone/Macbook.', 
+ '2025-04-20 17:00:00', 8.00, N'IN_PROGRESS'),
+
+(3, N'Triển khai bản vá lên Production', 
+ N'Tiến hành deploy và kiểm tra tính ổn định sau khi nâng cấp.', 
+ '2025-04-29 23:00:00', 4.00, N'IN_PROGRESS'),
+
+-- =========================================================================
+-- PROJECT 4: Triển khai hệ thống E-learning nội bộ (10/04/2025 - 10/07/2025)
+-- =========================================================================
+(4, N'Khảo sát nhu cầu đào tạo nhân viên', 
+ N'Gửi form khảo sát cho các phòng ban để xác định các khóa học cần thiết.', 
+ '2025-04-25 17:00:00', 10.00, N'IN_PROGRESS'),
+
+(4, N'Cấu hình server hosting cho LMS', 
+ N'Thiết lập môi trường server và cài đặt mã nguồn hệ thống E-learning.', 
+ '2025-05-15 17:00:00', 24.00, N'IN_PROGRESS'),
+
+(4, N'Số hóa tài liệu đào tạo (Video/PDF)', 
+ N'Chuyển đổi các bài giảng cũ sang định dạng số phù hợp với nền tảng web.', 
+ '2025-06-10 17:00:00', 40.00, N'IN_PROGRESS'),
+
+(4, N'Kiểm thử luồng đăng ký khóa học', 
+ N'Đảm bảo nhân viên có thể đăng ký và làm bài kiểm tra cuối khóa mượt mà.', 
+ '2025-06-30 17:00:00', 15.00, N'IN_PROGRESS'),
+
+(4, N'Hướng dẫn sử dụng cho nhân viên', 
+ N'Tổ chức buổi workshop online giới thiệu cách sử dụng hệ thống mới.', 
+ '2025-07-08 17:00:00', 6.00, N'IN_PROGRESS'),
+
+-- =========================================================================
+-- PROJECT 5: Thiết kế lại giao diện người dùng (20/02/2025 - 20/05/2025)
+-- =========================================================================
+(5, N'Phỏng vấn trải nghiệm người dùng cũ', 
+ N'Lấy ý kiến từ 10 khách hàng thân thiết về những điểm bất tiện của giao diện cũ.', 
+ '2025-03-05 17:00:00', 14.00, N'IN_PROGRESS'),
+
+(5, N'Xây dựng Wireframe cho Mobile App', 
+ N'Phác thảo cấu trúc các màn hình chính trên Figma.', 
+ '2025-03-25 17:00:00', 30.00, N'IN_PROGRESS'),
+
+(5, N'Thiết kế bộ UI Kit mới', 
+ N'Quy định màu sắc, font chữ, icon và các component dùng chung.', 
+ '2025-04-15 17:00:00', 25.00, N'IN_PROGRESS'),
+
+(5, N'Tạo Prototype tương tác (High-fidelity)', 
+ N'Làm bản demo có thể click được để trình chiếu cho ban giám đốc.', 
+ '2025-05-10 17:00:00', 20.00, N'IN_PROGRESS'),
+
+(5, N'Bàn giao tài liệu thiết kế cho Dev', 
+ N'Xuất file và viết mô tả các hiệu ứng chuyển cảnh cho bộ phận lập trình.', 
+ '2025-05-18 17:00:00', 8.00, N'IN_PROGRESS');
+GO
+
 
 /* =========================================================
    Update 01 (MUST DO IT MANUALLY)
@@ -298,6 +403,42 @@ VALUES
     (9, 5, SYSDATETIME()); -- Gán User 5 vào Task 9
 GO
 
+INSERT INTO TaskAssignee (TaskID, UserID, AssignedAt)
+VALUES
+-- PROJECT 1 (Members: 3, 4, 5, 6)
+(1, 5, GETDATE()),
+(2, 3, GETDATE()),
+(3, 6, GETDATE()),
+(4, 4, GETDATE()),
+
+-- PROJECT 2 (Members: 7, 8, 9, 3)
+(6, 9, GETDATE()),
+(7, 7, GETDATE()),
+(8, 8, GETDATE()),
+(9, 3, GETDATE()),
+(10, 7, GETDATE()),
+
+-- PROJECT 3 (Members: 4, 5, 6, 7)
+(11, 6, GETDATE()),
+(12, 4, GETDATE()),
+(13, 5, GETDATE()),
+(14, 7, GETDATE()),
+(15, 4, GETDATE()),
+
+-- PROJECT 4 (Members: 8, 9, 3, 4)
+(16, 3, GETDATE()),
+(17, 8, GETDATE()),
+(18, 4, GETDATE()),
+(19, 9, GETDATE()),
+(20, 8, GETDATE()),
+
+-- PROJECT 5 (Members: 5, 6, 7, 8)
+(21, 7, GETDATE()),
+(22, 5, GETDATE()),
+(23, 6, GETDATE()),
+(24, 5, GETDATE()),
+(25, 8, GETDATE());
+GO
 
 
 
@@ -351,6 +492,16 @@ VALUES
 (6, '2025-12-15', '2025-12-21', N'Draft', N'Tối ưu hóa tốc độ load trang và kiểm thử giao diện.'),
 (7, '2025-12-15', '2025-12-21', N'Draft', N'Xây dựng chức năng xuất báo cáo ra file Excel.');
 GO
+
+INSERT INTO Timesheet (UserID, DayStart, DayEnd, Status, Summary)
+VALUES 
+(3, '2025-12-08', '2025-12-14', N'Submitted', N'Điều phối tiến độ Project 1 và hỗ trợ review logic Database.'),
+(4, '2025-12-08', '2025-12-14', N'Submitted', N'Kiểm tra hiệu năng Backend và bắt đầu lập kế hoạch bảo trì Project 3.'),
+(8, '2025-12-08', '2025-12-14', N'Draft', N'Cấu hình hạ tầng Server cho dự án E-learning và họp kick-off Project 4.'),
+(9, '2025-12-08', '2025-12-14', N'Draft', N'Nghiên cứu giải pháp AI cho Project 2 và viết tài liệu kỹ thuật.');
+GO
+
+
 CREATE TABLE TimesheetEntry (
     EntryID         INT IDENTITY(1,1) PRIMARY KEY,
     TimesheetID     INT           NOT NULL,          -- Khóa ngoại liên kết với Timesheet (Header)
@@ -383,6 +534,111 @@ VALUES (7, '2025-12-17', '08:00:00', '18:00:00', 90, N'Viết DAO và Servlet x�
 GO
 
 
+-- =========================================================================
+-- TIMESHEET ID 1: User 5 (Tuần 08/12 - 14/12) - Login & Phân quyền
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(1, '2025-12-08', '08:00:00', '17:30:00', 60, N'Tìm hiểu cơ chế Spring Security và JWT.'),
+(1, '2025-12-09', '08:30:00', '18:00:00', 90, N'Viết code cho chức năng Authentication và lưu Token.'),
+(1, '2025-12-10', '09:00:00', '17:00:00', 60, N'Xây dựng Middleware kiểm tra quyền truy cập (Role-based).'),
+(1, '2025-12-11', '08:00:00', '12:00:00', 0, N'Fix lỗi không nhận Token trên trình duyệt Chrome.');
+
+-- =========================================================================
+-- TIMESHEET ID 2: User 6 (Tuần 08/12 - 14/12) - Dashboard & Sidebar
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(2, '2025-12-08', '08:00:00', '17:00:00', 60, N'Vẽ layout tổng thể cho Dashboard.'),
+(2, '2025-12-09', '08:00:00', '17:00:00', 60, N'Code sidebar menu đa cấp và hiệu ứng thu gọn.'),
+(2, '2025-12-10', '08:00:00', '17:00:00', 60, N'Tích hợp Chart.js để hiển thị biểu đồ thống kê công việc.');
+
+-- =========================================================================
+-- TIMESHEET ID 3: User 7 (Tuần 08/12 - 14/12) - API Báo cáo
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(3, '2025-12-08', '08:30:00', '17:30:00', 60, N'Thiết kế câu lệnh SQL lấy dữ liệu tổng hợp theo tuần.'),
+(3, '2025-12-09', '08:00:00', '17:00:00', 60, N'Viết API Endpoint cho báo cáo dự án.'),
+(3, '2025-12-10', '08:00:00', '18:00:00', 120, N'Tối ưu hóa performance cho các câu truy vấn phức tạp.');
+
+-- =========================================================================
+-- TIMESHEET ID 4: User 5 (Tuần 01/12 - 07/12) - ERD
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(4, '2025-12-01', '08:00:00', '17:00:00', 60, N'Họp lấy yêu cầu từ Stakeholders.'),
+(4, '2025-12-02', '08:30:00', '17:30:00', 60, N'Phác thảo sơ đồ ERD phiên bản 1.'),
+(4, '2025-12-03', '08:00:00', '17:00:00', 60, N'Chuẩn hóa các bảng dữ liệu về dạng 3NF.');
+
+-- =========================================================================
+-- TIMESHEET ID 5: User 6 (Tuần 01/12 - 07/12) - Setup Env
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(5, '2025-12-01', '09:00:00', '18:00:00', 60, N'Cài đặt Docker, SQL Server và môi trường lập trình.'),
+(5, '2025-12-02', '08:00:00', '17:00:00', 60, N'Khởi tạo project template (Frontend/Backend).'),
+(5, '2025-12-03', '08:30:00', '12:30:00', 0, N'Cấu hình CI/CD cơ bản cho dự án.');
+
+-- =========================================================================
+-- TIMESHEET ID 6: User 7 (Tuần 01/12 - 07/12) - Họp Kick-off
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(6, '2025-12-01', '08:00:00', '12:00:00', 0, N'Tham gia buổi họp Kick-off toàn công ty.'),
+(6, '2025-12-02', '13:00:00', '17:00:00', 0, N'Thảo luận về Tech-stack sử dụng (React vs Angular).'),
+(6, '2025-12-03', '08:00:00', '17:00:00', 60, N'Viết tài liệu Coding Convention cho Team.');
+
+-- =========================================================================
+-- TIMESHEET ID 7: User 5 (Bổ sung thêm 1 dòng cho đủ 4 dòng)
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note)
+VALUES (7, '2025-12-18', '08:00:00', '12:00:00', 0, N'Kiểm thử lại luồng lưu trữ TimesheetEntry và fix lỗi logic Start/End time.');
+
+-- =========================================================================
+-- TIMESHEET ID 8: User 6 (Tuần 15/12 - 21/12) - Tối ưu UI
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(8, '2025-12-15', '08:00:00', '17:00:00', 60, N'Kiểm tra độ tương thích giao diện trên điện thoại.'),
+(8, '2025-12-16', '08:30:00', '17:30:00', 60, N'Tối ưu hóa kích thước hình ảnh và nén file CSS.'),
+(8, '2025-12-17', '08:00:00', '17:00:00', 60, N'Sửa các lỗi giật lag khi chuyển đổi các trang Dashboard.');
+
+-- =========================================================================
+-- TIMESHEET ID 9: User 7 (Tuần 15/12 - 21/12) - Export Excel
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(9, '2025-12-15', '08:00:00', '17:00:00', 60, N'Nghiên cứu thư viện Apache POI (Java) để xuất file Excel.'),
+(9, '2025-12-16', '08:00:00', '17:00:00', 60, N'Định dạng template file Excel báo cáo (Màu sắc, Font chữ).'),
+(9, '2025-12-17', '08:00:00', '18:00:00', 60, N'Hoàn thành logic đổ dữ liệu từ DB vào file Excel.');
+
+-- =========================================================================
+-- TIMESHEET ID 10: User 3 (Tuần 08/12 - 14/12) - Quản lý P1
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(10, '2025-12-08', '08:00:00', '17:00:00', 60, N'Họp review tiến độ tuần của Project 1.'),
+(10, '2025-12-09', '09:00:00', '12:00:00', 0, N'Phân bổ task cho các thành viên mới gia nhập.'),
+(10, '2025-12-10', '08:00:00', '17:00:00', 60, N'Review code Backend cho Module Authentication.');
+
+-- =========================================================================
+-- TIMESHEET ID 11: User 4 (Tuần 08/12 - 14/12) - Backend/Bảo trì
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(11, '2025-12-08', '08:30:00', '17:30:00', 60, N'Viết script tự động backup database hàng ngày.'),
+(11, '2025-12-09', '08:00:00', '17:00:00', 60, N'Phân tích lỗi log trên môi trường Production.'),
+(11, '2025-12-10', '13:00:00', '18:00:00', 0, N'Lên danh sách các thư viện cần cập nhật cho Project 3.');
+
+-- =========================================================================
+-- TIMESHEET ID 12: User 8 (Tuần 08/12 - 14/12) - Server E-learning
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(12, '2025-12-08', '08:00:00', '17:00:00', 60, N'Cấu hình Web Server (Nginx) cho hệ thống E-learning.'),
+(12, '2025-12-09', '08:30:00', '17:30:00', 60, N'Phân quyền thư mục và cài đặt SSL Certificate.'),
+(12, '2025-12-10', '08:00:00', '12:00:00', 0, N'Tham gia họp kick-off với đối tác cung cấp nội dung.');
+
+-- =========================================================================
+-- TIMESHEET ID 13: User 9 (Tuần 08/12 - 14/12) - AI Research
+-- =========================================================================
+INSERT INTO TimesheetEntry (TimesheetID, WorkDate, StartTime, EndTime, DelayMinutes, Note) VALUES
+(13, '2025-12-08', '08:00:00', '17:00:00', 60, N'Nghiên cứu OpenAI API và LangChain.'),
+(13, '2025-12-09', '08:00:00', '17:00:00', 60, N'Chạy thử nghiệm một số prompt mẫu cho việc gợi ý task.'),
+(13, '2025-12-10', '08:30:00', '17:30:00', 60, N'Viết tài liệu so sánh chi phí giữa các Model AI hiện nay.');
+GO
+
+
 CREATE TABLE TimesheetReview (
     TimesheetReviewID INT IDENTITY(1,1) PRIMARY KEY,  -- Khóa chính Tự tăng
     TimesheetID       INT           NOT NULL,         -- Timesheet được đánh giá
@@ -394,6 +650,53 @@ CREATE TABLE TimesheetReview (
     CONSTRAINT FK_Review_Reviewer
         FOREIGN KEY (ReviewedByID) REFERENCES UserAccount(UserID),
 );
+GO
+
+-- =========================================================================
+-- SUPERVISOR (ID = 2) REVIEW CHO CÁC TIMESHEET TỪ 1 ĐẾN 13
+-- Thời điểm review: Thường là cuối tuần hoặc cuối đợt log (khoảng 20/12/2025)
+-- =========================================================================
+
+INSERT INTO TimesheetReview (TimesheetID, ReviewedByID, Comment, ReviewedAt)
+VALUES 
+-- Review cho Timesheet 1 (User 5 - Login & Auth)
+(1, 2, N'Cơ chế JWT đã được triển khai đúng tiêu chuẩn bảo mật của công ty. Tốt.', '2025-12-14 16:00:00'),
+
+-- Review cho Timesheet 2 (User 6 - Dashboard)
+(2, 2, N'Giao diện Dashboard trực quan, phần biểu đồ Chart.js cần tối ưu thêm màu sắc.', '2025-12-14 16:30:00'),
+
+-- Review cho Timesheet 3 (User 7 - API Báo cáo)
+(3, 2, N'Các câu query phức tạp đã được tối ưu hóa, API trả về dữ liệu nhanh.', '2025-12-14 17:00:00'),
+
+-- Review cho Timesheet 4 (User 5 - ERD)
+(4, 2, N'Sơ đồ ERD rất chi tiết, đã chuẩn hóa 3NF giúp database sạch hơn.', '2025-12-07 15:00:00'),
+
+-- Review cho Timesheet 5 (User 6 - Setup Env)
+(5, 2, N'Môi trường Docker đã ổn định, CI/CD hoạt động tốt.', '2025-12-07 15:30:00'),
+
+-- Review cho Timesheet 6 (User 7 - Kick-off)
+(6, 2, N'Tài liệu Coding Convention viết rất kỹ, team cần tuân thủ nghiêm ngặt.', '2025-12-07 16:00:00'),
+
+-- Review cho Timesheet 7 (User 5 - Timesheet Module - Đang làm)
+(7, 2, N'Tiến độ Module Timesheet Management đang đi đúng hướng, cần chú ý phần Validation.', '2025-12-20 09:00:00'),
+
+-- Review cho Timesheet 8 (User 6 - Tối ưu UI)
+(8, 2, N'Responsive trên mobile đã mượt mà hơn, đã check trên các thiết bị iPhone/Samsung.', '2025-12-20 10:00:00'),
+
+-- Review cho Timesheet 9 (User 7 - Export Excel)
+(9, 2, N'Logic Apache POI hoạt động ổn định, file Excel xuất ra đúng định dạng yêu cầu.', '2025-12-20 11:00:00'),
+
+-- Review cho Timesheet 10 (User 3 - Quản lý P1)
+(10, 2, N'Phân bổ task cho thành viên mới hợp lý, tiến độ dự án 1 đang rất tốt.', '2025-12-14 14:00:00'),
+
+-- Review cho Timesheet 11 (User 4 - Bảo trì P3)
+(11, 2, N'Script backup database hoạt động tốt, đã kiểm tra file backup trên cloud.', '2025-12-14 14:30:00'),
+
+-- Review cho Timesheet 12 (User 8 - Server E-learning)
+(12, 2, N'Server Nginx cấu hình tốt, SSL đã được kích hoạt thành công.', '2025-12-14 15:00:00'),
+
+-- Review cho Timesheet 13 (User 9 - AI Research)
+(13, 2, N'Bản so sánh các model AI rất giá trị cho quyết định đầu tư sắp tới của sếp.', '2025-12-14 15:30:00');
 GO
 
 
@@ -444,6 +747,111 @@ CREATE TABLE TaskReport (
 GO
 
 
+
+-- =========================================================================
+-- BÁO CÁO CHO PROJECT 1 (UserID: 3, 4, 5, 6)
+-- =========================================================================
+INSERT INTO TaskReport (UserID, TaskID, ReportDescription, EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID)
+VALUES 
+-- Task 1: Database Design (Assignee: User 5)
+(5, 1, N'Đã hoàn thành sơ đồ ERD sơ bộ và các bảng chính.', 60.00, 5.00, 1),
+(5, 1, N'Đã thêm các ràng buộc Check Constraint và Index.', 100.00, 8.00, 26), -- 26 là entry bổ sung ở bước trước
+
+-- Task 2: Backend Development (Assignee: User 3)
+(3, 2, N'Thiết kế xong cấu trúc các lớp Entity và DTO.', 40.00, 6.00, 30),
+
+-- Task 3: Frontend UI (Assignee: User 6)
+(6, 3, N'Hoàn thành giao diện danh sách, đang làm Modal thêm mới.', 70.00, 9.00, 5),
+
+-- Task 4: Workflow (Assignee: User 4)
+(4, 4, N'Đang nghiên cứu logic chuyển trạng thái Draft sang Submitted.', 20.00, 2.00, NULL),
+
+-- Task 5: Reporting (Assignee: User 5)
+(5, 5, N'Đang tìm hiểu thư viện xuất file Excel.', 10.00, 2.00, NULL);
+
+-- =========================================================================
+-- BÁO CÁO CHO PROJECT 2 (UserID: 7, 8, 9, 3) - Dự án nghiên cứu AI
+-- =========================================================================
+INSERT INTO TaskReport (UserID, TaskID, ReportDescription, EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID)
+VALUES 
+-- Task 6: Thu thập dữ liệu (Assignee: User 9)
+(9, 6, N'Đã thu thập đủ báo cáo từ Gartner và IDC.', 100.00, 10.00, 2),
+
+-- Task 7: Phân tích LLM (Assignee: User 7)
+(7, 7, N'Đã chạy thử nghiệm Benchmark trên GPT-4 và Claude 3.', 80.00, 15.00, 9),
+
+-- Task 8: Nghiên cứu đối thủ (Assignee: User 8)
+(8, 8, N'Hoàn thành bảng so sánh tính năng AI của 3 đối thủ lớn.', 100.00, 12.00, NULL),
+
+-- Task 9: Khảo sát người dùng (Assignee: User 3)
+(3, 9, N'Đã nhận được 50 bản phản hồi từ khảo sát.', 50.00, 6.00, 31),
+
+-- Task 10: Tổng kết (Assignee: User 7)
+(7, 10, N'Đang tổng hợp các báo cáo thành slide trình chiếu.', 30.00, 4.00, NULL);
+
+-- =========================================================================
+-- BÁO CÁO CHO PROJECT 3 (UserID: 4, 5, 6, 7) - Bảo trì Web
+-- =========================================================================
+INSERT INTO TaskReport (UserID, TaskID, ReportDescription, EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID)
+VALUES 
+-- Task 11: Framework Update (Assignee: User 6)
+(6, 11, N'Nâng cấp thành công lên React 18 nhưng bị lỗi một số thư viện cũ.', 50.00, 8.00, 21),
+
+-- Task 12: SQL Injection Fix (Assignee: User 4)
+(4, 12, N'Đã rà soát và sửa lỗi tại các màn hình User Profile.', 90.00, 10.00, 34),
+
+-- Task 13: Optimize Page Load (Assignee: User 5)
+(5, 13, N'Đã cấu hình nén ảnh trên Server, tốc độ tăng 20%.', 45.00, 10.00, 13),
+
+-- Task 14: Safari Bug (Assignee: User 7)
+(7, 14, N'Đã tìm ra nguyên nhân lỗi CSS trên Safari 15.', 60.00, 5.00, 17),
+
+-- Task 15: Deploy (Assignee: User 4)
+(4, 15, N'Chờ approve để tiến hành deploy bản vá.', 0.00, 0.00, NULL);
+
+-- =========================================================================
+-- BÁO CÁO CHO PROJECT 4 (UserID: 8, 9, 3, 4) - E-learning
+-- =========================================================================
+INSERT INTO TaskReport (UserID, TaskID, ReportDescription, EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID)
+VALUES 
+-- Task 16: Khảo sát nhu cầu (Assignee: User 3)
+(3, 16, N'Đã thiết kế xong Google Form khảo sát.', 100.00, 4.00, NULL),
+
+-- Task 17: Hosting LMS (Assignee: User 8)
+(8, 17, N'Đã cài đặt xong môi trường Ubuntu Server.', 40.00, 12.00, 36),
+
+-- Task 18: Số hóa tài liệu (Assignee: User 4)
+(4, 18, N'Đã quay xong 2 video hướng dẫn đầu tiên.', 25.00, 15.00, NULL),
+
+-- Task 19: Test luồng đăng ký (Assignee: User 9)
+(9, 19, N'Phát hiện lỗi không gửi email xác nhận khi đăng ký.', 30.00, 5.00, NULL),
+
+-- Task 20: Workshop (Assignee: User 8)
+(8, 20, N'Đang soạn tài liệu hướng dẫn nhanh cho buổi Workshop.', 15.00, 2.00, 38);
+
+-- =========================================================================
+-- BÁO CÁO CHO PROJECT 5 (UserID: 5, 6, 7, 8) - UX Redesign
+-- =========================================================================
+INSERT INTO TaskReport (UserID, TaskID, ReportDescription, EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID)
+VALUES 
+-- Task 21: Phỏng vấn (Assignee: User 7)
+(7, 21, N'Đã phỏng vấn xong 5 khách hàng đầu tiên.', 50.00, 10.00, 39),
+
+-- Task 22: Wireframe (Assignee: User 5)
+(5, 22, N'Đã vẽ xong luồng Checkout và Giỏ hàng.', 70.00, 20.00, NULL),
+
+-- Task 23: UI Kit (Assignee: User 6)
+(6, 23, N'Đã chọn xong bảng màu và Typography chính.', 40.00, 10.00, 41),
+
+-- Task 24: Prototype (Assignee: User 5)
+(5, 24, N'Đang tạo hiệu ứng chuyển cảnh cho màn hình Homepage.', 20.00, 5.00, NULL),
+
+-- Task 25: Bàn giao cho Dev (Assignee: User 8)
+(8, 25, N'Đang liệt kê các thông số kỹ thuật (margin, padding) cho Dev.', 10.00, 3.00, NULL);
+GO
+
+
+
 CREATE TABLE TaskReview (
     ReviewID                INT IDENTITY(1,1) PRIMARY KEY,
     
@@ -477,6 +885,44 @@ CREATE TABLE TaskReview (
 );
 GO
 
+INSERT INTO TaskReview (TaskID, ReviewedBy, EstimateWorkPercentDone, ReviewComment, DateCreated)
+VALUES 
+-- PROJECT 1 (UserID 2 Review)
+(1, 2, 60.00, N'Supervisor: Cấu trúc ERD ổn, cần chú ý thêm các index cho bảng Log.', '2025-12-10 10:00:00'),
+(1, 2, 100.00, N'Supervisor: Đã duyệt, Database thiết kế rất chuyên nghiệp.', '2025-12-20 14:00:00'),
+(2, 2, 35.00, N'Supervisor: Code cần refactor lại phần DTO cho gọn hơn.', '2025-12-21 09:00:00'),
+(3, 2, 70.00, N'Supervisor: Giao diện sạch sẽ, cần check thêm trên trình duyệt Edge.', '2025-12-15 16:30:00'),
+(4, 2, 20.00, N'Supervisor: Đẩy nhanh tiến độ phần Workflow phê duyệt.', '2025-12-26 10:00:00'),
+(5, 2, 10.00, N'Supervisor: Đã xem qua kế hoạch làm báo cáo Excel.', '2026-01-02 11:00:00'),
+
+-- PROJECT 2 (UserID 2 Review)
+(6, 2, 100.00, N'Supervisor: Nguồn dữ liệu thu thập rất chất lượng.', '2024-10-16 08:00:00'),
+(7, 2, 75.00, N'Supervisor: Phân tích LLM khá sâu, cần bổ sung bảng so sánh giá.', '2024-11-12 14:00:00'),
+(8, 2, 100.00, N'Supervisor: Đã xem báo cáo đối thủ, rất hữu ích cho sếp tổng.', '2024-12-01 09:30:00'),
+(9, 2, 50.00, N'Supervisor: Tiếp tục lấy thêm survey từ khách hàng thực tế.', '2024-12-16 10:00:00'),
+(10, 2, 30.00, N'Supervisor: Slide báo cáo cuối năm cần chỉnh sửa màu sắc thương hiệu.', '2024-12-31 15:00:00'),
+
+-- PROJECT 3 (UserID 2 Review)
+(11, 2, 45.00, N'Supervisor: Lưu ý backup code trước khi nâng cấp Framework.', '2025-03-16 10:00:00'),
+(12, 2, 95.00, N'Supervisor: Phần bảo mật làm rất tốt, cần duy trì tiêu chuẩn này.', '2025-03-26 11:00:00'),
+(13, 2, 50.00, N'Supervisor: Page speed đã tăng, cố gắng tối ưu thêm CSS.', '2025-04-11 14:00:00'),
+(14, 2, 60.00, N'Supervisor: Đã nhận thấy bug trên Safari, cố gắng fix trong tuần.', '2025-04-21 09:00:00'),
+(15, 2, 0.00, N'Supervisor: Chờ lịch họp với bộ phận vận hành để deploy.', '2025-04-29 10:00:00'),
+
+-- PROJECT 4 (UserID 2 Review)
+(16, 2, 100.00, N'Supervisor: Khảo sát rất đầy đủ thông tin cần thiết.', '2025-04-26 08:30:00'),
+(17, 2, 40.00, N'Supervisor: Server đã setup xong, cần chú ý bảo mật cổng 8080.', '2025-05-16 13:00:00'),
+(18, 2, 30.00, N'Supervisor: Video hướng dẫn cần làm ngắn gọn hơn.', '2025-06-11 10:00:00'),
+(19, 2, 30.00, N'Supervisor: Đã ghi nhận lỗi SMTP, yêu cầu fix trong 2 ngày.', '2025-07-01 11:00:00'),
+(20, 2, 20.00, N'Supervisor: Tài liệu Workshop cần chuyên nghiệp hơn.', '2025-07-08 16:00:00'),
+
+-- PROJECT 5 (UserID 2 Review)
+(21, 2, 55.00, N'Supervisor: Kết quả phỏng vấn UX rất chi tiết.', '2025-03-06 09:00:00'),
+(22, 2, 75.00, N'Supervisor: Bản vẽ Wireframe rất logic, sếp đã duyệt.', '2025-03-26 14:00:00'),
+(23, 2, 40.00, N'Supervisor: UI Kit đẹp, đồng bộ với bộ nhận diện.', '2025-04-16 10:30:00'),
+(24, 2, 20.00, N'Supervisor: Chú ý tốc độ phản hồi của các hiệu ứng Prototype.', '2025-05-11 11:00:00'),
+(25, 2, 10.00, N'Supervisor: Cần viết thêm file Guide cho bộ phận Frontend.', '2025-05-18 15:00:00');
+GO
 
 /* =========================================================
    3. WEEKLY TIMESHEET DATA
@@ -494,6 +940,25 @@ CREATE TABLE AttendanceRecord (
     CONSTRAINT FK_AttendanceRecord_User 
         FOREIGN KEY (UserID) REFERENCES UserAccount(UserID)
 );
+GO
+
+-- Chèn 30 dòng dữ liệu điểm danh (AttendanceRecord)
+INSERT INTO AttendanceRecord (UserID, AttendanceDate)
+VALUES 
+-- Thứ Hai: 15/12/2025 (Cả 7 người đi đủ)
+(3, '2025-12-15'), (4, '2025-12-15'), (5, '2025-12-15'), (6, '2025-12-15'), (7, '2025-12-15'), (8, '2025-12-15'), (9, '2025-12-15'),
+
+-- Thứ Ba: 16/12/2025 (User 6 vắng)
+(3, '2025-12-16'), (4, '2025-12-16'), (5, '2025-12-16'), (7, '2025-12-16'), (8, '2025-12-16'), (9, '2025-12-16'),
+
+-- Thứ Tư: 17/12/2025 (User 7 vắng)
+(3, '2025-12-17'), (4, '2025-12-17'), (5, '2025-12-17'), (6, '2025-12-17'), (8, '2025-12-17'), (9, '2025-12-17'),
+
+-- Thứ Năm: 18/12/2025 (User 4 vắng)
+(3, '2025-12-18'), (5, '2025-12-18'), (6, '2025-12-18'), (7, '2025-12-18'), (8, '2025-12-18'), (9, '2025-12-18'),
+
+-- Thứ Sáu: 19/12/2025 (User 3 và 5 vắng)
+(4, '2025-12-19'), (6, '2025-12-19'), (7, '2025-12-19'), (8, '2025-12-19'), (9, '2025-12-19');
 GO
 
 
@@ -715,7 +1180,61 @@ VALUES (N'nghiakhac2005@gmail.com', 4, 3, N'PENDING', DATEADD(day, 7, SYSDATETIM
  (N'nghiakhac2005@gmail.com', 4, 3, N'PENDING', DATEADD(day, -7, SYSDATETIME()), DATEADD(day, -14, SYSDATETIME()), 1);
 
 
+ -- =========================================================================
+-- 1. LỜI MỜI VÀO DỰ ÁN (PROJECT INVITATIONS)
+-- =========================================================================
 
+-- Mời làm Project Member (6) vào Project 1 - Trạng thái ACCEPTED
+INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, Status, CreatedAt, ExpiresAt, AcceptedAt)
+VALUES (N'user_test_1@gmail.com', 6, 2, 1, N'ACCEPTED', '2025-12-01 08:00:00', '2025-12-08 08:00:00', '2025-12-02 10:30:00');
+
+-- Mời làm Project Co-Lead (8) vào Project 3 - Trạng thái PENDING (Còn hạn)
+INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, Status, CreatedAt, ExpiresAt)
+VALUES (N'developer_pro@hotmail.com', 8, 4, 3, N'PENDING', SYSDATETIME(), DATEADD(day, 7, SYSDATETIME()));
+
+-- Mời làm Project Leader (7) vào Project 5 - Trạng thái REJECT
+INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, Status, CreatedAt, ExpiresAt)
+VALUES (N'leader_candidate@yahoo.com', 7, 2, 5, N'REJECT', '2025-12-10 09:00:00', '2025-12-17 09:00:00');
+
+-- Mời vào Project 4 - Trạng thái CANCELLED (Người mời chủ động hủy)
+INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, Status, CreatedAt, ExpiresAt)
+VALUES (N'old_friend@gmail.com', 6, 8, 4, N'CANCELLED', '2025-12-05 14:00:00', '2025-12-12 14:00:00');
+
+
+-- =========================================================================
+-- 2. LỜI MỜI VÀO NHÓM (TEAM INVITATIONS)
+-- =========================================================================
+
+-- Mời vào Team 1 (Alpha) - Trạng thái PENDING (Sắp hết hạn)
+INSERT INTO Invitation (Email, RoleID, InvitedByID, TeamID, Status, CreatedAt, ExpiresAt)
+VALUES (N'newbie_member@gmail.com', 4, 4, 1, N'PENDING', DATEADD(day, -6, SYSDATETIME()), DATEADD(hour, 5, SYSDATETIME()));
+
+-- Mời vào Team 2 (Beta) - Trạng thái ACCEPTED
+INSERT INTO Invitation (Email, RoleID, InvitedByID, TeamID, Status, CreatedAt, ExpiresAt, AcceptedAt)
+VALUES (N'researcher_01@gmail.com', 4, 5, 2, N'ACCEPTED', '2025-11-20 10:00:00', '2025-11-27 10:00:00', '2025-11-21 15:00:00');
+
+-- Mời làm Team Leader cho Team mới - Trạng thái PENDING
+INSERT INTO Invitation (Email, RoleID, InvitedByID, TeamID, Status, CreatedAt, ExpiresAt)
+VALUES (N'manager_test@gmail.com', 5, 2, 3, N'PENDING', SYSDATETIME(), DATEADD(day, 14, SYSDATETIME()));
+
+
+-- =========================================================================
+-- 3. CÁC TRƯỜNG HỢP ĐẶC BIỆT CHO EMAIL CỦA BẠN (nghiakhac2005@gmail.com)
+-- =========================================================================
+
+-- Mời làm Project Member cho Project 2 (Còn hạn)
+INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, Status, CreatedAt, ExpiresAt)
+VALUES (N'nghiakhac2005@gmail.com', 6, 7, 2, N'PENDING', SYSDATETIME(), DATEADD(day, 3, SYSDATETIME()));
+
+-- Mời làm Project Co-Lead cho Project 1 (Đã hết hạn)
+INSERT INTO Invitation (Email, RoleID, InvitedByID, ProjectID, Status, CreatedAt, ExpiresAt)
+VALUES (N'nghiakhac2005@gmail.com', 8, 3, 1, N'PENDING', '2025-11-01 08:00:00', '2025-11-08 08:00:00');
+
+-- Lời mời đã bị từ chối trước đó
+INSERT INTO Invitation (Email, RoleID, InvitedByID, TeamID, Status, CreatedAt, ExpiresAt)
+VALUES (N'nghiakhac2005@gmail.com', 4, 6, 2, N'REJECT', '2025-10-15 10:00:00', '2025-10-22 10:00:00');
+
+GO
 
 
 
