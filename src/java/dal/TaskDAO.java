@@ -72,4 +72,83 @@ public class TaskDAO extends DBContext {
         }
         return list;
     }
+
+    public List<ProjectTask> getAllTasksInProject(int projectId) {
+        List<ProjectTask> list = new ArrayList<>();
+        
+        // Use same query structure as getTasksInProject (which works) but without pagination
+        String sql = "SELECT pt.TaskID, pt.TaskName, pt.Status, pt.Deadline, pt.Description, "
+                + "pt.EstimateHourToDo, pt.CreatedAt, pt.ProjectID "
+                + "FROM ProjectTask pt "
+                + "WHERE pt.ProjectID = ? "
+                + "ORDER BY pt.TaskID DESC";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, projectId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProjectTask task = new ProjectTask();
+                    task.setTaskId(rs.getInt("TaskID"));
+                    task.setTaskName(rs.getString("TaskName"));
+                    task.setStatus(rs.getString("Status"));
+                    
+                    java.sql.Timestamp deadline = rs.getTimestamp("Deadline");
+                    task.setDeadline(deadline);
+                    
+                    task.setDescription(rs.getString("Description"));
+                    
+                    Double estimateHours = rs.getObject("EstimateHourToDo", Double.class);
+                    task.setEstimateHourToDo(estimateHours);
+                    
+                    java.sql.Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                    task.setCreatedAt(createdAt);
+                    
+                    Integer projectIdFromDb = rs.getObject("ProjectID", Integer.class);
+                    task.setProjectId(projectIdFromDb);
+                    
+                    list.add(task);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TaskDAO.class.getName()).log(Level.SEVERE, "Error retrieving all tasks in project: " + ex.getMessage(), ex);
+            ex.printStackTrace();
+            return list;
+        }
+        
+        // Then, get assignee names for each task
+        if (!list.isEmpty()) {
+            String assigneeSql = "SELECT ta.TaskID, u.FullName "
+                    + "FROM TaskAssignee ta "
+                    + "JOIN UserAccount u ON ta.UserID = u.UserID "
+                    + "WHERE ta.TaskID = ?";
+            
+            try (PreparedStatement ps = connection.prepareStatement(assigneeSql)) {
+                for (ProjectTask task : list) {
+                    ps.setInt(1, task.getTaskId());
+                    List<String> assigneeNamesList = new ArrayList<>();
+                    
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            String fullName = rs.getString("FullName");
+                            if (fullName != null && !fullName.trim().isEmpty()) {
+                                assigneeNamesList.add(fullName);
+                            }
+                        }
+                    }
+                    
+                    // Join assignee names with comma
+                    if (!assigneeNamesList.isEmpty()) {
+                        String assigneeNames = String.join(", ", assigneeNamesList);
+                        task.setAssigneeNames(assigneeNames);
+                    }
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(TaskDAO.class.getName()).log(Level.WARNING, "Error retrieving assignee names: " + ex.getMessage(), ex);
+                // Don't fail the whole operation if assignee names can't be retrieved
+            }
+        }
+        
+        return list;
+    }
 }

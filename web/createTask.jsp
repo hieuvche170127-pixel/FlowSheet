@@ -60,6 +60,16 @@
             border-color: #667eea;
             box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
         }
+        .form-select:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .project-locked-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -100,16 +110,32 @@
                         </div>
 
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="projectId" name="projectId" required>
+                            <% 
+                                Integer selectedProjectId = (Integer) request.getAttribute("selectedProjectId");
+                                boolean isProjectLocked = (selectedProjectId != null);
+                            %>
+                            <% if (isProjectLocked) { %>
+                                <!-- Hidden input to ensure projectId is submitted when dropdown is disabled -->
+                                <input type="hidden" name="projectId" value="<%= selectedProjectId %>">
+                            <% } %>
+                            <select class="form-select" id="projectId" name="projectId" <%= isProjectLocked ? "disabled" : "" %> required>
                                 <option value="">-- Select Project --</option>
-                                <% List<Project> projects = (List<Project>) request.getAttribute("projects");
+                                <% 
+                                    List<Project> projects = (List<Project>) request.getAttribute("projects");
                                     if (projects != null) {
-                                        for (Project p : projects) { %>
-                                <option value="<%= p.getProjectID() %>"><%= p.getProjectName() %></option>
+                                        for (Project p : projects) { 
+                                            boolean isSelected = (selectedProjectId != null && selectedProjectId.equals(p.getProjectID()));
+                                %>
+                                <option value="<%= p.getProjectID() %>" <%= isSelected ? "selected" : "" %>><%= p.getProjectName() %></option>
                                 <%      }
                                 } %>
                             </select>
                             <label for="projectId"><i class="fas fa-project-diagram me-2"></i>Assign to Project *</label>
+                            <% if (isProjectLocked) { %>
+                                <div class="project-locked-info">
+                                    <i class="fas fa-lock me-1"></i>Project is locked for this task
+                                </div>
+                            <% } %>
                         </div>
 
                         <div class="form-floating mb-3">
