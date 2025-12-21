@@ -492,13 +492,19 @@ public class ProjectDAO extends DBContext {
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Project p = new Project();
-                p.setProjectID(rs.getInt("ProjectID"));
-                p.setProjectCode(rs.getString("ProjectCode"));
-                p.setProjectName(rs.getString("ProjectName"));
-                p.setDescription(rs.getString("Description"));
-                p.setStartDate(rs.getDate("StartDate"));
-                p.setDeadline(rs.getDate("Deadline"));
-                p.setStatus(rs.getString("Status"));
+                // Use column index to avoid case sensitivity issues
+                int projectId = rs.getInt(1); // ProjectID is first column
+                // Skip if projectID is invalid (0 or negative)
+                if (projectId <= 0) {
+                    continue;
+                }
+                p.setProjectID(projectId);
+                p.setProjectCode(rs.getString(2)); // ProjectCode
+                p.setProjectName(rs.getString(3)); // ProjectName
+                p.setDescription(rs.getString(4)); // Description
+                p.setStartDate(rs.getDate(5)); // StartDate
+                p.setDeadline(rs.getDate(6)); // Deadline
+                p.setStatus(rs.getString(7)); // Status
 
                 projectList.add(p);
             }
