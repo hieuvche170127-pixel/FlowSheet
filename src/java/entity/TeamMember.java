@@ -7,7 +7,10 @@ public class TeamMember {
     private int userId;
     private int roleId;
     private Timestamp joinedAt;
+    private String role;
 
+    public TeamMember() {
+    }
     public TeamMember(int teamId, int userId, int roleId) {
         this.teamId = teamId;
         this.userId = userId;
@@ -58,7 +61,20 @@ public class TeamMember {
         return "TeamMember{" + "teamId=" + teamId + ", userId=" + userId + ", roleId=" + roleId + '}';
     }
 
+    public TeamMember(int teamId, int userId, String role, Timestamp joinedAt) {
+        this.teamId = teamId;
+        this.userId = userId;
+        this.role = role;
+        this.joinedAt = joinedAt;
+    }
    
-    
+        public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     
 }

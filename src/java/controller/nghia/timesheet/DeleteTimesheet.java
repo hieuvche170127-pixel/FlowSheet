@@ -95,9 +95,8 @@ public class DeleteTimesheet extends HttpServlet {
                     } else {
                         session.setAttribute("info", "Lỗi hệ thống, không thể xóa!");
                     }
-                    
                     // neu thanh cong hoac that bai thi vao all timesheet chu nhi, tai day la xoa timesheet ma
-                    response.sendRedirect("ViewDetailTimesheet?timesheetId=" + timesheetIdInt);
+                    request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
                     return;
                 } else {
                     session.setAttribute("errorList", errorList);
@@ -117,11 +116,11 @@ public class DeleteTimesheet extends HttpServlet {
             }
         } catch (NumberFormatException numberFormatException) {
             errorList.add("ko lấy được id của timesheet");
-            request.setAttribute("errorList", errorList);
+            session.setAttribute("errorList", errorList);
             request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
         } catch (Exception e) {
             errorList.add("Đã có exception xảy ra");
-            request.setAttribute("errorList", errorList);
+            session.setAttribute("errorList", errorList);
             request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
         }
 

@@ -315,7 +315,8 @@
                     
                     <li style="margin-top: 15px;"><a href="#"><i class="fas fa-home"></i>HomePage</a></li>
                     <li><a href="${pageContext.request.contextPath}/team"><i class="fas fa-users"></i> All Teams</a></li>
-                    <c:if test="${not empty sessionScope.user && sessionScope.user.roleID == 2}">
+                    <c:if test="${not empty sessionScope.user 
+                                  && (sessionScope.user.roleID == 2 || sessionScope.user.roleID == 1)}">
                         <li>
                             <a href="${pageContext.request.contextPath}/task-review?action=list">
                                 <i class="fas fa-list-ol"></i>
@@ -328,6 +329,6 @@
                 </ul>
             </div>
         </aside>
-
+                    <a href="layout_header.jsp"></a>
         <div class="content-wrapper" id="content-wrapper">
             <section class="content">

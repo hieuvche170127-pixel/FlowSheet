@@ -64,7 +64,7 @@ public class TimesheetEntryDAO extends DBContext {
         ArrayList<TimesheetEntry> list = new ArrayList<>();
         // Sắp xếp theo WorkDate và StartTime để dữ liệu hiện ra theo đúng trình tự thời gian
         String sql = "SELECT [EntryID], [TimesheetID], [WorkDate], [StartTime], [EndTime], "
-                + "[DelayMinutes], [Note], [CreatedAt], [ProjectID], [TaskID] "
+                + "[DelayMinutes], [Note], [CreatedAt]"
                 + "FROM [TimesheetEntry] "
                 + "WHERE [TimesheetID] = ? "
                 + "ORDER BY [WorkDate] ASC, [StartTime] ASC";
