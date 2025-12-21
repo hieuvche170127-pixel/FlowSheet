@@ -68,6 +68,16 @@
         padding: 14px 0 10px;
         border-bottom: 1px solid #e1e4f0;
         margin-bottom: 14px;
+        gap: 16px;
+    }
+
+    /* Ensure the left header section is a flex row */
+    .team-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1 1 auto;
+        min-width: 320px;
     }
 
     .team-info-left {
@@ -77,16 +87,17 @@
     }
 
     .team-avatar {
-        width: 44px;
-        height: 44px;
+        width: 56px;          /* pick 52–64 */
+        height: 56px;
+        min-width: 56px;
+        min-height: 56px;
         border-radius: 50%;
-        background-color: #d4a015;
-        color: #fff;
-        font-weight: 600;
-        font-size: 20px;
+        flex: 0 0 56px;        /* IMPORTANT: prevents shrink */
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
     }
 
     .team-name {
@@ -250,6 +261,73 @@
         cursor: pointer;
         font-size: 13px;
     }
+
+    .team-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .team-desc {
+        max-width: 560px;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.35;
+        white-space: normal;
+        overflow-wrap: anywhere; /* very important for long Vietnamese/URLs */
+    }
+
+    .team-actions-right form {
+        align-items: flex-start !important; /* so textarea aligns nicely */
+    }
+
+    .team-desc-input {
+        width: 340px;
+        min-height: 38px;
+        max-height: 120px;
+        resize: vertical;
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid #ccd2e0;
+        font-size: 13px;
+        line-height: 1.3;
+        outline: none;
+    }
+
+    .team-desc-input:focus {
+        border-color: #00bfa5;
+    }
+
+    @media (max-width: 900px) {
+        .team-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .team-actions-right {
+            width: 100%;
+            flex: 0 0 auto;
+        }
+        .team-desc-input {
+            width: 100%;
+        }
+        .team-desc {
+            max-width: 100%;
+        }
+    }
+
+    .team-actions-right form {
+        display: flex;
+        flex-wrap: wrap;     /* allow wrapping instead of squeezing */
+        gap: 10px;
+        align-items: center;
+    }
+
+    /* Control textarea width so it doesn't explode */
+    .team-desc-input {
+        width: 360px;
+        max-width: 42vw;     /* responsive */
+    }
 </style>
 
 <div class="page-wrapper">
@@ -270,8 +348,14 @@
                 }
             %>
             <div class="team-avatar"><%= teamInitial%></div>
-            <div>
+            <div class="team-meta">
                 <div class="team-name"><%= (team != null && team.getTeamName() != null) ? team.getTeamName() : "Team"%></div>
+
+                <div class="team-desc">
+                    <%= (team != null && team.getDescription() != null && !team.getDescription().trim().isEmpty())
+                            ? team.getDescription()
+                            : "No description"%>
+                </div>
             </div>
         </div>
 
@@ -286,9 +370,8 @@
                        required
                        style="padding:6px 10px;border-radius:10px;border:1px solid #ccd2e0;">
 
-                <input type="text" name="description"
-                       value="<%= team.getDescription() != null ? team.getDescription() : ""%>"
-                       style="padding:6px 10px;border-radius:10px;border:1px solid #ccd2e0;">
+                <textarea name="description" class="team-desc-input"
+                          placeholder="Team description..."><%= team.getDescription() != null ? team.getDescription() : ""%></textarea>
 
                 <button class="btn-outline" type="submit">Update Team</button>
             </form>
