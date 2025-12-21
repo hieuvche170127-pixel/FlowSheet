@@ -35,8 +35,8 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/supervisor/dashboard">
-                            <i class="fas fa-home me-1"></i>Dashboard
+                        <a class="nav-link" href="${pageContext.request.contextPath}//admin/users">
+                            <i class="fas fa-home me-1"></i>Account Management
                         </a>
                     </li>
                     <li class="nav-item">

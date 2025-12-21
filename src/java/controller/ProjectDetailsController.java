@@ -141,7 +141,50 @@ public class ProjectDetailsController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+                HttpSession session = request.getSession();
+        UserAccount currentUser = (UserAccount) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        String idStr = request.getParameter("id");
+        String taskIdStr = request.getParameter("taskId");
+
+        if ("deleteTask".equals(action) && taskIdStr != null && idStr != null) {
+            try {
+                int taskId = Integer.parseInt(taskIdStr);
+                int projectId = Integer.parseInt(idStr);
+                
+                dao.TaskDAO taskDAO = new dao.TaskDAO();
+                
+                try {
+                    if (taskDAO.deleteTask(taskId)) {
+                        session.setAttribute("success", "Task đã được xóa thành công!");
+                    } else {
+                        session.setAttribute("error", "Không thể xóa task. Task có thể không tồn tại hoặc đã bị xóa.");
+                    }
+                } catch (IllegalStateException e) {
+                    session.setAttribute("error", e.getMessage());
+                }
+                
+                // Redirect back to project details page
+                response.sendRedirect(request.getContextPath() + "/project/details?id=" + projectId);
+                return;
+            } catch (NumberFormatException e) {
+                if (idStr != null) {
+                    response.sendRedirect(request.getContextPath() + "/project/details?id=" + idStr);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/projects");
+                }
+                return;
+            }
+        }
+
+        // If no action matches, redirect to projects
+        response.sendRedirect(request.getContextPath() + "/projects");
     }
 
     /**

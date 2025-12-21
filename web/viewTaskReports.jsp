@@ -173,7 +173,7 @@
                     </div>
 
                     <div class="text-center mt-4">
-                        <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
+                        <a href="${pageContext.request.contextPath}/studentHomePage" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Home
                         </a>
                     </div>

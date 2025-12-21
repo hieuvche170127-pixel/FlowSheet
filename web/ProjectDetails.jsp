@@ -228,7 +228,28 @@
                                                 </td>
 
                                                 <td class="text-end">
-                                                    <a href="#" class="text-muted"><i class="bi bi-three-dots-vertical"></i></a>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link text-muted p-0" type="button" id="taskMenu${task.taskId}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="taskMenu${task.taskId}">
+                                                            <li>
+                                                                <a class="dropdown-item" href="${pageContext.request.contextPath}/task/update?taskId=${task.taskId}">
+                                                                    <i class="bi bi-pencil me-2"></i>Update
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <form action="${pageContext.request.contextPath}/project/details" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa task này không?');">
+                                                                    <input type="hidden" name="id" value="${project.projectID}">
+                                                                    <input type="hidden" name="action" value="deleteTask">
+                                                                    <input type="hidden" name="taskId" value="${task.taskId}">
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i class="bi bi-trash me-2"></i>Delete
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </c:forEach>
