@@ -273,20 +273,15 @@
                 </div>
 
                 <ul class="navbar-right">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link"><i class="far fa-envelope"></i> <span class="badge">1</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link"><i class="far fa-bell"></i> <span class="badge">2</span></a>
-                    </li>
+
                     <li class="nav-item user-menu">
-                        <a href="#" class="nav-link" style="padding: 0 10px;">
+                        <a href="${pageContext.request.contextPath}/profile" class="nav-link" style="padding: 0 10px;">
                             <i class="far fa-user-circle user-icon"></i> 
                             <span><span>${sessionScope.user.fullName}</span></span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link" title="Sign out"><i class="fas fa-power-off"></i></a>
+                        <a href="${pageContext.request.contextPath}/logout" class="nav-link" title="Sign out"><i class="fas fa-power-off"></i></a>
                     </li>
                 </ul>
             </nav>
@@ -310,13 +305,12 @@
                     <li><a href="${pageContext.request.contextPath}/projects"><i class="fas fa-graduation-cap"></i>My Project</a></li>
                     <li><a href="${pageContext.request.contextPath}/MyTeamList"><i class="fas fa-users"></i>My Teams</a></li>
                     <li><a href="${pageContext.request.contextPath}/student/tasks"><i class="fas fa-shield-alt"></i> My tasks</a></li>
-                    <li><a href="${pageContext.request.contextPath}/nghiapages/my_timesheet.jsp"><i class="fas fa-list-ol"></i> My Timesheet</a></li>
+                    <li><a href="${pageContext.request.contextPath}/ViewAndSearchTimesheet"><i class="fas fa-list-ol"></i> My Timesheet</a></li>
                     <li><a href="${pageContext.request.contextPath}/request"><i class="fas fa-list-ol"></i> Absence Request</a></li>
                     
                     <li style="margin-top: 15px;"><a href="#"><i class="fas fa-home"></i>HomePage</a></li>
                     <li><a href="${pageContext.request.contextPath}/team"><i class="fas fa-users"></i> All Teams</a></li>
-                    <c:if test="${not empty sessionScope.user 
-                                  && (sessionScope.user.roleID == 2 || sessionScope.user.roleID == 1)}">
+                    <c:if test="${not empty sessionScope.user && sessionScope.user.roleID == 2}">
                         <li>
                             <a href="${pageContext.request.contextPath}/task-review?action=list">
                                 <i class="fas fa-list-ol"></i>
@@ -325,10 +319,10 @@
                         </li>
                     </c:if>
                     <li><a href="${pageContext.request.contextPath}/task-report/list"><i class="fas fa-calendar-alt"></i>My Report</a></li>
-                    <li><a href="#"><i class="fas fa-file-alt"></i> Private files</a></li>
+                    <li><a href="${pageContext.request.contextPath}/ViewAllInvitationSentToMe"><i class="fas fa-file-alt"></i>My invitation</a></li>
                 </ul>
             </div>
         </aside>
-                    <a href="layout_header.jsp"></a>
+
         <div class="content-wrapper" id="content-wrapper">
             <section class="content">
