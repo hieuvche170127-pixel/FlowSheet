@@ -30,9 +30,34 @@ public class CreateTaskServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         UserAccount user = (UserAccount) session.getAttribute("user");
 
-        if (user == null || user.getRoleID()==1) {
-            resp.sendRedirect("view");  // Restrict access
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return;
+        }
+
+        // Allow access if user is not a student, OR if user is a student but is a project leader
+        if (user.getRoleID() == 1) {
+            // Student - check if they are a project leader
+            String projectIdParam = req.getParameter("projectId");
+            if (projectIdParam != null && !projectIdParam.trim().isEmpty()) {
+                try {
+                    int projectId = Integer.parseInt(projectIdParam);
+                    if (!projectDAO.isProjectLeader(projectId, user.getUserID())) {
+                        // Student is not a project leader - deny access
+                        resp.sendRedirect("view");
+                        return;
+                    }
+                    // Student is a project leader - allow access
+                } catch (NumberFormatException e) {
+                    // Invalid projectId - deny access
+                    resp.sendRedirect("view");
+                    return;
+                }
+            } else {
+                // No projectId provided - deny access for students
+                resp.sendRedirect("view");
+                return;
+            }
         }
 
         List<Project> projects = projectDAO.getAllProjects();
@@ -58,9 +83,34 @@ public class CreateTaskServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         UserAccount user = (UserAccount) session.getAttribute("user");
 
-        if (user == null || user.getRoleID()==1) {
-            resp.sendRedirect("view");
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return;
+        }
+
+        // Allow access if user is not a student, OR if user is a student but is a project leader
+        if (user.getRoleID() == 1) {
+            // Student - check if they are a project leader
+            String projectIdStr = req.getParameter("projectId");
+            if (projectIdStr != null && !projectIdStr.trim().isEmpty()) {
+                try {
+                    int projectId = Integer.parseInt(projectIdStr);
+                    if (!projectDAO.isProjectLeader(projectId, user.getUserID())) {
+                        // Student is not a project leader - deny access
+                        resp.sendRedirect("view");
+                        return;
+                    }
+                    // Student is a project leader - allow access
+                } catch (NumberFormatException e) {
+                    // Invalid projectId - deny access
+                    resp.sendRedirect("view");
+                    return;
+                }
+            } else {
+                // No projectId provided - deny access for students
+                resp.sendRedirect("view");
+                return;
+            }
         }
 
         String taskName = req.getParameter("taskName");
@@ -142,11 +192,18 @@ public class CreateTaskServlet extends HttpServlet {
         }
 
         if (taskDAO.createTask(task)) {
-            req.setAttribute("success", "Task created successfully with ID: " + task.getTaskId());
+            // Check if we came from a project details page - if so, redirect back there
+            String refererProjectId = req.getParameter("projectId");
+            if (refererProjectId != null && !refererProjectId.trim().isEmpty()) {
+                // Redirect back to project details page
+                resp.sendRedirect(req.getContextPath() + "/project/details?id=" + refererProjectId);
+                return;
+            }
+            // Otherwise redirect to task view page
+            resp.sendRedirect(req.getContextPath() + "/task/view");
         } else {
             req.setAttribute("error", "Failed to create task. Please try again.");
+            doGet(req, resp);  // Reload form with error message
         }
-        req.getRequestDispatcher("/task/view").forward(req, resp);
-//        doGet(req, resp);  // Reload form with message
     }
 }
