@@ -22,6 +22,19 @@
     <%@ include file="/nghiapages/layout_header.jsp" %>
 
     <div class="container mt-4">
+        <c:if test="${not empty sessionScope.errorList}">
+            <div class="alert alert-danger">
+                <ul>
+                    <%-- 2. Duyệt qua từng lỗi và in ra --%>
+                    <c:forEach var="error" items="${sessionScope.errorList}">
+                        <li>${error}</li>
+                        </c:forEach>
+                </ul>
+            </div>
+
+            <%-- 3. Hủy session sau khi đã hiển thị xong --%>
+            <c:remove var="errorList" scope="session" />
+        </c:if>
 
         <c:if test="${not empty sessionScope.sessionMessage}">
             <div class="alert alert-${sessionScope.messageType} alert-dismissible fade show" role="alert">
