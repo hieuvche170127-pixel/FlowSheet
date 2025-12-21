@@ -228,7 +228,38 @@
                                                 </td>
 
                                                 <td class="text-end">
-                                                    <a href="#" class="text-muted"><i class="bi bi-three-dots-vertical"></i></a>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link text-muted p-0" type="button" id="taskMenu${task.taskId}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="taskMenu${task.taskId}">
+                                                            <li>
+                                                                <a class="dropdown-item" href="${pageContext.request.contextPath}/task/update?taskId=${task.taskId}">
+                                                                    <i class="bi bi-pencil me-2"></i>Update
+                                                                </a>
+                                                            </li>
+                                                            <c:set var="hasReports" value="${taskHasReports[task.taskId]}" />
+                                                            <c:if test="${hasReports}">
+                                                                <li>
+                                                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/task-report/review?taskId=${task.taskId}">
+                                                                        <i class="bi bi-eye me-2"></i>Review
+                                                                    </a>
+                                                                </li>
+                                                            </c:if>
+                                                            <c:if test="${not hasReports}">
+                                                                <li>
+                                                                    <form action="${pageContext.request.contextPath}/project/details" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa task này không?');">
+                                                                        <input type="hidden" name="id" value="${project.projectID}">
+                                                                        <input type="hidden" name="action" value="deleteTask">
+                                                                        <input type="hidden" name="taskId" value="${task.taskId}">
+                                                                        <button type="submit" class="dropdown-item text-danger">
+                                                                            <i class="bi bi-trash me-2"></i>Delete
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                            </c:if>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </c:forEach>
@@ -237,9 +268,19 @@
 
                                 <div class="d-flex justify-content-between align-items-center">
 
-                                    <a href="${pageContext.request.contextPath}/task/create?projectId=${project.projectID}" class="text-decoration-none text-success fw-bold">
-                                        <i class="bi bi-plus-lg"></i> Create New Task
-                                    </a>
+                                    <%-- Show "Create New Task" button - enabled for non-students or student leaders, disabled for student members --%>
+                                    <c:choose>
+                                        <c:when test="${sessionScope.user.roleID != 1 || isCurrentUserLeader}">
+                                            <a href="${pageContext.request.contextPath}/task/create?projectId=${project.projectID}" class="text-decoration-none text-success fw-bold">
+                                                <i class="bi bi-plus-lg"></i> Create New Task
+                                            </a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="#" class="text-decoration-none text-muted fw-bold" style="pointer-events: none; opacity: 0.5; cursor: not-allowed;" title="Only project leaders can create tasks">
+                                                <i class="bi bi-plus-lg"></i> Create New Task
+                                            </a>
+                                        </c:otherwise>
+                                    </c:choose>
 
                                     <c:if test="${endPage > 0}">
                                         <nav aria-label="Page navigation">

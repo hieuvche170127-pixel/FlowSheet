@@ -393,4 +393,39 @@ public class TaskReportDAO extends DBContext {
         }
         return 0;
     }
+
+    //----------------------------------- UPDATE ---------------------------------------
+    public TaskReport getTaskReportById(int reportId) {
+        if (connection == null) {
+            return null;
+        }
+
+        String sql = """
+        SELECT ReportID, UserID, TaskID, ReportDescription,
+               EstimateWorkPercentDone, TotalHourUsed, TimesheetEntryID, CreatedAt
+        FROM TaskReport
+        WHERE ReportID = ?
+    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, reportId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TaskReport report = new TaskReport();
+                    report.setReportId(rs.getInt("ReportID"));
+                    report.setUserId(rs.getInt("UserID"));
+                    report.setTaskId(rs.getInt("TaskID"));
+                    report.setReportDescription(rs.getString("ReportDescription"));
+                    report.setEstimateWorkPercentDone(rs.getObject("EstimateWorkPercentDone", Double.class));
+                    report.setTotalHourUsed(rs.getObject("TotalHourUsed", Double.class));
+                    report.setTimesheetEntryId(rs.getObject("TimesheetEntryID", Integer.class));
+                    report.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    return report;
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
 }

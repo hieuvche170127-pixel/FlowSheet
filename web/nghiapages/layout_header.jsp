@@ -273,20 +273,15 @@
                 </div>
 
                 <ul class="navbar-right">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link"><i class="far fa-envelope"></i> <span class="badge">1</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link"><i class="far fa-bell"></i> <span class="badge">2</span></a>
-                    </li>
+
                     <li class="nav-item user-menu">
-                        <a href="#" class="nav-link" style="padding: 0 10px;">
+                        <a href="${pageContext.request.contextPath}/profile" class="nav-link" style="padding: 0 10px;">
                             <i class="far fa-user-circle user-icon"></i> 
                             <span><span>${sessionScope.user.fullName}</span></span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link" title="Sign out"><i class="fas fa-power-off"></i></a>
+                        <a href="${pageContext.request.contextPath}/logout" class="nav-link" title="Sign out"><i class="fas fa-power-off"></i></a>
                     </li>
                 </ul>
             </nav>

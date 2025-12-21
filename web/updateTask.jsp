@@ -169,8 +169,19 @@
                             <button type="submit" class="btn btn-primary btn-update flex-fill">
                                 <i class="fas fa-save me-2"></i>Update Task
                             </button>
+                            <% 
+                                String projectIdParam = request.getParameter("projectId");
+                                String cancelUrl;
+                                if (projectIdParam != null && !projectIdParam.trim().isEmpty()) {
+                                    cancelUrl = request.getContextPath() + "/project/details?id=" + projectIdParam;
+                                } else if (task.getProjectId() != null) {
+                                    cancelUrl = request.getContextPath() + "/project/details?id=" + task.getProjectId();
+                                } else {
+                                    cancelUrl = "view";
+                                }
+                            %>
                             <button type="button" class="btn btn-danger btn-cancel flex-fill"
-                                    onclick="window.location.href='view'">
+                                    onclick="window.location.href='<%= cancelUrl %>'">
                                 <i class="fas fa-times me-2"></i>Cancel
                             </button>
                         </div>
@@ -180,14 +191,32 @@
                         <i class="fas fa-exclamation-triangle me-2"></i>Task not found.
                     </div>
                     <div class="text-center mt-3">
-                        <a href="view" class="btn btn-secondary">
+                        <% 
+                            String projectIdParam2 = request.getParameter("projectId");
+                            String backUrl;
+                            if (projectIdParam2 != null && !projectIdParam2.trim().isEmpty()) {
+                                backUrl = request.getContextPath() + "/project/details?id=" + projectIdParam2;
+                            } else {
+                                backUrl = "view";
+                            }
+                        %>
+                        <a href="<%= backUrl %>" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Task List
                         </a>
                     </div>
                     <% } %>
 
                     <div class="text-center mt-4">
-                        <a href="view" class="text-decoration-none text-muted">
+                        <% 
+                            String projectIdParam3 = request.getParameter("projectId");
+                            String backUrl2;
+                            if (projectIdParam3 != null && !projectIdParam3.trim().isEmpty()) {
+                                backUrl2 = request.getContextPath() + "/project/details?id=" + projectIdParam3;
+                            } else {
+                                backUrl2 = "view";
+                            }
+                        %>
+                        <a href="<%= backUrl2 %>" class="text-decoration-none text-muted">
                             <i class="fas fa-arrow-left me-1"></i>Back to Task List
                         </a>
                     </div>

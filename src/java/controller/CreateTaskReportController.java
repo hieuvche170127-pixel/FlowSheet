@@ -159,9 +159,8 @@ public class CreateTaskReportController extends HttpServlet {
 
             // Create the report
             if (taskReportDAO.createTaskReport(report)) {
-                req.setAttribute("success", "Task report created successfully!");
-                // Redirect to show the created report or task list
-                resp.sendRedirect(req.getContextPath() + "/task/view");
+                // Redirect to task report list with success message
+                resp.sendRedirect(req.getContextPath() + "/task-report/list?success=Task report created successfully!");
             } else {
                 req.setAttribute("error", "Failed to create task report. Please try again.");
                 doGet(req, resp);

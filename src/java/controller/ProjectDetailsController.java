@@ -2,6 +2,7 @@ package controller;
 
 import dal.ProjectDAO;
 import dal.TaskDAO;
+import dal.TaskReportDAO;
 import entity.Project;
 import entity.ProjectTask;
 import entity.UserAccount;
@@ -13,7 +14,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "ProjectDetailsController", urlPatterns = {"/project/details"})
 public class ProjectDetailsController extends HttpServlet {
@@ -107,9 +110,21 @@ public class ProjectDetailsController extends HttpServlet {
 
             List<ProjectTask> tasks = taskDAO.getTasksInProject(projectId, index, tasksPerPage);
 
+            // Check which tasks have reports (cannot be deleted)
+            TaskReportDAO taskReportDAO = new TaskReportDAO();
+            Map<Integer, Boolean> taskHasReports = new HashMap<>();
+            for (ProjectTask task : tasks) {
+                taskHasReports.put(task.getTaskId(), taskReportDAO.hasTaskReports(task.getTaskId()));
+            }
+
+            // Check if current user is a project leader (for students to create tasks)
+            boolean isCurrentUserLeader = dao.isProjectLeader(projectId, currentUser.getUserID());
+
             request.setAttribute("project", project);
             request.setAttribute("members", members);
             request.setAttribute("tasks", tasks);
+            request.setAttribute("taskHasReports", taskHasReports);
+            request.setAttribute("isCurrentUserLeader", isCurrentUserLeader);
             request.setAttribute("currentPage", index);
             request.setAttribute("endPage", endPage);
 
@@ -141,7 +156,50 @@ public class ProjectDetailsController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+                HttpSession session = request.getSession();
+        UserAccount currentUser = (UserAccount) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        String idStr = request.getParameter("id");
+        String taskIdStr = request.getParameter("taskId");
+
+        if ("deleteTask".equals(action) && taskIdStr != null && idStr != null) {
+            try {
+                int taskId = Integer.parseInt(taskIdStr);
+                int projectId = Integer.parseInt(idStr);
+                
+                dao.TaskDAO taskDAO = new dao.TaskDAO();
+                
+                try {
+                    if (taskDAO.deleteTask(taskId)) {
+                        session.setAttribute("success", "Task đã được xóa thành công!");
+                    } else {
+                        session.setAttribute("error", "Không thể xóa task. Task có thể không tồn tại hoặc đã bị xóa.");
+                    }
+                } catch (IllegalStateException e) {
+                    session.setAttribute("error", e.getMessage());
+                }
+                
+                // Redirect back to project details page
+                response.sendRedirect(request.getContextPath() + "/project/details?id=" + projectId);
+                return;
+            } catch (NumberFormatException e) {
+                if (idStr != null) {
+                    response.sendRedirect(request.getContextPath() + "/project/details?id=" + idStr);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/projects");
+                }
+                return;
+            }
+        }
+
+        // If no action matches, redirect to projects
+        response.sendRedirect(request.getContextPath() + "/projects");
     }
 
     /**

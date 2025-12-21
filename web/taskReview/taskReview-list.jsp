@@ -1,9 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
 <%@page import="entity.UserAccount"%>
-<%@page import="entity.TaskReview"%>
-<%@page import="entity.ProjectTask"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
@@ -13,7 +9,14 @@
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
-    boolean isSupervisor = (current.getRoleID() == 2); // same assumption as team-list :contentReference[oaicite:4]{index=4}
+
+    // Supervisor = roleID 2 (as you used)
+    boolean isSupervisor = (current.getRoleID() == 2);
+
+    // Controller SHOULD set canManage for fine-grained permission.
+    // If controller doesn't set it yet, fallback: supervisor can manage, others view-only.
+    Object canManageObj = request.getAttribute("canManage");
+    boolean canManage = (canManageObj instanceof Boolean) ? (Boolean) canManageObj : isSupervisor;
 %>
 
 <jsp:include page="/nghiapages/layout_header.jsp" />
@@ -116,13 +119,20 @@
         background: #f3fff7;
         color: #0f6b2f;
     }
+    .msg.info {
+        border-color: #cfe3ff;
+        background: #f3f8ff;
+        color: #1a4b9a;
+    }
 </style>
 
 <div class="page-wrapper">
 
     <div class="page-header">
-        <h1>Task Reviews</h1>
-        <% if (isSupervisor) {%>
+        <h1 style="color: blue;">Task Reviews</h1>
+
+        <%-- Only show Create button if user can manage --%>
+        <% if (canManage) { %>
         <a class="btn-primary"
            href="${pageContext.request.contextPath}/task-review?action=create&taskId=${taskId}">
             Create Review
@@ -130,9 +140,10 @@
         <% } %>
     </div>
 
-    <% if (!isSupervisor) { %>
-    <div class="msg err">Access denied. Only Supervisor can manage Task Reviews.</div>
-    <% } else { %>
+    <%-- Inform students / view-only users --%>
+    <% if (!canManage) { %>
+    <div class="msg info">You have <b>view-only</b> access to Task Reviews.</div>
+    <% } %>
 
     <c:if test="${not empty error}">
         <div class="msg err">${error}</div>
@@ -142,6 +153,8 @@
     </c:if>
 
     <form class="filter-row" method="get" action="${pageContext.request.contextPath}/task-review">
+        <input type="hidden" name="action" value="list"/>
+
         <label class="muted">Filter by task:</label>
         <select name="taskId">
             <option value="">-- All tasks --</option>
@@ -172,7 +185,8 @@
                     <th>progress (%)</th>
                     <th>comment</th>
                     <th>created at</th>
-                    <th>action</th>
+                    <th>reviewer</th>
+                    <th>action</th>                
                 </tr>
             </thead>
             <tbody>
@@ -221,9 +235,22 @@
                                     </c:choose>
                                 </td>
 
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${not empty reviewerNameMap && reviewerNameMap[r.reviewedBy] != null}">
+                                            ${reviewerNameMap[r.reviewedBy]}
+                                        </c:when>
+                                        <c:otherwise>
+                                            User #${r.reviewedBy}
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+
                                 <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <%-- View-only users see no edit/delete --%>
+                                    <% if (canManage) { %>
                                     <a class="btn-outline"
-                                       href="${pageContext.request.contextPath}/task-review?action=edit&reviewId=${r.reviewId}&taskId=${taskId}">
+                                       href="${pageContext.request.contextPath}/task-review?action=edit&reviewId=${r.reviewId}&taskId=${r.taskId}">
                                         Edit
                                     </a>
 
@@ -232,11 +259,15 @@
                                           style="margin:0;"
                                           onsubmit="return confirm('Delete this review?');">
                                         <input type="hidden" name="action" value="delete"/>
-                                        <input type="hidden" name="taskId" value="${taskId}"/>
+                                        <input type="hidden" name="taskId" value="${r.taskId}"/>
                                         <input type="hidden" name="reviewId" value="${r.reviewId}"/>
                                         <button class="btn-outline btn-danger" type="submit">Delete</button>
                                     </form>
+                                    <% } else { %>
+                                    <span class="muted">—</span>
+                                    <% }%>
                                 </td>
+
                             </tr>
                         </c:forEach>
                     </c:when>
@@ -252,8 +283,6 @@
             </tbody>
         </table>
     </div>
-
-    <% }%>
 
 </div>
 

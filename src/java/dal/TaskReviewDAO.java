@@ -310,9 +310,9 @@ public class TaskReviewDAO extends DBContext {
         SELECT tr.ReviewID, tr.TaskID, tr.ReviewedBy, tr.EstimateWorkPercentDone, tr.ReviewComment, tr.DateCreated
         FROM TaskReview tr
         WHERE tr.TaskID IN (
-            SELECT DISTINCT te.TaskID
-            FROM TimesheetEntry te
-            WHERE te.UserID = ?
+            SELECT DISTINCT ta.TaskID
+            FROM TaskAssignee ta
+            WHERE ta.UserID = ?
         )
           AND (? IS NULL OR tr.TaskID = ?)
           AND (? IS NULL OR tr.ReviewComment LIKE ?)
@@ -364,8 +364,8 @@ public class TaskReviewDAO extends DBContext {
         String sql = """
         SELECT DISTINCT pt.TaskID, pt.TaskName
         FROM ProjectTask pt
-        INNER JOIN TimesheetEntry te ON te.TaskID = pt.TaskID
-        WHERE te.UserID = ?
+        INNER JOIN TaskAssignee ta ON ta.TaskID = pt.TaskID
+        WHERE ta.UserID = ?
         ORDER BY pt.TaskID DESC
     """;
 

@@ -156,7 +156,16 @@
                             <button type="submit" class="btn btn-success btn-create flex-grow-1">
                                 <i class="fas fa-plus me-2"></i>Create Task
                             </button>
-                            <a href="view" class="btn btn-secondary" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                            <% 
+                                String projectIdParam = request.getParameter("projectId");
+                                String cancelUrl;
+                                if (projectIdParam != null && !projectIdParam.trim().isEmpty()) {
+                                    cancelUrl = request.getContextPath() + "/project/details?id=" + projectIdParam;
+                                } else {
+                                    cancelUrl = "view";
+                                }
+                            %>
+                            <a href="<%= cancelUrl %>" class="btn btn-secondary" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
                                 <i class="fas fa-times me-2"></i>Cancel
                             </a>
                         </div>
