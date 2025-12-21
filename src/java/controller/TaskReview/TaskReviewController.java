@@ -114,6 +114,12 @@ public class TaskReviewController extends HttpServlet {
 
         switch (action) {
             case "create" -> {
+                boolean isSupervisor = (user.getRoleID() == 2);
+                if (!isSupervisor) {
+                    response.sendRedirect(request.getContextPath() + "/task-review?action=list&error=Access denied");
+                    return;
+                }
+
                 int taskId = parseIntOrMinus1(request.getParameter("taskId"));
                 request.setAttribute("taskId", (taskId > 0) ? taskId : 0);
 
@@ -127,6 +133,12 @@ public class TaskReviewController extends HttpServlet {
             }
 
             case "edit" -> {
+                boolean isSupervisor = (user.getRoleID() == 2);
+                if (!isSupervisor) {
+                    response.sendRedirect(request.getContextPath() + "/task-review?action=list&error=Access denied");
+                    return;
+                }
+
                 int reviewId = parseIntOrMinus1(request.getParameter("reviewId"));
                 if (reviewId <= 0) {
                     /* handle error */ }
@@ -147,20 +159,30 @@ public class TaskReviewController extends HttpServlet {
             default -> {
                 int taskId = parseIntOrMinus1(request.getParameter("taskId"));
                 String q = request.getParameter("q");
-
-                int reviewerId = user.getUserID();
-
-                // dropdown: only tasks this supervisor has reviews for
-                loadReviewedTasks(request, reviewerId);
-
                 Integer filterTaskId = (taskId > 0) ? taskId : null;
 
-                // IMPORTANT: only show reviews by this supervisor
-                List<TaskReview> reviews = dao.listReviews(filterTaskId, q, reviewerId);
+                //int reviewerId = user.getUserID();
+                boolean isSupervisor = (user.getRoleID() == 2);
+                boolean canManage = isSupervisor; // for now: students view-only
 
-                request.setAttribute("reviews", reviews);
+                request.setAttribute("canManage", canManage);
+
+                if (isSupervisor) {
+                    // dropdown: only tasks this supervisor has reviews for
+                    loadReviewedTasks(request, user.getUserID());
+
+                    // IMPORTANT: only show reviews by this supervisor or student
+                    List<TaskReview> reviews = dao.listReviews(filterTaskId, q, user.getUserID());
+                    request.setAttribute("reviews", reviews);
+                } else {
+                    // students: only see reviews for tasks they have in TimesheetEntry
+                    loadTasksForStudent(request, user.getUserID());
+
+                    List<TaskReview> reviews = dao.listReviewsForStudent(filterTaskId, q, user.getUserID());
+                    request.setAttribute("reviews", reviews);
+                }
+
                 request.setAttribute("taskId", (taskId > 0) ? taskId : 0);
-
                 request.getRequestDispatcher("/taskReview/taskReview-list.jsp").forward(request, response);
             }
         }
@@ -192,6 +214,12 @@ public class TaskReviewController extends HttpServlet {
         try {
             switch (action) {
                 case "create" -> {
+                    boolean isSupervisor = (user.getRoleID() == 2);
+                    if (!isSupervisor) {
+                        response.sendRedirect(request.getContextPath() + "/task-review?action=list&error=Access denied");
+                        return;
+                    }
+
                     if (taskId <= 0) {
                         throw new IllegalArgumentException("Invalid taskId.");
                     }
@@ -231,6 +259,12 @@ public class TaskReviewController extends HttpServlet {
                 }
 
                 case "edit" -> {
+                    boolean isSupervisor = (user.getRoleID() == 2);
+                    if (!isSupervisor) {
+                        response.sendRedirect(request.getContextPath() + "/task-review?action=list&error=Access denied");
+                        return;
+                    }
+
                     int reviewId = parseIntOrMinus1(request.getParameter("reviewId"));
                     if (reviewId <= 0 || taskId <= 0) {
                         throw new IllegalArgumentException("Invalid reviewId/taskId.");
@@ -272,6 +306,12 @@ public class TaskReviewController extends HttpServlet {
                 }
 
                 case "delete" -> {
+                    boolean isSupervisor = (user.getRoleID() == 2);
+                    if (!isSupervisor) {
+                        response.sendRedirect(request.getContextPath() + "/task-review?action=list&error=Access denied");
+                        return;
+                    }
+                    
                     int reviewId = parseIntOrMinus1(request.getParameter("reviewId"));
                     if (reviewId <= 0) {
                         throw new IllegalArgumentException("Invalid reviewId.");
@@ -349,6 +389,17 @@ public class TaskReviewController extends HttpServlet {
 
     private void loadReviewedTasks(HttpServletRequest request, int reviewerId) {
         List<ProjectTask> tasks = dao.listReviewedTasksBySupervisor(reviewerId);
+        request.setAttribute("tasks", tasks);
+
+        Map<Integer, ProjectTask> taskMap = new HashMap<>();
+        for (ProjectTask t : tasks) {
+            taskMap.put(t.getTaskId(), t);
+        }
+        request.setAttribute("taskMap", taskMap);
+    }
+
+    private void loadTasksForStudent(HttpServletRequest request, int studentId) {
+        List<ProjectTask> tasks = dao.listTasksForStudent(studentId);
         request.setAttribute("tasks", tasks);
 
         Map<Integer, ProjectTask> taskMap = new HashMap<>();
