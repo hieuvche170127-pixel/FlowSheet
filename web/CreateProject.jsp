@@ -135,6 +135,7 @@
             </div>
         </form>
     </div>
+</div>
 
 <template id="member-template">
     <div class="row align-items-center mb-2 member-row fade-in">
@@ -144,7 +145,7 @@
                 <select class="form-select tom-select-user" name="memberIds" placeholder="Tìm thành viên...">
                     <option value="">Chọn thành viên...</option>
                     <c:forEach items="${userList}" var="u">
-                        <option value="${u.userId}">${u.fullName} (${u.email})</option>
+                        <option value="${u.userID}">${u.fullName} (${u.email})</option>
                     </c:forEach>
                 </select>
             </div>
@@ -292,16 +293,5 @@
     }
 </script>
 
-        /**
-         * Hàm xóa dòng thành viên
-         * @param btn Nút xóa vừa được bấm
-         */
-        function removeMemberRow(btn) {
-            // Tìm thẻ cha (div.member-row) gần nhất và xóa nó
-            // btn -> div.input-group -> remove()
-            btn.closest(".member-row").remove(); // Cách viết hiện đại
-            // Hoặc: btn.parentNode.remove();
-        }
-    </script>
-    <%@ include file="nghiapages/layout_footer.jsp" %>
+</body>
 </html>

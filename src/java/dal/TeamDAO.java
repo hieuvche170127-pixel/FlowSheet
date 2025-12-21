@@ -15,9 +15,9 @@ import java.util.logging.Logger;
 public class TeamDAO extends DBContext {
 
     public boolean createTeamTransaction(Team team, List<TeamMember> members, List<TeamProject> projects) {
-        String sqlTeam = "INSERT INTO Team (TeamName, Description, CreatedBy) VALUES (?, ?, ?)";
-        String sqlMember = "INSERT INTO TeamMember (TeamID, UserID, RoleInTeam) VALUES (?, ?, ?)";
-        String sqlProject = "INSERT INTO TeamProject (TeamID, ProjectID) VALUES (?, ?)";
+        String sqlTeam = "INSERT INTO Team (TeamName, Description, CreatedBy, CreatedAt) VALUES (?, ?, ?, GETDATE())";
+        String sqlMember = "INSERT INTO TeamMember (TeamID, UserID, RoleID, JoinedAt) VALUES (?, ?, ?, GETDATE())";
+        String sqlProject = "INSERT INTO TeamProject (TeamID, ProjectID, AssignedAt) VALUES (?, ?, GETDATE())";
 
         try {
             connection.setAutoCommit(false);
@@ -38,14 +38,15 @@ public class TeamDAO extends DBContext {
                 }
             }
 
-            PreparedStatement psMember = connection.prepareStatement(sqlMember);
-            for (TeamMember mem : members) {
-                psMember.setInt(1, newTeamId);
-                psMember.setInt(2, mem.getUserId());
-                psMember.setString(3, mem.getRole());
-                psMember.addBatch();
+            try (PreparedStatement psMember = connection.prepareStatement(sqlMember)) {
+                for (TeamMember mem : members) {
+                    psMember.setInt(1, newTeamId);
+                    psMember.setInt(2, mem.getUserId());
+                    psMember.setInt(3, mem.getRoleId());
+                    psMember.addBatch();
+                }
+                psMember.executeBatch();
             }
-            psMember.executeBatch();
 
             if (projects != null && !projects.isEmpty()) {
                 PreparedStatement psProject = connection.prepareStatement(sqlProject);
@@ -60,10 +61,10 @@ public class TeamDAO extends DBContext {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            // 3. Nếu có lỗi -> Rollback
+            // Nếu có lỗi -> Rollback
             try {
                 if (connection != null) {
-                    connection.rollback();
+                    connection.rollback();                  
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -71,7 +72,6 @@ public class TeamDAO extends DBContext {
             Logger.getLogger(TeamDAO.class.getName()).log(Level.SEVERE, null, e);
             return false;
         } finally {
-            // 4. Trả lại trạng thái AutoCommit ban đầu (Quan trọng với DBContext kiểu này)
             try {
                 if (connection != null) {
                     connection.setAutoCommit(true);

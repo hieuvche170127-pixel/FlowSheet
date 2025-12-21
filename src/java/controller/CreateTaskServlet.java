@@ -37,6 +37,17 @@ public class CreateTaskServlet extends HttpServlet {
 
         List<Project> projects = projectDAO.getAllProjects();
 
+        // Get projectId from URL parameter if exists
+        String projectIdParam = req.getParameter("projectId");
+        if (projectIdParam != null && !projectIdParam.trim().isEmpty()) {
+            try {
+                Integer projectId = Integer.parseInt(projectIdParam);
+                req.setAttribute("selectedProjectId", projectId);
+            } catch (NumberFormatException e) {
+                // Invalid projectId, ignore
+            }
+        }
+
         req.setAttribute("projects", projects);
         req.getRequestDispatcher("/createTask.jsp").forward(req, resp);
     }
@@ -85,12 +96,30 @@ public class CreateTaskServlet extends HttpServlet {
             try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
                 java.util.Date parsedDate = dateFormat.parse(deadlineStr);
+                
+                // Validate deadline is not in the past
+                java.util.Date now = new java.util.Date();
+                if (parsedDate.before(now)) {
+                    req.setAttribute("error", "Deadline cannot be in the past.");
+                    doGet(req, resp);
+                    return;
+                }
+                
                 task.setDeadline(new Timestamp(parsedDate.getTime()));
             } catch (ParseException e) {
                 // Try alternative format
                 try {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     java.util.Date parsedDate = dateFormat.parse(deadlineStr);
+                    
+                    // Validate deadline is not in the past
+                    java.util.Date now = new java.util.Date();
+                    if (parsedDate.before(now)) {
+                        req.setAttribute("error", "Deadline cannot be in the past.");
+                        doGet(req, resp);
+                        return;
+                    }
+                    
                     task.setDeadline(new Timestamp(parsedDate.getTime()));
                 } catch (ParseException ex) {
                     req.setAttribute("error", "Invalid deadline format.");

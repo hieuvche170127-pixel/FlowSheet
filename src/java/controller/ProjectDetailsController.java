@@ -57,23 +57,12 @@ public class ProjectDetailsController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        UserAccount currentUser = (UserAccount) session.getAttribute("LOGIN_USER");
+        UserAccount currentUser = (UserAccount) session.getAttribute("user");
 
         if (currentUser == null) {
-
-            currentUser = new UserAccount();
-            currentUser.setUserID(3);
-            currentUser.setUsername("stu_anh");
-            currentUser.setFullName("Nguyen Hoang Anh (Test)");
-            currentUser.setRoleID(1);
-
-            session.setAttribute("user", currentUser);
-            System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
         }
-//        if (currentUser == null) {
-//            response.sendRedirect(request.getContextPath() + "/login.jsp");
-//            return;
-//        }
 
         String idStr = request.getParameter("id");
         String action = request.getParameter("action");
@@ -82,53 +71,63 @@ public class ProjectDetailsController extends HttpServlet {
             return;
         }
 
-//        try {
-//            int projectId = Integer.parseInt(idStr);
-//            ProjectDAO dao = new ProjectDAO();
-//            TaskDAO taskDAO = new TaskDAO();
-//
-//            Project project = dao.getProjectById(projectId);
-//            if (project == null) {
-//                request.setAttribute("error", "Project not found!");
-//                request.getRequestDispatcher("/views/error.jsp").forward(request, response);
-//                return;
-//            }
-//
-//            if ("deactive".equals(action) && idStr != null) {
-//                dao.deactiveProject(projectId, false);
-//                session.setAttribute("notification", "Dự án đã được ngưng hoạt động!");
-//                response.sendRedirect(request.getContextPath() + "/projects");
-//                return;
-//            }
-//            List<UserAccount> members = dao.getProjectMembers(projectId);
-//            String indexPage = request.getParameter("page");
-//            if (indexPage == null) {
-//                indexPage = "1";
-//            }
-//            int index = Integer.parseInt(indexPage);
-//
-//            int totalTasks = taskDAO.countTasksByProject(projectId);
-//
-//            int tasksPerPage = 5;
-//
-//            int endPage = totalTasks / tasksPerPage;
-//            if (totalTasks % tasksPerPage != 0) {
-//                endPage++;
-//            }
-//
-//            List<ProjectTask> tasks = taskDAO.getTasksInProject(projectId, index, tasksPerPage);
-//
-//            request.setAttribute("project", project);
-//            request.setAttribute("members", members);
-//            request.setAttribute("tasks", tasks);
-//            request.setAttribute("currentPage", index);
-//            request.setAttribute("endPage", endPage);
-//
-//            request.getRequestDispatcher("/ProjectDetails.jsp").forward(request, response);
-//
-//        } catch (NumberFormatException e) {
-//            response.sendRedirect(request.getContextPath() + "/projects");
-//        }
+        try {
+            int projectId = Integer.parseInt(idStr);
+            ProjectDAO dao = new ProjectDAO();
+            TaskDAO taskDAO = new TaskDAO();
+
+            Project project = dao.getProjectById(projectId);
+            if (project == null) {
+                request.setAttribute("error", "Project not found!");
+                request.getRequestDispatcher("/nghiapages/errorPage.jsp").forward(request, response);
+                return;
+            }
+
+            if ("deactive".equals(action) && idStr != null) {
+                dao.deactiveProject(projectId, false);
+                session.setAttribute("notification", "Dự án đã được ngưng hoạt động!");
+                response.sendRedirect(request.getContextPath() + "/projects");
+                return;
+            }
+            List<UserAccount> members = dao.getProjectMembers(projectId);
+            String indexPage = request.getParameter("page");
+            if (indexPage == null) {
+                indexPage = "1";
+            }
+            int index = Integer.parseInt(indexPage);
+            
+            int tasksPerPage = 5;
+            
+            int totalTasks = taskDAO.countTasksByProject(projectId);
+
+            int endPage = totalTasks / tasksPerPage;
+            if (totalTasks % tasksPerPage != 0) {
+                endPage++;
+            }
+
+            List<ProjectTask> tasks = taskDAO.getTasksInProject(projectId, index, tasksPerPage);
+
+            request.setAttribute("project", project);
+            request.setAttribute("members", members);
+            request.setAttribute("tasks", tasks);
+            request.setAttribute("currentPage", index);
+            request.setAttribute("endPage", endPage);
+
+            request.getRequestDispatcher("/ProjectDetails.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/projects");
+        }catch (Exception e) {
+            // --- QUAN TRỌNG: BẮT MỌI LỖI KHÁC ĐỂ XEM NGUYÊN NHÂN ---
+            System.out.println("========== LỖI CRASH TRANG DETAILS ==========");
+            e.printStackTrace(); // In lỗi ra cửa sổ Output
+            System.out.println("=============================================");
+            
+            // Gửi thông báo lỗi ra trang Error để không bị trắng trang
+            request.setAttribute("error", "Hệ thống gặp lỗi: " + e.getMessage());
+            // Nếu bạn chưa có file error.jsp thì comment dòng dưới lại
+            // request.getRequestDispatcher("/views/error.jsp").forward(request, response);
+        }
     }
 
     /**

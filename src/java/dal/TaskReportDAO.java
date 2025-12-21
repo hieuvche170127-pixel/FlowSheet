@@ -38,25 +38,21 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, report.getUserId());
             ps.setInt(2, report.getTaskId());
-
             if (report.getReportDescription() == null || report.getReportDescription().trim().isEmpty()) {
                 ps.setNull(3, java.sql.Types.NVARCHAR);
             } else {
                 ps.setString(3, report.getReportDescription());
             }
-
             if (report.getEstimateWorkPercentDone() == null) {
                 ps.setDouble(4, 0.0);
             } else {
                 ps.setDouble(4, report.getEstimateWorkPercentDone());
             }
-
             if (report.getTotalHourUsed() == null) {
                 ps.setDouble(5, 0.0);
             } else {
                 ps.setDouble(5, report.getTotalHourUsed());
             }
-
             if (report.getTimesheetEntryId() == null) {
                 ps.setNull(6, java.sql.Types.INTEGER);
             } else {
@@ -98,7 +94,6 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));
@@ -147,7 +142,6 @@ public class TaskReportDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, taskId);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
                 TaskReport report = new TaskReport();
                 report.setReportId(rs.getInt("ReportID"));

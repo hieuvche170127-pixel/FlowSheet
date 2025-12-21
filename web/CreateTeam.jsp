@@ -62,7 +62,7 @@
     </style>
 </head>
 <body>
-
+    
 <div class="container mt-5 mb-5" style="max-width: 900px;">
     
     <c:if test="${not empty error}">
@@ -116,7 +116,7 @@
                 <hr class="my-4">
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a href="${pageContext.request.contextPath}/team/list" class="btn btn-light px-4">Hủy bỏ</a>
+                    <a href="${pageContext.request.contextPath}/team" class="btn btn-light px-4">Hủy bỏ</a>
                     <button type="button" class="btn btn-success px-4" onclick="validateAndSubmit()">
                         <i class="fas fa-save me-2"></i>Lưu & Đóng
                     </button>
@@ -134,7 +134,7 @@
                 <select class="form-select tom-select-user" name="memberIds" placeholder="Tìm thành viên...">
                     <option value="">Chọn thành viên...</option>
                     <c:forEach items="${userList}" var="u">
-                        <option value="${u.userId}">${u.fullName} (${u.email})</option>
+                        <option value="${u.userID}">${u.fullName} (${u.email})</option>
                     </c:forEach>
                 </select>
             </div>

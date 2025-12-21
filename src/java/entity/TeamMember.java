@@ -5,22 +5,22 @@ import java.sql.Timestamp;
 public class TeamMember {
     private int teamId;
     private int userId;
-    private String role;
+    private int roleId;
     private Timestamp joinedAt;
+    private String role;
 
     public TeamMember() {
     }
-
-    public TeamMember(int teamId, int userId, String role) {
+    public TeamMember(int teamId, int userId, int roleId) {
         this.teamId = teamId;
         this.userId = userId;
-        this.role = role;
+        this.roleId = roleId;
     }
 
-    public TeamMember(int teamId, int userId, String role, Timestamp joinedAt) {
+    public TeamMember(int teamId, int userId, int roleId, Timestamp joinedAt) {
         this.teamId = teamId;
         this.userId = userId;
-        this.role = role;
+        this.roleId = roleId;
         this.joinedAt = joinedAt;
     }
 
@@ -40,12 +40,12 @@ public class TeamMember {
         this.userId = userId;
     }
 
-    public String getRole() {
-        return role;
+    public int getRoleId() {
+        return roleId;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
     }
 
     public Timestamp getJoinedAt() {
@@ -58,8 +58,23 @@ public class TeamMember {
 
     @Override
     public String toString() {
-        return "TeamMember{" + "teamId=" + teamId + ", userId=" + userId + ", role=" + role + '}';
+        return "TeamMember{" + "teamId=" + teamId + ", userId=" + userId + ", roleId=" + roleId + '}';
     }
-    
+
+    public TeamMember(int teamId, int userId, String role, Timestamp joinedAt) {
+        this.teamId = teamId;
+        this.userId = userId;
+        this.role = role;
+        this.joinedAt = joinedAt;
+    }
+   
+        public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     
 }

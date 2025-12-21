@@ -53,39 +53,49 @@
         </nav>
 
         <div class="container">
-            <form action="${pageContext.request.contextPath}/project/edit" method="POST">
+            <c:if test="${not empty requestScope.error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> <strong>Error:</strong> <c:out value="${requestScope.error}"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </c:if>
+
+            <form action="${pageContext.request.contextPath}/project/edit" method="POST" onsubmit="return validateForm()">
                 <input type="hidden" name="id" value="${project.projectID}">
                 <input type="hidden" name="deleted_members" id="deletedMembersInput" value="">
 
-                <div class="row g-4"> <div class="col-lg-8">
+                <div class="row g-4"> 
+                    <div class="col-lg-8">
                         <div class="card shadow-sm border-0">
-                            <div class="card-header bg-white fw-bold py-3">
-                                General Information
-                            </div>
+                            <div class="card-header bg-white fw-bold py-3">General Information</div>
                             <div class="card-body p-4">
+                                
                                 <div class="mb-3 row">
                                     <label class="col-sm-3 col-form-label text-muted">Code</label>
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control bg-light" value="${project.projectCode}" readonly>
                                     </div>
                                 </div>
+
                                 <div class="mb-3 row">
                                     <label class="col-sm-3 col-form-label">Project Name</label>
                                     <div class="col-sm-9">
                                         <input type="text" name="name" class="form-control" value="${project.projectName}" required>
                                     </div>
                                 </div>
+
                                 <div class="mb-3 row">
                                     <label class="col-sm-3 col-form-label">Timeline</label>
                                     <div class="col-sm-4">
-                                        <input type="date" name="startDate" class="form-control" value="${project.startDate}">
+                                        <input type="date" id="startDate" name="startDate" class="form-control" value="${project.startDate}">
                                         <div class="form-text">Start Date</div>
                                     </div>
                                     <div class="col-sm-5">
-                                        <input type="date" name="deadline" class="form-control" value="${project.deadline}">
+                                        <input type="date" id="deadline" name="deadline" class="form-control" value="${project.deadline}">
                                         <div class="form-text">Deadline</div>
                                     </div>
                                 </div>
+
                                 <div class="mb-3 row">
                                     <label class="col-sm-3 col-form-label">Status</label>
                                     <div class="col-sm-9">
@@ -102,11 +112,12 @@
                                         <textarea name="description" class="form-control" rows="4">${project.description}</textarea>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div> 
-                    <div class="col-lg-4">
 
+                    <div class="col-lg-4">
                         <div class="card shadow-sm border-0 mb-3">
                             <div class="card-header bg-white fw-bold py-3 d-flex justify-content-between align-items-center">
                                 <span>Team Members</span>
@@ -129,13 +140,12 @@
                             <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                                 <table class="table table-hover mb-0" id="membersTable">
                                     <tbody style="border-top: none;">
-
                                         <c:if test="${empty currentMembers}">
                                             <tr><td colspan="3" class="text-center text-muted py-3">No members yet.</td></tr>
                                         </c:if>
 
                                         <c:forEach var="m" items="${currentMembers}">
-                                            <tr class="member-row" id="row_${m.userId}">
+                                            <tr class="member-row" id="row_${m.userID}">
                                                 <td style="padding-left: 15px;">
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar-circle">
@@ -144,47 +154,54 @@
                                                         <div style="line-height: 1.2;">
                                                             <div class="fw-bold text-dark">${m.username}</div>
                                                             <small class="text-muted" style="font-size: 11px;">${m.fullName}</small>
-                                                            <input type="hidden" name="exist_member_ids[]" value="${m.userId}">
+                                                            <input type="hidden" name="exist_member_ids[]" value="${m.userID}">
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <select name="exist_member_roles[]" class="form-select form-select-sm" style="font-size: 12px;">
-
-                                                        <option value="Leader" 
-                                                                ${m.roleInProject != null && m.roleInProject.trim().equalsIgnoreCase('Leader') ? 'selected' : ''}>
-                                                            Leader
-                                                        </option>
-
-                                                        <option value="Member" 
-                                                                ${m.roleInProject == null || m.roleInProject.trim().equalsIgnoreCase('Member') ? 'selected' : ''}>
-                                                            Member
-                                                        </option>
+                                                        <option value="Leader" ${m.roleInProject != null && m.roleInProject.trim().equalsIgnoreCase('Leader') ? 'selected' : ''}>Leader</option>
+                                                        <option value="Member" ${m.roleInProject == null || m.roleInProject.trim().equalsIgnoreCase('Member') ? 'selected' : ''}>Member</option>
                                                     </select>
                                                 </td>
                                                 <td style="width: 30px;" class="text-end pe-3">
-                                                    <button type="button" class="btn btn-link text-danger p-0" onclick="removeExistingMember(this, ${m.userId})">
+                                                    <button type="button" class="btn btn-link text-danger p-0" onclick="removeExistingMember(this, ${m.userID})">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </td>
                                             </tr>
                                         </c:forEach>
-
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg fw-bold">SAVE</button>
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">SAVE CHANGES</button>
                             <a href="${pageContext.request.contextPath}/project/details?id=${project.projectID}" class="btn btn-outline-secondary">CANCEL</a>
                         </div>
-
                     </div>
-                </div> </form>
+                </div> 
+            </form>
         </div>
 
         <script>
+            // 2. JAVASCRIPT VALIDATION (QUAN TRỌNG ĐỂ KHÔNG MẤT DỮ LIỆU MEMBER)
+            function validateForm() {
+                var startStr = document.getElementById("startDate").value;
+                var endStr = document.getElementById("deadline").value;
+
+                if (startStr && endStr) {
+                    var startDate = new Date(startStr);
+                    var deadline = new Date(endStr);
+                    if (startDate > deadline) {
+                        alert("Start Date must be before Deadline!");
+                        return false; // Chặn submit form
+                    }
+                }
+                return true; // Cho phép submit
+            }
+
             function addNewMember() {
                 var input = document.getElementById('newMemberInput');
                 var username = input.value.trim();
@@ -192,8 +209,7 @@
                 var dataList = document.getElementById('userSuggestions');
 
                 errorDiv.style.display = 'none';
-                if (username === "")
-                    return;
+                if (username === "") return;
 
                 // Check duplicate visually
                 var isExist = false;
@@ -219,6 +235,7 @@
 
                 // Create Row
                 var firstChar = username.charAt(0).toUpperCase();
+                // 3. FIX BUG: Logic option Value và Text đã được sửa lại cho đúng
                 var newRow = `
                     <tr class="member-row new-row" style="background-color: #e8f5e9;">
                         <td style="padding-left: 15px;">
@@ -233,8 +250,8 @@
                         </td>
                         <td>
                             <select name="new_roles[]" class="form-select form-select-sm" style="font-size: 12px;">
-                                <option value="Leader">Member</option>
-                                <option value="Member" selected>Leader</option>
+                                <option value="Member" selected>Member</option>
+                                <option value="Leader">Leader</option>
                             </select>
                         </td>
                         <td class="text-end pe-3">
@@ -246,8 +263,7 @@
 
                 // Remove empty msg if exists
                 var emptyMsg = document.querySelector('#membersTable td[colspan="3"]');
-                if (emptyMsg)
-                    emptyMsg.closest('tr').remove();
+                if (emptyMsg) emptyMsg.closest('tr').remove();
 
                 document.querySelector('#membersTable tbody').insertAdjacentHTML('beforeend', newRow);
                 input.value = "";
@@ -255,9 +271,10 @@
             }
 
             function removeExistingMember(btn, userId) {
-                if (confirm('Remove?')) {
+                if (confirm('Remove this member?')) {
                     btn.closest('tr').style.display = 'none';
                     var inp = document.getElementById('deletedMembersInput');
+                    // Logic ghép chuỗi ID: "1,2,5"
                     inp.value = inp.value ? inp.value + "," + userId : userId;
                     updateCount();
                 }

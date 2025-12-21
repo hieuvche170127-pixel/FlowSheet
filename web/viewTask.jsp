@@ -169,11 +169,13 @@
                         </form>
                     </div>
 
+                    <c:if test="${user.roleID != 2}">
                     <div class="text-end mb-3">
                         <a href="create" class="btn btn-success btn-add">
                             <i class="fas fa-plus me-2"></i>Add New Task
                         </a>
                     </div>
+                    </c:if>
 
                     <div class="table-responsive">
                         <table class="table table-hover table-striped">
@@ -208,27 +210,42 @@
                                             <td>${task.estimateHourToDo != null ? task.estimateHourToDo : 'N/A'}</td>
                                             <td>${task.createdAt != null ? task.createdAt : 'N/A'}</td>
                                             <td class="d-flex gap-2">
-                                                <a href="update?taskId=${task.taskId}" class="btn btn-primary btn-edit btn-sm">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
                                                 <c:set var="hasReports" value="${taskHasReports[task.taskId]}" />
                                                 <c:choose>
-                                                    <c:when test="${hasReports}">
-                                                        <button type="button" class="btn btn-danger btn-delete btn-sm" 
-                                                                disabled
-                                                                title="Cannot delete task: Task has task reports. Please delete all task reports first.">
-                                                            <i class="fas fa-trash"></i> Delete
-                                                        </button>
+                                                    <c:when test="${user.roleID == 2}">
+                                                        <!-- Supervisor: Only show Review Report button if task has reports -->
+                                                        <c:if test="${hasReports}">
+                                                            <a href="${pageContext.request.contextPath}/task-report/review?taskId=${task.taskId}" 
+                                                               class="btn btn-info btn-sm" 
+                                                               style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); border: none; border-radius: 20px; padding: 6px 12px;">
+                                                                <i class="fas fa-eye me-1"></i> Review Report
+                                                            </a>
+                                                        </c:if>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <form action="view" method="post" class="mb-0">
-                                                            <input type="hidden" name="action" value="delete">
-                                                            <input type="hidden" name="taskId" value="${task.taskId}">
-                                                            <button type="submit" class="btn btn-danger btn-delete btn-sm"
-                                                                    onclick="return confirm('Are you sure you want to delete this task?');">
-                                                                <i class="fas fa-trash"></i> Delete
-                                                            </button>
-                                                        </form>
+                                                        <!-- Non-supervisor: Show Edit and Delete buttons -->
+                                                        <a href="update?taskId=${task.taskId}" class="btn btn-primary btn-edit btn-sm">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </a>
+                                                        <c:choose>
+                                                            <c:when test="${hasReports}">
+                                                                <button type="button" class="btn btn-danger btn-delete btn-sm" 
+                                                                        disabled
+                                                                        title="Cannot delete task: Task has task reports. Please delete all task reports first.">
+                                                                    <i class="fas fa-trash"></i> Delete
+                                                                </button>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <form action="view" method="post" class="mb-0">
+                                                                    <input type="hidden" name="action" value="delete">
+                                                                    <input type="hidden" name="taskId" value="${task.taskId}">
+                                                                    <button type="submit" class="btn btn-danger btn-delete btn-sm"
+                                                                            onclick="return confirm('Are you sure you want to delete this task?');">
+                                                                        <i class="fas fa-trash"></i> Delete
+                                                                    </button>
+                                                                </form>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
@@ -249,9 +266,18 @@
                     </div>
 
                     <div class="text-center mt-4">
-                        <a href="dashboard" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                        </a>
+                        <c:choose>
+                            <c:when test="${user.roleID == 2 || user.roleID == 3}">
+                                <a href="${pageContext.request.contextPath}/supervisor/dashboard" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </div>

@@ -58,23 +58,12 @@ public class CreateProjectController extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
-        UserAccount currentUser = (UserAccount) session.getAttribute("LOGIN_USER"); // Key phải khớp với lúc Login
+        UserAccount currentUser = (UserAccount) session.getAttribute("user"); 
 
         if (currentUser == null) {
-
-            currentUser = new UserAccount();
-            currentUser.setUserID(3);
-            currentUser.setUsername("stu_anh");
-            currentUser.setFullName("Nguyen Hoang Anh (Test)");
-            currentUser.setRoleID(1);
-
-            session.setAttribute("user", currentUser);
-            System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
         }
-//        if (currentUser == null) {
-//            response.sendRedirect(request.getContextPath() + "/login.jsp");
-//            return;
-//        }
 
         ProjectDAO dao = new ProjectDAO();
 

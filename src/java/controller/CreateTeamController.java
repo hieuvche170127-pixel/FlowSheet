@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,20 +67,9 @@ public class CreateTeamController extends HttpServlet {
         UserAccount currentUser = (UserAccount) session.getAttribute("user");
 
         if (currentUser == null) {
-        // Tạo ra một user giả
-        currentUser = new UserAccount();
-        currentUser.setUserID(2); // QUAN TRỌNG: ID này phải tồn tại trong bảng UserAccount
-        currentUser.setUsername("sup_hoa");
-        currentUser.setFullName("Nguyen Thi Hoa (Test)");
-        currentUser.setRoleID(2); // Role Supervisor
-
-        session.setAttribute("user", currentUser);
-        System.out.println("--- ĐÃ KÍCH HOẠT CHẾ ĐỘ TEST USER ---");
-    }
-//        if (currentUser == null) {
-//            response.sendRedirect(request.getContextPath() + "/login?msg=LoginRequired");
-//            return;
-//        }
+            response.sendRedirect(request.getContextPath() + "/login?msg=LoginRequired");
+            return;
+        }
 
         UserAccountDAO userDAO = new UserAccountDAO();
         ProjectDAO projectDAO = new ProjectDAO();
@@ -162,8 +152,17 @@ public class CreateTeamController extends HttpServlet {
             List<TeamMember> members = new ArrayList<>();
             for (int i = 0; i < memberIdsRaw.length; i++) {
                 int uid = Integer.parseInt(memberIdsRaw[i]);
-                String role = roles[i];
-                members.add(new TeamMember(0, uid, role));
+                String roleString = roles[i]; 
+
+                int roleId;
+                if ("Leader".equalsIgnoreCase(roleString)) {
+                    roleId = 4; // Quy ước: 4 là Leader
+                } else {
+                    roleId = 5; // Quy ước: 5 là Member
+                }
+
+                // Truyền số int vào constructor
+                members.add(new TeamMember(0, uid, roleId));
             }
 
             List<TeamProject> projects = new ArrayList<>();
@@ -171,7 +170,7 @@ public class CreateTeamController extends HttpServlet {
                 for (String pidStr : projectIdsRaw) {
                     if (pidStr != null && !pidStr.isEmpty()) {
                         int pid = Integer.parseInt(pidStr);
-                        projects.add(new TeamProject(0, pid)); // TeamID tạm để 0
+                        projects.add(new TeamProject(0, pid));
                     }
                 }
             }
@@ -180,10 +179,8 @@ public class CreateTeamController extends HttpServlet {
             boolean isSuccess = teamDAO.createTeamTransaction(newTeam, members, projects);
 
             if (isSuccess) {
-                // Thành công -> Chuyển về danh sách
-                response.sendRedirect(request.getContextPath() + "/team/list?msg=CreateSuccess");
+                response.sendRedirect(request.getContextPath() + "/team?msg=CreateSuccess");
             } else {
-                // Thất bại (Lỗi SQL...)
                 handleError(request, response, "Lỗi hệ thống: Không thể tạo nhóm. Vui lòng thử lại.");
             }
 
@@ -196,7 +193,6 @@ public class CreateTeamController extends HttpServlet {
 private void handleError(HttpServletRequest request, HttpServletResponse response, String msg)
         throws ServletException, IOException {
     request.setAttribute("error", msg);
-    // Load lại dropdown data để người dùng không thấy dropdown trống trơn
     doGet(request, response);
 }
 

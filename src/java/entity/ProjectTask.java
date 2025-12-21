@@ -26,11 +26,12 @@ public class ProjectTask {
     private Timestamp deadline;
     private Double estimateHourToDo;
     private Timestamp createdAt;
+
     // Vẫn dùng String như bình thường
     private String status;
-    
     // Optional display-only field from joins
     private String projectName;
+    private String assigneeNames;
 
     public ProjectTask() {
         // Mặc định khi tạo mới là TO_DO
@@ -144,4 +145,14 @@ public class ProjectTask {
     public void setProjectName(String projectName) {
         this.projectName = projectName;
     }
+
+    public String getAssigneeNames() {
+        return assigneeNames;
+    }
+
+    public void setAssigneeNames(String assigneeNames) {
+        this.assigneeNames = assigneeNames;
+    }
+    
+    
 }
