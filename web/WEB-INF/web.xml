@@ -56,6 +56,22 @@
         <servlet-name>TaskReviewController</servlet-name>
         <servlet-class>controller.TaskReview.TaskReviewController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AddTImesheetEntry</servlet-name>
+        <servlet-class>controller.nghia.timesheetEntry.AddTImesheetEntry</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DeleteTimesheetEntry</servlet-name>
+        <servlet-class>controller.nghia.timesheetEntry.DeleteTimesheetEntry</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ViewTimesheetDetail</servlet-name>
+        <servlet-class>controller.nghia.timesheetEntry.ViewTimesheetEntryDetail</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UpdateTimesheetEntryDetail</servlet-name>
+        <servlet-class>controller.nghia.timesheetEntry.UpdateTimesheetEntry</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TimesheetManagement</servlet-name>
         <url-pattern>/TimesheetManagement</url-pattern>
@@ -108,6 +124,22 @@
         <servlet-name>ReplyInvitation</servlet-name>
         <url-pattern>/ReplyInvitation</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AddTImesheetEntry</servlet-name>
+        <url-pattern>/AddTImesheetEntry</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteTimesheetEntry</servlet-name>
+        <url-pattern>/DeleteTimesheetEntry</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewTimesheetDetail</servlet-name>
+        <url-pattern>/ViewTimesheetEntryDetail</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UpdateTimesheetEntryDetail</servlet-name>
+        <url-pattern>/UpdateTimesheetEntryDetail</url-pattern>
+    </servlet-mapping>
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
@@ -115,7 +147,6 @@
         <servlet-name>TaskReviewController</servlet-name>
         <servlet-class>controller.TaskReview.TaskReviewController</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>TaskReviewController</servlet-name>
         <url-pattern>/task-review</url-pattern>

@@ -108,15 +108,15 @@ public class ViewDetailTimesheet extends HttpServlet {
                 if (foundById == null) {
                     // chưa chỉnh lại url af ko the dung roi.
                     errorList.add("ko tìm thấy timesheet");
-                    request.setAttribute("errorList", errorList);
-                    request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
-                    return;
                 }
 
-                if (foundById.getUserId() != user.getUserID()) {
+                // check vì biết đâu ăn NPE :))
+                if (foundById!= null && foundById.getUserId() != user.getUserID()) {
                     // chưa chỉnh lại url af ko the dung roi.
                     errorList.add("timesheet này ko phải của cậuuuuuu");
-                    request.setAttribute("errorList", errorList);
+                }
+                if (!errorList.isEmpty()) {
+                    session.setAttribute("errorList", errorList);
                     request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
                     return;
                 }
@@ -127,7 +127,6 @@ public class ViewDetailTimesheet extends HttpServlet {
                 // lấy thêm reporttask trong tuần (ứng với timesheetentry)
                 // giờ nghĩ lại thấy nên chuyển từ mqh từ timesheetentry đến report chuyển thành đến task, còn timesheet report thì lấy theo ngày là được
                 ArrayList<TimesheetEntry> timesheetEntryInTimesheet = timesheetEntryDao.getEntriesByTimesheetId(timesheetIdInt);
-
                 request.setAttribute("timesheetEntry", timesheetEntryInTimesheet);
                 request.setAttribute("timesheet", foundById);
                 request.getRequestDispatcher("/nghiapages/timesheetjsp/timesheetdetail.jsp").forward(request, response);
@@ -136,13 +135,13 @@ public class ViewDetailTimesheet extends HttpServlet {
             } catch (NumberFormatException numberFormatException) {
                 // gửi về mytimesheet - à ừ đúng r
                 errorList.add("ko lấy được id của timesheet");
-                request.setAttribute("errorList", errorList);
+                session.setAttribute("errorList", errorList);
                 request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
                 return;
             } catch (Exception e) {
                 // gửi về mytimesheet - à ừ đúng r
                 errorList.add("Đã có exception xảy ra");
-                request.setAttribute("errorList", errorList);
+                session.setAttribute("errorList", errorList);
                 request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
                 return;
             }

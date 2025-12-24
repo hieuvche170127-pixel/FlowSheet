@@ -509,7 +509,7 @@ CREATE TABLE TimesheetEntry (
     -- Cột thời gian chi tiết
     WorkDate        DATE          NOT NULL,          -- Ngày làm việc cụ thể
     StartTime       TIME          NOT NULL,          -- Bắt đầu (Tôi đề nghị NOT NULL để tính toán dễ hơn)
-    EndTime         TIME          NOT NULL,          -- Kết thúc (Tôi đề nghị NOT NULL để tính toán dễ hơn)
+    EndTime         TIME           NULL,          -- Kết thúc (Tôi đề nghị NOT NULL để tính toán dễ hơn)
     -- Số phút làm việc (Tính được: EndTime - StartTime - Delay)
     -- Giữ cột này vì nó lưu giá trị thực tế sau khi tính toán các khoảng nghỉ
     DelayMinutes    INT           NOT NULL DEFAULT 0, -- Thời gian nghỉ/delay được loại trừ (ví dụ: ăn trưa)

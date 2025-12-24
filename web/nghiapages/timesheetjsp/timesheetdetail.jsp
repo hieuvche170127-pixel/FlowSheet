@@ -6,6 +6,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -161,9 +162,41 @@
                 margin-right: 12px;
                 border-radius: 10px;
             }
+
+
+
+            /* Style cho nút Add Timesheet */
+            .btn-add-ts {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                border: none;
+                padding: 12px 0;
+                border-radius: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+
+            .btn-add-ts:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            }
+
+            .btn-add-ts:active {
+                transform: translateY(0);
+            }
         </style>
     </head>
     <%@ include file="/nghiapages/layout_header.jsp" %>
+
+    <div style="margin-bottom: 30px">
+        <a href="${pageContext.request.contextPath}/ViewAndSearchTimesheet" >Về My Timesheet</a>
+    </div>
 
     <div class="d-flex justify-content-between">
         <h3>Thông tin Timesheet</h3>
@@ -270,23 +303,223 @@
                     <c:choose>
                         <c:when test="${entry.delayMinutes > 0}">
                             <div class="delay-tag">
-                                <i class="bi bi-clock-history"></i> Trễ: ${entry.delayMinutes}p
+                                <i class="bi bi-clock-history"></i> tổng thời gian nghỉ: ${entry.delayMinutes}p
                             </div>
                         </c:when>
                         <c:otherwise>
-                            <span class="badge bg-light text-success border">Đúng giờ</span>
+                            <div class="delay-tag text-success fw-bold">
+                                <i class="bi bi-clock-history"></i> tổng thời gian nghỉ: ${entry.delayMinutes}p
+                            </div>
                         </c:otherwise>
                     </c:choose>
 
                     <div class="note-text" title="${entry.note}">
                         <c:out value="${entry.note}" default="--"/>
                     </div>
+
+                    <div class="mt-auto pt-2 border-top d-flex justify-content-between gap-2">
+
+                        <!--nút hiện timesheetentry detail-->
+                        <!-- Sửa dòng này -->
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-info flex-fill" 
+                                onclick="fillData(
+                                                '<fmt:formatDate value="${entry.workDate}" pattern="dd/MM/yyyy"/>',
+                                                '<fmt:formatDate value="${entry.startTime}" pattern="HH:mm"/>',
+                                                '<fmt:formatDate value="${entry.endTime}" pattern="HH:mm"/>',
+                                                '${entry.delayMinutes}',
+                                                '${fn:escapeXml(entry.note)}',
+                                                '${entry.entryId}',
+                                                '${timesheet.timesheetId}')"> <!-- THÊM CÁI NÀY VÀO CUỐI -->
+                            <i class="bi bi-search"></i> Xem cụ thể
+                        </button>
+
+
+                        <a href="javascript:void(0)" 
+                           onclick="confirmDelete('${entry.entryId}', '${timesheet.timesheetId}')"
+                           class="btn btn-sm btn-outline-danger flex-fill">
+                            <i class="bi bi-trash"></i> Xóa
+                        </a>
+                    </div>
                 </div>
             </c:forEach>
         </div>
     </c:if>
 
+    <!--tạo button để add thêm timesheetentry-->
+    <!--cho add chay ban đầu cũng được, xong về sau thì sửa lại -trong tuần-->
+    <div class="d-flex justify-content-center">
+        <button class="w-75 btn-add-ts" data-bs-toggle="modal" data-bs-target="#addEntryModal">
+            <i class="fas fa-plus-circle me-2"></i> add time sheet
+        </button>
+    </div>
 
+    <!--đây là cho timesheetEntryDetail.-->
+    <div class="container mt-4 mb-5">
+        <div id="big-detail-box" class="card shadow border-0 d-none" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header bg-primary bg-gradient text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check me-2"></i>Chi tiết ngày: <span id="detail-date">...</span>
+
+                    <small class="ms-3 opacity-75" id="detail-id"></small> 
+                </h5>
+                <button type="button" class="btn-close btn-close-white" onclick="closeBox()"></button>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <h6 class="text-primary fw-bold"><i class="bi bi-clock me-2"></i>Thời gian làm việc</h6>
+                            <p class="fs-5 mb-1" id="detail-time">--:-- - --:--</p>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span>Thời gian nghỉ:</span>
+                                <span class=" text-dark px-3" id="detail-delay">0 phút</span> 
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span>Thời gian thực làm: </span>
+                                <span class="text-success fw-bold px-3" id="detail-actual-work"></span> 
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="text-primary fw-bold"><i class="bi bi-card-text me-2"></i>Ghi chú công việc</h6>
+                        <div id="detail-note" class="p-3 border rounded-3 bg-white shadow-sm" style="min-height: 150px; white-space: pre-wrap; line-height: 1.6;">
+                            ...
+                        </div>
+                    </div>
+                </div>
+
+                <!--cái này gọi modal chỉnh sửa timesheet entry ở du--> 
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <!--vừa comment lại dòng openeditfrom detail thì đúng là nó chỉ dùng để lấy data thât-->
+                    <!--cái dòng chỗ onclick xong gọi hàm ý-->
+                    <button type="button" 
+                            class="btn btn-warning btn-sm px-4 shadow-sm" 
+                            onclick="openEditFromDetail()"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editEntryModal">
+                        <i class="bi bi-pencil-square me-2"></i>Chỉnh sửa
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!--modal để edit timesheet-->
+    <div class="modal fade" id="editEntryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <form action="${pageContext.request.contextPath}/UpdateTimesheetEntryDetail" method="Get">
+                    <div class="modal-header bg-warning text-dark border-0">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-fill me-2"></i>Cập nhật Timesheet</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="timesheetId" id="modal-ts-id">
+                        <input type="hidden" name="entryId" id="modal-entry-id">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">NGÀY LÀM VIỆC</label>
+                            <input type="text" class="form-control bg-light border-0" id="modal-date" readonly>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">GIỜ BẮT ĐẦU</label>
+                                <input type="time" name="startTime" class="form-control" id="modal-start" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">GIỜ KẾT THÚC</label>
+                                <input type="time" name="endTime" class="form-control" id="modal-end">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">THỜI GIAN NGHỈ (PHÚT)</label>
+                            <input type="number" name="delay" class="form-control" id="modal-delay" min="0">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">GHI CHÚ CÔNG VIỆC</label>
+                            <textarea name="note" class="form-control" id="modal-note" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill shadow">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!--modal để add timesheetentry-->
+    <div class="modal fade" id="addEntryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" style="font-weight: 800; color: #1e293b;">
+                        <i class="fas fa-calendar-plus me-2 text-primary"></i>Thêm Công Việc Mới
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form action="${pageContext.request.contextPath}/AddTImesheetEntry" method="Get">
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="timesheetId" value="${timesheet.timesheetId}">
+
+                        <!--ngon r-->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Ngày làm việc</label>
+                            <input type="date" 
+                                   name="workDate" 
+                                   class="form-control shadow-none" 
+                                   min="${timesheet.dayStart}" 
+                                   max="${timesheet.dayEnd}" 
+                                   value="${timesheet.dayStart}"
+                                   required>
+                            <div class="form-text" style="font-size: 0.7rem;">
+                                Hệ thống chỉ cho phép chọn từ ${timesheet.dayStart} đến ${timesheet.dayEnd} (trong tuần này)
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold text-uppercase text-muted">Giờ bắt đầu</label>
+                                <input type="time" name="startTime" class="form-control shadow-none" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold text-uppercase text-muted">Giờ kết thúc</label>
+                                <input type="time" name="endTime" class="form-control shadow-none" placeholder="Đang học...">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Thời gian nghỉ/ không làm việc (phút)</label>
+                            <input type="number" name="delayTime" class="form-control shadow-none" placeholder="Để trống nếu chưa tính" value="0" min="0">
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Summary (Note)</label>
+                            <textarea name="summary" class="form-control shadow-none" rows="3" placeholder="tổng kết hôm nay bạn đã làm được những gì?"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn fw-bold text-muted" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-add-ts px-4" style="width: auto !important;">Lưu thông tin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--đây là cái modal của update nhéee-->
     <div class="modal fade" id="myModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -311,6 +544,91 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+                                function confirmDelete(entryId, tsId) {
+                                    if (confirm("Anh có chắc muốn xóa dòng này không?")) {
+                                        // Truyền entryId để xóa và timesheetId để sau đó Servlet biết đường quay về
+                                        window.location.href = "DeleteTimesheetEntry?DeletedTimesheetEntryId=" + entryId + "&timesheetId=" + tsId;
+                                    }
+                                }
+
+                                function fillData(workDate, startTime, endTime, delay, note, id, tsId) {
+                                    // 1. Hiện cái thùng
+                                    document.getElementById('big-detail-box').classList.remove('d-none');
+
+                                    // 2. Đổ dữ liệu vào Thùng chi tiết
+                                    document.getElementById('detail-date').innerText = workDate;
+                                    document.getElementById('detail-time').innerText = startTime + " - " + (endTime || "--:--");
+                                    document.getElementById('detail-delay').innerText = (delay || 0) + " phút";
+
+                                    // Đổ ID vào thẻ detail-id (để hàm edit lấy được)
+                                    document.getElementById('detail-id').innerText = "#" + id;
+
+                                    // Lưu TimesheetId vào attribute data-tsid
+                                    document.getElementById('big-detail-box').setAttribute('data-tsid', tsId);
+
+                                    // 3. Xử lý Ghi chú
+                                    const noteBox = document.getElementById('detail-note');
+                                    if (note && note !== 'null' && note.trim() !== '') {
+                                        noteBox.innerText = note;
+                                    } else {
+                                        // Lưu ý: Để class để tí hàm Edit nhận biết là trống
+                                        noteBox.innerHTML = '<em class="text-muted is-empty">Không có ghi chú.</em>';
+                                    }
+
+                                    // 4. Tính toán thời gian thực làm
+                                    let actualDisplay = "0h 0p";
+                                    if (startTime && endTime && endTime !== 'null' && endTime !== '') {
+                                        const s = startTime.split(':');
+                                        const e = endTime.split(':');
+                                        const totalMin = (parseInt(e[0]) * 60 + parseInt(e[1]))
+                                                - (parseInt(s[0]) * 60 + parseInt(s[1]))
+                                                - (parseInt(delay) || 0);
+
+                                        if (totalMin >= 0) {
+                                            actualDisplay = Math.floor(totalMin / 60) + "h " + (totalMin % 60) + "p";
+                                        }
+                                    }
+                                    document.getElementById('detail-actual-work').innerText = actualDisplay;
+
+                                    // 5. Cuộn xuống
+                                    document.getElementById('big-detail-box').scrollIntoView({behavior: 'smooth'});
+                                }
+
+                                function openEditFromDetail() {
+                                    // 1. Bốc ID và TimesheetId
+                                    const rawId = document.getElementById('detail-id').innerText;
+                                    document.getElementById('modal-entry-id').value = rawId.replace('#', '').trim();
+                                    document.getElementById('modal-ts-id').value = document.getElementById('big-detail-box').getAttribute('data-tsid');
+
+                                    // 2. Bốc Ngày, Delay
+                                    document.getElementById('modal-date').value = document.getElementById('detail-date').innerText;
+                                    document.getElementById('modal-delay').value = parseInt(document.getElementById('detail-delay').innerText) || 0;
+
+                                    // 3. Bốc Note (Kiểm tra nếu có class is-empty thì để trống)
+                                    const noteBox = document.getElementById('detail-note');
+                                    if (noteBox.querySelector('.is-empty')) {
+                                        document.getElementById('modal-note').value = "";
+                                    } else {
+                                        document.getElementById('modal-note').value = noteBox.innerText;
+                                    }
+
+                                    // 4. Tách chuỗi giờ "HH:mm - HH:mm"
+                                    const timeRange = document.getElementById('detail-time').innerText.split(' - ');
+                                    if (timeRange.length === 2) {
+                                        document.getElementById('modal-start').value = timeRange[0].trim();
+                                        const endTime = timeRange[1].trim();
+                                        document.getElementById('modal-end').value = (endTime === '--:--' || endTime === '') ? '' : endTime;
+                                    }
+                                }
+
+
+                                function closeBox() {
+                                    // Nút đóng hộp cho nó gọn
+                                    document.getElementById('big-detail-box').classList.add('d-none');
+                                }
+    </script>
 
     <%@ include file="/nghiapages/layout_footer.jsp" %>
 
