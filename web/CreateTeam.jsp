@@ -62,7 +62,7 @@
     </style>
 </head>
 <body>
-    
+    <jsp:include page="/nghiapages/layout_header.jsp" />
 <div class="container mt-5 mb-5" style="max-width: 900px;">
     
     <c:if test="${not empty error}">
