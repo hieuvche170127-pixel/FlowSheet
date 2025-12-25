@@ -306,7 +306,7 @@
                                             ${inviterName}
                                         </td>
                                         <td>
-                                            <span class="badge ${inv.status == 'PENDING' ? 'bg-warning text-dark' : (inv.status == 'ACCEPTED' ? 'bg-success' : 'bg-secondary')}">
+                                            <span class="">
                                                 ${inv.status}
                                             </span>
                                         </td>

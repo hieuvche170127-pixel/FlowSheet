@@ -127,11 +127,13 @@ public class ViewDetailTimesheet extends HttpServlet {
                 // lấy thêm reporttask trong tuần (ứng với timesheetentry)
                 // giờ nghĩ lại thấy nên chuyển từ mqh từ timesheetentry đến report chuyển thành đến task, còn timesheet report thì lấy theo ngày là được
                 ArrayList<TimesheetEntry> timesheetEntryInTimesheet = timesheetEntryDao.getEntriesByTimesheetId(timesheetIdInt);
+                ArrayList<TaskReport> taskreportsInTimesheet = taskreportDao.getTaskReportsByTimesheetId(timesheetIdInt);
+                         
+                request.setAttribute(timesheetIdString, taskreportsInTimesheet);
                 request.setAttribute("timesheetEntry", timesheetEntryInTimesheet);
                 request.setAttribute("timesheet", foundById);
                 request.getRequestDispatcher("/nghiapages/timesheetjsp/timesheetdetail.jsp").forward(request, response);
                 return;
-
             } catch (NumberFormatException numberFormatException) {
                 // gửi về mytimesheet - à ừ đúng r
                 errorList.add("ko lấy được id của timesheet");
