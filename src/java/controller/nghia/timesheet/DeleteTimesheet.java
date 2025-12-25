@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 
+import entity.TimeSheet;
+
 /**
  *
  * @author Admin
@@ -83,25 +85,28 @@ public class DeleteTimesheet extends HttpServlet {
             if (user.getRoleID() == 1) {
                 String timesheetIdString = request.getParameter("timesheetId");
                 int timesheetIdInt = Integer.parseInt(timesheetIdString);
+                TimeSheet timesheet = timesheetDao.getTimesheetByTimesheetId(timesheetIdInt);
+
                 boolean isAbleToDelte = timesheetDao.isTimesheetAbleToDelete(timesheetIdInt, user.getUserID());
                 if (!isAbleToDelte) {
-                    errorList.add("this timesheet is not able to delete");
+                    errorList.add("Bạn không thể xóa timesheet này (từ ngày: "+timesheet.getDayStart().toString()+" đến ngày: "+timesheet.getDayEnd().toString()+") "
+                            + "- vì timesheet đã chứa dữ liệu hoặc vì bạn ko phải là người sở hữu timesheet này Hoặc do timesheet này là của các tuần trước.");
                 }
                 //sau validate
                 if (errorList.isEmpty()) {
                     // xóa và gửi về status ch obene mytimesheetlist.
                     if (timesheetDao.deleteTimesheetById(timesheetIdInt)) {
-                        session.setAttribute("info", "Xóa Timesheet thành công!");
+                        // kiểm tra cái attribute name với jsp 
+                        session.setAttribute("sessionMessage", "Xóa Timesheet thành công!");
                     } else {
-                        session.setAttribute("info", "Lỗi hệ thống, không thể xóa!");
+                        session.setAttribute("sessionMessage", "Lỗi hệ thống, không thể xóa!");
                     }
                     // neu thanh cong hoac that bai thi vao all timesheet chu nhi, tai day la xoa timesheet ma
-                    request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
-                    return;
                 } else {
                     session.setAttribute("errorList", errorList);
                 }
-
+                request.getRequestDispatcher("/ViewAndSearchTimesheet").forward(request, response);
+                return;
             } else {
                 //redirect về homepage tương ứng với 2 và 3, còn lại thì session.invalidate rồi tống về login
                 if (user.getRoleID() == 2 || user.getRoleID() == 3) {

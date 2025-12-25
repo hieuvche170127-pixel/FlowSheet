@@ -5,6 +5,7 @@
 package controller.nghia.invitation;
 
 import dal.InvitationDAO;
+import dal.TeamMemberDAO;
 import dao.RoleDAO;
 import entity.Invitation;
 import entity.Role;
@@ -72,6 +73,7 @@ public class ReplyInvitation extends HttpServlet {
         HttpSession session = request.getSession(true);
         UserAccount user = (UserAccount) session.getAttribute("user");
         InvitationDAO invitationDao = new InvitationDAO();
+        TeamMemberDAO teamMemDao = new TeamMemberDAO();
         RoleDAO roleDao = new RoleDAO();
         if (user == null) {
             response.sendRedirect("login.jsp");
@@ -85,7 +87,7 @@ public class ReplyInvitation extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-        
+
         try {
             if (user.getRoleID() == 1) {
                 String action = request.getParameter("action"); // accept hoặc reject
@@ -93,28 +95,30 @@ public class ReplyInvitation extends HttpServlet {
 
                 int invitationId = Integer.parseInt(invitationidString);
                 boolean isAbleToReply = invitationDao.countSpecificPendingInvitation(invitationId, user.getEmail());
+                Invitation invitation = invitationDao.getInvitationByInvitationId(invitationId);
 
                 // nếu có thể update - tức là đúng người, đúng thời điểm, chưa bị cancell
                 if (isAbleToReply) {
                     if (action.equalsIgnoreCase("ACCEPTED")
                             || action.equalsIgnoreCase("reject")) {
-                        boolean replyStatus = invitationDao.editStatus(invitationId, action);
-                        session.setAttribute("replyStatus", replyStatus);
-                        // nếu chấp thuận thì phải làm gì với team mem và project mem
-                        // check xem cái nào có Teamid/ProjectId
-                        // search thử xem team/project còn tồn tại ko? (có) add vào team/project mem : (ko)gửi error mesage:
-                        // team hoặc project ko còn tồn tại. 
-                     
-                        if(action.equalsIgnoreCase("ACCEPTED")){
-                            
+                        boolean replyStatus;
+                        boolean editInvitationStatus = invitationDao.editStatus(invitationId, action);
+                        boolean addTeamMemberStatus = false;
+                        if (action.equalsIgnoreCase("ACCEPTED")) {
+                            addTeamMemberStatus = teamMemDao.addTeamMember(user.getUserID(), invitation.getTeamId(), invitation.getRoleId());
+                            replyStatus = addTeamMemberStatus;
+                        } else {
+                            replyStatus = true;
                         }
+                        session.setAttribute("replyStatus", replyStatus);
+
                     }
                 } else {
                     String errorMsg = "người dùng ko có quyền update hoặc là lời mời đã bị hủy, hết hạn, hoặc đã được trả lời.";
                     session.setAttribute("sessionError", errorMsg);
                 }
                 // vẫn gửi về bên viewall để lấy data
-                response.sendRedirect(request.getContextPath()+"/ViewAllInvitationSentToMe");
+                response.sendRedirect(request.getContextPath() + "/ViewAllInvitationSentToMe");
                 return;
             } else {
                 //redirect về homepage tương ứng với 2 và 3, còn lại thì session.invalidate rồi tống về login

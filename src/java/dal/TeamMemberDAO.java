@@ -249,4 +249,22 @@ public class TeamMemberDAO extends DBContext {
             connection.setAutoCommit(true);
         }
     }
+
+    public boolean addTeamMember(int userId, int teamId, int roleId) {
+        // Câu lệnh SQL không cần chèn JoinedAt vì DB tự xử lý
+        String sql = "INSERT INTO TeamMember (UserID, TeamID, RoleID) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            // Truyền các tham số vào câu lệnh
+            ps.setInt(1, userId);
+            ps.setInt(2, teamId);
+            ps.setInt(3, roleId);
+            // Thực thi lệnh và trả về true nếu có ít nhất 1 dòng được chèn thành công
+            int rowAffected = ps.executeUpdate();
+            return rowAffected > 0;
+        } catch (SQLException e) {
+            // In lỗi ra console để anh dễ debug
+            System.out.println("Lỗi addTeamMember: " + e.getMessage());
+            return false;
+        }
+    }
 }

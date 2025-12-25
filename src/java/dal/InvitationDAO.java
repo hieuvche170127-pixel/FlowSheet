@@ -262,7 +262,7 @@ public class InvitationDAO extends DBContext {
         Invitation invitation = null;
 
         // Em chọn các cột cần thiết như yêu cầu
-        String sql = "SELECT InvitationID, InvitedByID, ExpiresAt, Status, AcceptedAt, TeamID "
+        String sql = "SELECT InvitationID, InvitedByID, ExpiresAt, Status, AcceptedAt, TeamID,RoleId "
                 + "FROM Invitation "
                 + "WHERE InvitationID = ?";
 
@@ -282,6 +282,7 @@ public class InvitationDAO extends DBContext {
                     // Lấy kiểu Timestamp cho DateTime
                     invitation.setExpiresAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("ExpiresAt")));
                     invitation.setAcceptedAt(DateTimeConverter.convertSqlTimestampToLocalDateTime(rs.getTimestamp("AcceptedAt")));
+                    invitation.setRoleId(rs.getInt("RoleId"));
                 }
             }
         } catch (Exception e) {
