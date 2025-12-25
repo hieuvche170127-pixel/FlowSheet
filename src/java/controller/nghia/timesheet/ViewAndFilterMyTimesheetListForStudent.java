@@ -79,6 +79,10 @@ public class ViewAndFilterMyTimesheetListForStudent extends HttpServlet {
         }
 
         String error = "";
+        if (user.getRoleID() == 2 || user.getRoleID() == 3) {
+            response.sendRedirect(request.getContextPath() + "/supervisor/dashboard");
+            return;
+        }
         // kiểm tra xem thk người dùng có phải student hay ko ? 
         if (user.getRoleID() == 1) {
             // mảng này có thể rỗng - chắc trả về cho jsp để tự xử lý.
@@ -87,6 +91,9 @@ public class ViewAndFilterMyTimesheetListForStudent extends HttpServlet {
             request.getRequestDispatcher("/nghiapages/timesheetjsp/my_timesheet.jsp").forward(request, response);
             return;
         } else {
+            session.invalidate();
+            response.sendRedirect("login.jsp");
+            return;
 
         }
 

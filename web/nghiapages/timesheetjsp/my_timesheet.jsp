@@ -27,22 +27,12 @@
                     <%-- 2. Duyệt qua từng lỗi và in ra --%>
                     <c:forEach var="error" items="${sessionScope.errorList}">
                         <li>${error}</li>
-                        </c:forEach>
+                    </c:forEach>
                 </ul>
             </div>
 
             <%-- 3. Hủy session sau khi đã hiển thị xong --%>
             <c:remove var="errorList" scope="session" />
-        </c:if>
-
-        <c:if test="${not empty sessionScope.sessionMessage}">
-            <div class="alert alert-${sessionScope.messageType} alert-dismissible fade show" role="alert">
-                ${sessionScope.sessionMessage}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <%-- Hiển thị xong thì xóa ngay cho sạch session --%>
-            <c:remove var="sessionMessage" scope="session" />
-            <c:remove var="messageType" scope="session" />
         </c:if>
 
         <%-- Hiển thị thông báo LỖI (sessionError) --%>
@@ -54,6 +44,18 @@
             <%-- Hiển thị xong thì xóa ngay để tránh lặp lại khi F5 --%>
             <c:remove var="sessionError" scope="session" />
         </c:if>
+
+        <!--thông báo về nội dung của hành động - thành công hay fail.-->
+        <c:if test="${not empty sessionScope.sessionMessage}">
+            <div class="alert alert-${sessionScope.messageType} alert-dismissible fade show" role="alert">
+                ${sessionScope.sessionMessage}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <%-- Hiển thị xong thì xóa ngay cho sạch session --%>
+            <c:remove var="sessionMessage" scope="session" />
+            <c:remove var="messageType" scope="session" />
+        </c:if>
+
 
 
         <h1>Timesheet của tôi: </h1>

@@ -98,7 +98,7 @@ public class UpdateTimesheet extends HttpServlet {
                 }
                 boolean isAbleToUpdate = timesheetDao.isAbleToUpdateTimesheet(timesheetIdInt, user.getUserID());
                 if (!isAbleToUpdate) {
-                    errorList.add("this timesheet is reviewed or expired or you are not the create one");
+                    errorList.add("timesheet này đã ko còn có thể thay đổi do đã qua tuần.");
                 }
 
                 if (errorList.isEmpty()) {
