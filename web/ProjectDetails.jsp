@@ -241,7 +241,7 @@
                                                             <c:set var="hasReports" value="${taskHasReports[task.taskId]}" />
                                                             <c:if test="${hasReports}">
                                                                 <li>
-                                                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/task-report/review?taskId=${task.taskId}">
+                                                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/task-review?action=list&taskId=${task.taskId}">
                                                                         <i class="bi bi-eye me-2"></i>Review
                                                                     </a>
                                                                 </li>

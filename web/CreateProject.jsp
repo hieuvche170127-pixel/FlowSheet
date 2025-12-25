@@ -53,7 +53,7 @@
     </style>
 </head>
 <body>
-
+<jsp:include page="/nghiapages/layout_header.jsp" />
 <div class="container py-4" style="max-width: 900px;">
     <div id="errorAlertJS" class="alert alert-danger align-items-center mb-4 fade-in d-none" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i> <span id="errorMessage"></span>
